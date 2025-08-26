@@ -5,6 +5,7 @@ use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Http\Controllers\LeaderboardController;
 
 Route::get('/', function () {
     return view('home');
@@ -48,6 +49,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/predictions/{prediction}/lock', [AdminController::class, 'lockPrediction'])->name('predictions.lock');
         Route::post('/predictions/{prediction}/unlock', [AdminController::class, 'unlockPrediction'])->name('predictions.unlock');
         Route::delete('/predictions/{prediction}', [AdminController::class, 'deletePrediction'])->name('predictions.delete');
+    });
+    
+    // Leaderboard routes
+    Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
+        Route::get('/', [LeaderboardController::class, 'index'])->name('index');
+        Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
+        Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
+        Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');
     });
 });
 
