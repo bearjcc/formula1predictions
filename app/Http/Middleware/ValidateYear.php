@@ -15,19 +15,16 @@ class ValidateYear
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // TODO: Replace hardcoded year validation with database lookup
-        // TODO: Add support for future years (2024, 2025, etc.)
-        // TODO: Implement proper error messages for invalid years
-        // TODO: Add logging for invalid year attempts
-        // TODO: Consider caching valid years for performance
-        // TODO: Add unit tests for year validation logic
-        
         $year = $request->route('year');
-        
-        // FIXME: This is temporary validation - replace with database check
-        if ($year !== '2022' && $year !== '2023') {
-            abort(404, 'Invalid year specified.');
+
+        // Validate year format and range - only allow 2022-2024 for now
+        if (!is_numeric($year) || $year < 2022 || $year > 2024) {
+            abort(404, 'Invalid year specified. Please select a year between 2022 and 2024.');
         }
+
+        // TODO: Add database lookup for available years
+        // TODO: Add caching for valid years
+        // TODO: Add unit tests for year validation logic
 
         return $next($request);
     }
