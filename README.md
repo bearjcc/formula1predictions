@@ -436,12 +436,12 @@ The project follows a structured learning path designed to:
 ## TODO
 
 ### Immediate Next Steps (High Priority)
-- [ ] **Complete Model Relationships**: Add missing foreign key relationships between models
-- [ ] **Implement Role-Based Access Control**: Add Gates and Policies for user authorization
-- [ ] **Create Prediction Forms**: Build forms for creating and editing predictions
-- [ ] **Add Data Import/Export**: Create tools to import historical F1 data and export predictions
-- [ ] **Implement Leaderboard System**: Build real-time leaderboard with user rankings
-- [ ] **Add Admin Interface**: Create comprehensive admin dashboard for data management
+- [x] **Complete Model Relationships**: Add missing foreign key relationships between models
+- [x] **Implement Role-Based Access Control**: Add Gates and Policies for user authorization
+- [x] **Create Prediction Forms**: Build forms for creating and editing predictions
+- [x] **Add Data Import/Export**: Create tools to import historical F1 data and export predictions
+- [x] **Implement Leaderboard System**: Build real-time leaderboard with user rankings
+- [x] **Add Admin Interface**: Create comprehensive admin dashboard for data management
 
 ### Medium Priority
 - [ ] **Interactive Prediction Interface**: Implement drag-and-drop driver ordering with LiveWire
