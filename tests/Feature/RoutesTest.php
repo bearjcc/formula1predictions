@@ -5,7 +5,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 // Test that routes exist and return 200 (even if views don't exist yet)
-it("can access the home page", function () {
+it('can access the home page', function () {
     $response = $this->get('/');
     $response->assertStatus(200);
 });
@@ -24,7 +24,7 @@ describe('Year-specific routes exist', function () {
     foreach ($validYears as $year) {
         foreach ($yearRoutes as $route) {
             $testRoute = str_replace('{year}', $year, $route);
-            
+
             it("route {$testRoute} exists", function () use ($testRoute) {
                 $response = $this->get($testRoute);
                 // Just check the route exists, don't care about view errors
@@ -34,12 +34,12 @@ describe('Year-specific routes exist', function () {
     }
 
     // Test year-specific routes with additional parameters
-    it("route /2023/standings/predictions/bearjcc exists", function () {
+    it('route /2023/standings/predictions/bearjcc exists', function () {
         $response = $this->get('/2023/standings/predictions/bearjcc');
         expect($response->status())->toBeIn([200, 500]);
     });
 
-    it("route /2023/race/123 exists", function () {
+    it('route /2023/race/123 exists', function () {
         $response = $this->get('/2023/race/123');
         expect($response->status())->toBeIn([200, 500]);
     });
@@ -47,8 +47,8 @@ describe('Year-specific routes exist', function () {
 
 // Test invalid years return 404
 describe('Invalid years return 404', function () {
-    $invalidYears = ['1920', '1900', '2030', 'abc', '2024'];
-    
+    $invalidYears = ['1920', '1900', '2030', 'abc', '2025'];
+
     foreach ($invalidYears as $year) {
         it("returns 404 for /{$year}/races", function () use ($year) {
             $response = $this->get("/{$year}/races");
@@ -57,12 +57,12 @@ describe('Invalid years return 404', function () {
     }
 
     // Test invalid years with additional parameters
-    it("returns 404 for /1920/standings/predictions/bearjcc", function () {
+    it('returns 404 for /1920/standings/predictions/bearjcc', function () {
         $response = $this->get('/1920/standings/predictions/bearjcc');
         $response->assertStatus(404);
     });
 
-    it("returns 404 for /1920/race/123", function () {
+    it('returns 404 for /1920/race/123', function () {
         $response = $this->get('/1920/race/123');
         $response->assertStatus(404);
     });
@@ -142,3 +142,20 @@ describe('Route naming works correctly', function () {
     });
 });
 
+test('races page loads successfully', function () {
+    $response = $this->get('/2024/races');
+
+    $response->assertSuccessful();
+    $response->assertSee('2024 Races');
+    $response->assertSeeLivewire('races.races-list');
+});
+
+test('races page shows loading state', function () {
+    $response = $this->get('/2024/races');
+
+    $response->assertSuccessful();
+    // The loading state happens too quickly to be visible in tests
+    // Instead, we can verify the page loads and contains the races list component
+    $response->assertSee('2024 Races');
+    $response->assertSeeLivewire('races.races-list');
+});

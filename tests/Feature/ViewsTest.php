@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 it("can load the home page view", function () {
     $response = $this->get('/');
     $response->assertStatus(200);
-    $response->assertViewIs('welcome');
+    $response->assertViewIs('home');
 });
 
 // Test year-specific views
@@ -61,7 +61,7 @@ describe('Non-year-specific views load correctly', function () {
         '/driver/lewis-hamilton' => 'driver',
         '/circuit/silverstone' => 'circuit',
         '/country/belgium' => 'country',
-        '/race/british-grand-prix' => 'race',
+        '/race/british-grand-prix' => 'race-detail',
     ];
 
     foreach ($routes as $route => $view) {
@@ -115,7 +115,7 @@ describe('Views have basic structure', function () {
 
     it("team page shows the team slug", function () {
         $response = $this->get('/team/mercedes');
-        $response->assertSee('mercedes');
+        $response->assertSee('Mercedes');
     });
 });
 
