@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -57,5 +58,45 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * Get the predictions for the user.
+     * 
+     * TODO: Create Prediction model and migration
+     * TODO: Add prediction statistics methods (accuracy, total predictions, etc.)
+     * TODO: Add prediction history with pagination
+     * TODO: Implement prediction scoring methods
+     * TODO: Add prediction comparison methods
+     */
+    public function predictions(): HasMany
+    {
+        return $this->hasMany(Prediction::class);
+    }
+
+    /**
+     * Get the user's prediction accuracy percentage.
+     * 
+     * TODO: Implement accuracy calculation logic
+     * TODO: Add caching for performance
+     * TODO: Consider different accuracy metrics (qualifying vs race)
+     */
+    public function getPredictionAccuracy(): float
+    {
+        // TODO: Calculate and return prediction accuracy
+        return 0.0;
+    }
+
+    /**
+     * Get the user's total prediction score.
+     * 
+     * TODO: Implement scoring system
+     * TODO: Add point calculation logic
+     * TODO: Consider bonus points for perfect predictions
+     */
+    public function getTotalScore(): int
+    {
+        // TODO: Calculate and return total prediction score
+        return 0;
     }
 }
