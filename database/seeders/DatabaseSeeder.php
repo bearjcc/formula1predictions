@@ -19,5 +19,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Call other seeders
+        $this->call([
+            HistoricalPredictionsSeeder::class,
+            // FakerBasicSeeder::class,
+            // BotPredictionsSeeder::class,
+        ]);
     }
 }

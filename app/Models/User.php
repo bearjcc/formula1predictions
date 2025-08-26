@@ -62,12 +62,6 @@ class User extends Authenticatable
 
     /**
      * Get the predictions for the user.
-     * 
-     * TODO: Create Prediction model and migration
-     * TODO: Add prediction statistics methods (accuracy, total predictions, etc.)
-     * TODO: Add prediction history with pagination
-     * TODO: Implement prediction scoring methods
-     * TODO: Add prediction comparison methods
      */
     public function predictions(): HasMany
     {
@@ -76,27 +70,162 @@ class User extends Authenticatable
 
     /**
      * Get the user's prediction accuracy percentage.
-     * 
-     * TODO: Implement accuracy calculation logic
-     * TODO: Add caching for performance
-     * TODO: Consider different accuracy metrics (qualifying vs race)
      */
     public function getPredictionAccuracy(): float
     {
-        // TODO: Calculate and return prediction accuracy
-        return 0.0;
+        $scoredPredictions = $this->predictions()
+            ->where('status', 'scored')
+            ->whereNotNull('accuracy')
+            ->get();
+
+        if ($scoredPredictions->isEmpty()) {
+            return 0.0;
+        }
+
+        $totalAccuracy = $scoredPredictions->sum('accuracy');
+        return $totalAccuracy / $scoredPredictions->count();
     }
 
     /**
      * Get the user's total prediction score.
-     * 
-     * TODO: Implement scoring system
-     * TODO: Add point calculation logic
-     * TODO: Consider bonus points for perfect predictions
      */
     public function getTotalScore(): int
     {
-        // TODO: Calculate and return total prediction score
-        return 0;
+        return $this->predictions()
+            ->where('status', 'scored')
+            ->sum('score');
+    }
+
+    /**
+     * Get the user's score for a specific season.
+     */
+    public function getSeasonScore(int $season): int
+    {
+        return $this->predictions()
+            ->where('status', 'scored')
+            ->where('season', $season)
+            ->sum('score');
+    }
+
+    /**
+     * Get the user's accuracy for a specific season.
+     */
+    public function getSeasonAccuracy(int $season): float
+    {
+        $scoredPredictions = $this->predictions()
+            ->where('status', 'scored')
+            ->where('season', $season)
+            ->whereNotNull('accuracy')
+            ->get();
+
+        if ($scoredPredictions->isEmpty()) {
+            return 0.0;
+        }
+
+        $totalAccuracy = $scoredPredictions->sum('accuracy');
+        return $totalAccuracy / $scoredPredictions->count();
+    }
+
+    /**
+     * Get the user's total number of predictions.
+     */
+    public function getTotalPredictionsCount(): int
+    {
+        return $this->predictions()->count();
+    }
+
+    /**
+     * Get the user's scored predictions count.
+     */
+    public function getScoredPredictionsCount(): int
+    {
+        return $this->predictions()
+            ->where('status', 'scored')
+            ->count();
+    }
+
+    /**
+     * Get the user's predictions for a specific season.
+     */
+    public function getSeasonPredictions(int $season): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->predictions()
+            ->where('season', $season)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get the user's race predictions.
+     */
+    public function getRacePredictions(): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->predictions()
+            ->where('type', 'race')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get the user's preseason predictions.
+     */
+    public function getPreseasonPredictions(): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->predictions()
+            ->where('type', 'preseason')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get the user's midseason predictions.
+     */
+    public function getMidseasonPredictions(): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->predictions()
+            ->where('type', 'midseason')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get the user's best prediction score.
+     */
+    public function getBestPredictionScore(): int
+    {
+        return $this->predictions()
+            ->where('status', 'scored')
+            ->max('score') ?? 0;
+    }
+
+    /**
+     * Get the user's average prediction score.
+     */
+    public function getAveragePredictionScore(): float
+    {
+        $scoredPredictions = $this->predictions()
+            ->where('status', 'scored')
+            ->get();
+
+        if ($scoredPredictions->isEmpty()) {
+            return 0.0;
+        }
+
+        return $scoredPredictions->avg('score');
+    }
+
+    /**
+     * Get the user's prediction statistics.
+     */
+    public function getPredictionStats(): array
+    {
+        return [
+            'total_predictions' => $this->getTotalPredictionsCount(),
+            'scored_predictions' => $this->getScoredPredictionsCount(),
+            'total_score' => $this->getTotalScore(),
+            'average_accuracy' => $this->getPredictionAccuracy(),
+            'best_score' => $this->getBestPredictionScore(),
+            'average_score' => $this->getAveragePredictionScore(),
+        ];
     }
 }

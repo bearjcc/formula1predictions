@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Countries extends Model
 {
@@ -11,16 +12,107 @@ class Countries extends Model
     use HasFactory;
 
     /**
-     * TODO: Define fillable fields for countries
-     * TODO: Add country F1 history and achievements
-     * TODO: Add circuits relationship
-     * TODO: Add drivers relationship
-     * TODO: Add teams relationship
-     * TODO: Add country statistics (races hosted, championships won, etc.)
-     * TODO: Add country flag and geographical information
-     * TODO: Add country comparison methods
-     * TODO: Add country ranking methods
-     * TODO: Add country social media links
-     * TODO: Add country F1 news and updates
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
      */
+    protected $fillable = [
+        'name',
+        'code',
+        'flag_url',
+        'description',
+        'f1_races_hosted',
+        'world_championships_won',
+        'drivers_count',
+        'teams_count',
+        'circuits_count',
+        'is_active',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'f1_races_hosted' => 'integer',
+            'world_championships_won' => 'integer',
+            'drivers_count' => 'integer',
+            'teams_count' => 'integer',
+            'circuits_count' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get the drivers from this country.
+     */
+    public function drivers(): HasMany
+    {
+        return $this->hasMany(Drivers::class, 'nationality', 'name');
+    }
+
+    /**
+     * Get the teams from this country.
+     */
+    public function teams(): HasMany
+    {
+        return $this->hasMany(Teams::class, 'nationality', 'name');
+    }
+
+    /**
+     * Get the circuits in this country.
+     */
+    public function circuits(): HasMany
+    {
+        return $this->hasMany(Circuits::class, 'country', 'name');
+    }
+
+    /**
+     * Scope to get only active countries.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Get the country's slug for URLs.
+     */
+    public function getSlugAttribute(): string
+    {
+        return str($this->name)
+            ->lower()
+            ->replace([' ', '&', '-'], '-')
+            ->slug();
+    }
+
+    /**
+     * Get the country's flag URL.
+     */
+    public function getFlagUrlAttribute(): string
+    {
+        if ($this->flag_url) {
+            return $this->flag_url;
+        }
+
+        // Default flag URL based on country code
+        return "https://flagcdn.com/{$this->code}.svg";
+    }
+
+    /**
+     * Get the country's F1 statistics.
+     */
+    public function getF1Stats(): array
+    {
+        return [
+            'races_hosted' => $this->f1_races_hosted,
+            'world_championships' => $this->world_championships_won,
+            'drivers' => $this->drivers_count,
+            'teams' => $this->teams_count,
+            'circuits' => $this->circuits_count,
+        ];
+    }
 }
