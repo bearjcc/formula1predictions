@@ -13,7 +13,8 @@ class PredictionPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Users can view their own predictions
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class PredictionPolicy
      */
     public function view(User $user, Prediction $prediction): bool
     {
-        return false;
+        // Users can view their own predictions
+        return $user->id === $prediction->user_id;
     }
 
     /**
@@ -29,7 +31,8 @@ class PredictionPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Any authenticated user can create predictions
+        return true;
     }
 
     /**
@@ -37,7 +40,8 @@ class PredictionPolicy
      */
     public function update(User $user, Prediction $prediction): bool
     {
-        return false;
+        // Users can only update their own predictions that are still in draft status
+        return $user->id === $prediction->user_id && $prediction->status === 'draft';
     }
 
     /**
@@ -45,7 +49,8 @@ class PredictionPolicy
      */
     public function delete(User $user, Prediction $prediction): bool
     {
-        return false;
+        // Users can only delete their own predictions that are still in draft status
+        return $user->id === $prediction->user_id && $prediction->status === 'draft';
     }
 
     /**
@@ -53,7 +58,8 @@ class PredictionPolicy
      */
     public function restore(User $user, Prediction $prediction): bool
     {
-        return false;
+        // Only admins can restore predictions
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +67,25 @@ class PredictionPolicy
      */
     public function forceDelete(User $user, Prediction $prediction): bool
     {
-        return false;
+        // Only admins can permanently delete predictions
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can submit the prediction.
+     */
+    public function submit(User $user, Prediction $prediction): bool
+    {
+        // Users can only submit their own predictions that are in draft status
+        return $user->id === $prediction->user_id && $prediction->status === 'draft';
+    }
+
+    /**
+     * Determine whether the user can score the prediction.
+     */
+    public function score(User $user, Prediction $prediction): bool
+    {
+        // Only admins or the system can score predictions
+        return $user->hasRole('admin') || $user->hasRole('system');
     }
 }

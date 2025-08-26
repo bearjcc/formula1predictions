@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\RacesController;
 use App\Http\Controllers\PredictionController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -30,9 +31,24 @@ Route::middleware(['auth'])->group(function () {
 
     Volt::route('predict/{slug}', 'predict.create')->name('predict.create');
     Volt::route('predict/{slug}', 'predict.edit')->name('predict.edit');
-    
+
     // Prediction routes
     Route::resource('predictions', PredictionController::class);
+    
+    // Admin routes
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
+        Route::get('/races', [AdminController::class, 'races'])->name('races');
+        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        
+        // Prediction management actions
+        Route::post('/predictions/{prediction}/score', [AdminController::class, 'scorePrediction'])->name('predictions.score');
+        Route::post('/predictions/{prediction}/lock', [AdminController::class, 'lockPrediction'])->name('predictions.lock');
+        Route::post('/predictions/{prediction}/unlock', [AdminController::class, 'unlockPrediction'])->name('predictions.unlock');
+        Route::delete('/predictions/{prediction}', [AdminController::class, 'deletePrediction'])->name('predictions.delete');
+    });
 });
 
 // F1 API Test Routes
@@ -98,7 +114,7 @@ Route::get('/country/{slug}', function ($slug) {
 })->name('country');
 
 Route::get('/race/{slug}', function ($slug) {
-    return view('race-detail', ['slug' => $slug]);
+    return view('race', ['slug' => $slug]);
 })->name('race.detail');
 
 require __DIR__.'/auth.php';
