@@ -23,3 +23,6 @@ yarn-error.log
 /.zed
 
 /reference
+
+# Previous projects directory
+/previous/
