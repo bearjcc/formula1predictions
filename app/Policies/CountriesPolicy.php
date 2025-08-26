@@ -13,7 +13,8 @@ class CountriesPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view countries
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class CountriesPolicy
      */
     public function view(User $user, Countries $countries): bool
     {
-        return false;
+        // All authenticated users can view individual countries
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class CountriesPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admins can create countries
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +40,8 @@ class CountriesPolicy
      */
     public function update(User $user, Countries $countries): bool
     {
-        return false;
+        // Only admins can update countries
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +49,8 @@ class CountriesPolicy
      */
     public function delete(User $user, Countries $countries): bool
     {
-        return false;
+        // Only admins can delete countries
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +58,8 @@ class CountriesPolicy
      */
     public function restore(User $user, Countries $countries): bool
     {
-        return false;
+        // Only admins can restore countries
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +67,16 @@ class CountriesPolicy
      */
     public function forceDelete(User $user, Countries $countries): bool
     {
-        return false;
+        // Only admins can permanently delete countries
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can view country statistics.
+     */
+    public function viewStats(User $user, Countries $countries): bool
+    {
+        // All authenticated users can view country statistics
+        return true;
     }
 }

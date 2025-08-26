@@ -61,7 +61,7 @@ class Teams extends Model
      */
     public function drivers(): HasMany
     {
-        return $this->hasMany(Drivers::class, 'team_id', 'team_id');
+        return $this->hasMany(Drivers::class, 'team_id');
     }
 
     /**

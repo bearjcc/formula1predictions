@@ -60,7 +60,7 @@ class Circuits extends Model
      */
     public function races(): HasMany
     {
-        return $this->hasMany(Races::class, 'circuit_id', 'circuit_id');
+        return $this->hasMany(Races::class, 'circuit_id');
     }
 
     /**

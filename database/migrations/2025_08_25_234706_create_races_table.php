@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('race_name'); // F1 API raceName
             $table->date('date'); // F1 API date
             $table->time('time')->nullable(); // F1 API time
-            $table->string('circuit_id')->nullable(); // F1 API circuit.circuitId
+            $table->string('circuit_api_id')->nullable(); // F1 API circuit.circuitId
             $table->string('circuit_name')->nullable(); // F1 API circuit.circuitName
             $table->string('circuit_url')->nullable(); // F1 API circuit.url
             $table->string('country')->nullable(); // F1 API circuit.country
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->index(['season', 'race_name']);
             $table->index(['date']);
             $table->index(['status']);
-            $table->index(['circuit_id']);
+            $table->index(['circuit_api_id']);
             
             // Add foreign key relationship to circuits table
             $table->foreignId('circuit_id')->nullable()->constrained('circuits', 'id')->onDelete('set null');

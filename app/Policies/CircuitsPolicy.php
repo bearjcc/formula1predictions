@@ -13,7 +13,8 @@ class CircuitsPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view circuits
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class CircuitsPolicy
      */
     public function view(User $user, Circuits $circuits): bool
     {
-        return false;
+        // All authenticated users can view individual circuits
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class CircuitsPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admins can create circuits
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +40,8 @@ class CircuitsPolicy
      */
     public function update(User $user, Circuits $circuits): bool
     {
-        return false;
+        // Only admins can update circuits
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +49,8 @@ class CircuitsPolicy
      */
     public function delete(User $user, Circuits $circuits): bool
     {
-        return false;
+        // Only admins can delete circuits
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +58,8 @@ class CircuitsPolicy
      */
     public function restore(User $user, Circuits $circuits): bool
     {
-        return false;
+        // Only admins can restore circuits
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +67,16 @@ class CircuitsPolicy
      */
     public function forceDelete(User $user, Circuits $circuits): bool
     {
-        return false;
+        // Only admins can permanently delete circuits
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can view circuit statistics.
+     */
+    public function viewStats(User $user, Circuits $circuits): bool
+    {
+        // All authenticated users can view circuit statistics
+        return true;
     }
 }

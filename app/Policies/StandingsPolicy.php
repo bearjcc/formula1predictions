@@ -13,7 +13,8 @@ class StandingsPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view standings
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class StandingsPolicy
      */
     public function view(User $user, Standings $standings): bool
     {
-        return false;
+        // All authenticated users can view individual standings
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class StandingsPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admins can create standings
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +40,8 @@ class StandingsPolicy
      */
     public function update(User $user, Standings $standings): bool
     {
-        return false;
+        // Only admins can update standings
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +49,8 @@ class StandingsPolicy
      */
     public function delete(User $user, Standings $standings): bool
     {
-        return false;
+        // Only admins can delete standings
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +58,8 @@ class StandingsPolicy
      */
     public function restore(User $user, Standings $standings): bool
     {
-        return false;
+        // Only admins can restore standings
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +67,16 @@ class StandingsPolicy
      */
     public function forceDelete(User $user, Standings $standings): bool
     {
-        return false;
+        // Only admins can permanently delete standings
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can view standings statistics.
+     */
+    public function viewStats(User $user, Standings $standings): bool
+    {
+        // All authenticated users can view standings statistics
+        return true;
     }
 }

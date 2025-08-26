@@ -436,8 +436,8 @@ The project follows a structured learning path designed to:
 ## TODO
 
 ### Immediate Next Steps (High Priority)
-- [x] **Complete Model Relationships**: Add missing foreign key relationships between models
-- [x] **Implement Role-Based Access Control**: Add Gates and Policies for user authorization
+- [x] **Complete Model Relationships**: Add missing foreign key relationships between models ✅
+- [x] **Implement Role-Based Access Control**: Add Gates and Policies for user authorization ✅
 - [x] **Create Prediction Forms**: Build forms for creating and editing predictions
 - [x] **Add Data Import/Export**: Create tools to import historical F1 data and export predictions
 - [x] **Implement Leaderboard System**: Build real-time leaderboard with user rankings

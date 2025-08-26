@@ -13,7 +13,8 @@ class DriversPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view drivers
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class DriversPolicy
      */
     public function view(User $user, Drivers $drivers): bool
     {
-        return false;
+        // All authenticated users can view individual drivers
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class DriversPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admins can create drivers
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +40,8 @@ class DriversPolicy
      */
     public function update(User $user, Drivers $drivers): bool
     {
-        return false;
+        // Only admins can update drivers
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +49,8 @@ class DriversPolicy
      */
     public function delete(User $user, Drivers $drivers): bool
     {
-        return false;
+        // Only admins can delete drivers
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +58,8 @@ class DriversPolicy
      */
     public function restore(User $user, Drivers $drivers): bool
     {
-        return false;
+        // Only admins can restore drivers
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +67,16 @@ class DriversPolicy
      */
     public function forceDelete(User $user, Drivers $drivers): bool
     {
-        return false;
+        // Only admins can permanently delete drivers
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can view driver statistics.
+     */
+    public function viewStats(User $user, Drivers $drivers): bool
+    {
+        // All authenticated users can view driver statistics
+        return true;
     }
 }

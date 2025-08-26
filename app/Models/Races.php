@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Races extends Model
@@ -57,6 +58,14 @@ class Races extends Model
     }
 
     /**
+     * Get the circuit for this race.
+     */
+    public function circuit(): BelongsTo
+    {
+        return $this->belongsTo(Circuits::class, 'circuit_id');
+    }
+
+    /**
      * Get the predictions for this race.
      */
     public function predictions(): HasMany
@@ -71,7 +80,7 @@ class Races extends Model
     public function standings(): HasMany
     {
         return $this->hasMany(Standings::class, 'round', 'round')
-            ->where('season', 'season');
+            ->where('standings.season', $this->season);
     }
 
     /**

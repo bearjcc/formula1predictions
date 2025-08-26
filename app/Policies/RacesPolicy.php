@@ -13,7 +13,8 @@ class RacesPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view races
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class RacesPolicy
      */
     public function view(User $user, Races $races): bool
     {
-        return false;
+        // All authenticated users can view individual races
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class RacesPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admins can create races
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +40,8 @@ class RacesPolicy
      */
     public function update(User $user, Races $races): bool
     {
-        return false;
+        // Only admins can update races
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +49,8 @@ class RacesPolicy
      */
     public function delete(User $user, Races $races): bool
     {
-        return false;
+        // Only admins can delete races
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +58,8 @@ class RacesPolicy
      */
     public function restore(User $user, Races $races): bool
     {
-        return false;
+        // Only admins can restore races
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +67,25 @@ class RacesPolicy
      */
     public function forceDelete(User $user, Races $races): bool
     {
-        return false;
+        // Only admins can permanently delete races
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can manage race results.
+     */
+    public function manageResults(User $user, Races $races): bool
+    {
+        // Only admins can manage race results
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can view race predictions.
+     */
+    public function viewPredictions(User $user, Races $races): bool
+    {
+        // All authenticated users can view race predictions
+        return true;
     }
 }

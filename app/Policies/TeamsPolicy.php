@@ -13,7 +13,8 @@ class TeamsPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view teams
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class TeamsPolicy
      */
     public function view(User $user, Teams $teams): bool
     {
-        return false;
+        // All authenticated users can view individual teams
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class TeamsPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admins can create teams
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +40,8 @@ class TeamsPolicy
      */
     public function update(User $user, Teams $teams): bool
     {
-        return false;
+        // Only admins can update teams
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +49,8 @@ class TeamsPolicy
      */
     public function delete(User $user, Teams $teams): bool
     {
-        return false;
+        // Only admins can delete teams
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +58,8 @@ class TeamsPolicy
      */
     public function restore(User $user, Teams $teams): bool
     {
-        return false;
+        // Only admins can restore teams
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +67,16 @@ class TeamsPolicy
      */
     public function forceDelete(User $user, Teams $teams): bool
     {
-        return false;
+        // Only admins can permanently delete teams
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can view team statistics.
+     */
+    public function viewStats(User $user, Teams $teams): bool
+    {
+        // All authenticated users can view team statistics
+        return true;
     }
 }

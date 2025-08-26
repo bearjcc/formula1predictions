@@ -64,7 +64,7 @@ class Drivers extends Model
      */
     public function team(): BelongsTo
     {
-        return $this->belongsTo(Teams::class, 'team_id', 'team_id');
+        return $this->belongsTo(Teams::class, 'team_id');
     }
 
     /**
