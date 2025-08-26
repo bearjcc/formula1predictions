@@ -1,0 +1,572 @@
+# Type Systems Implementation Guidelines
+
+## Overview
+This project should implement comprehensive type systems to improve code quality, catch errors early, and provide better IDE support. The project uses PHP 8.4.5 and Laravel 12, which have excellent type system support.
+
+## Current State
+- Basic PHPDoc annotations exist in models and form requests
+- No static analysis tools configured (PHPStan, Psalm)
+- Missing strict type declarations
+- Incomplete type hints in method signatures
+
+## Implementation Priorities
+
+### 1. Static Analysis Tools Setup
+
+#### PHPStan Configuration
+```bash
+composer require --dev phpstan/phpstan phpstan/phpstan-laravel phpstan/phpstan-phpunit
+```
+
+Create `phpstan.neon`:
+```neon
+parameters:
+    level: 8
+    paths:
+        - app
+        - tests
+    excludePaths:
+        - app/Console/Kernel.php
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Collection::#'
+    extensions:
+        - phpstan/extension-installer
+    includes:
+        - vendor/phpstan/phpstan-laravel/extension.neon
+```
+
+#### Psalm Configuration (Alternative)
+```bash
+composer require --dev vimeo/psalm psalm/plugin-laravel
+```
+
+Create `psalm.xml`:
+```xml
+<?xml version="1.0"?>
+<psalm
+    errorLevel="4"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="true"
+>
+    <projectFiles>
+        <directory name="app"/>
+        <directory name="tests"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+        </ignoreFiles>
+    </projectFiles>
+    <plugins>
+        <pluginClass class="Psalm\LaravelPlugin\Plugin"/>
+    </plugins>
+</psalm>
+```
+
+### 2. Strict Type Declarations
+
+#### Add to All PHP Files
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\...;
+```
+
+#### Update composer.json Scripts
+```json
+{
+    "scripts": {
+        "analyse": "phpstan analyse",
+        "analyse:psalm": "psalm",
+        "type-check": "composer analyse && composer analyse:psalm"
+    }
+}
+```
+
+### 3. Model Type Enhancements
+
+#### Example Enhanced Model
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Collection;
+
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property \Carbon\Carbon|null $email_verified_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property-read Collection<int, Prediction> $predictions
+ */
+class User extends Authenticatable
+{
+    use HasFactory, Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<string>
+     */
+    protected array $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<string>
+     */
+    protected array $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    /**
+     * Get the user's initials
+     */
+    public function initials(): string
+    {
+        return Str::of($this->name)
+            ->explode(' ')
+            ->take(2)
+            ->map(fn (string $word): string => Str::substr($word, 0, 1))
+            ->implode('');
+    }
+
+    /**
+     * Get the predictions for the user.
+     *
+     * @return HasMany<Prediction>
+     */
+    public function predictions(): HasMany
+    {
+        return $this->hasMany(Prediction::class);
+    }
+
+    /**
+     * Get the user's prediction accuracy percentage.
+     */
+    public function getPredictionAccuracy(): float
+    {
+        $scoredPredictions = $this->predictions()
+            ->where('status', 'scored')
+            ->whereNotNull('accuracy')
+            ->get();
+
+        if ($scoredPredictions->isEmpty()) {
+            return 0.0;
+        }
+
+        $totalAccuracy = $scoredPredictions->sum('accuracy');
+        return $totalAccuracy / $scoredPredictions->count();
+    }
+}
+```
+
+### 4. Service Class Type Enhancements
+
+#### Example Service with Types
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Models\Prediction;
+use App\Models\Races;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
+
+class PredictionService
+{
+    /**
+     * Calculate scores for all predictions in a race
+     *
+     * @param Races $race
+     * @return Collection<int, Prediction>
+     */
+    public function scoreRacePredictions(Races $race): Collection
+    {
+        $predictions = $race->predictions()
+            ->where('status', 'submitted')
+            ->get();
+
+        return $predictions->map(function (Prediction $prediction): Prediction {
+            $prediction->score();
+            return $prediction;
+        });
+    }
+
+    /**
+     * Get prediction statistics for a user
+     *
+     * @param int $userId
+     * @return array{
+     *     total_predictions: int,
+     *     scored_predictions: int,
+     *     total_score: int,
+     *     average_accuracy: float,
+     *     best_score: int,
+     *     average_score: float
+     * }
+     */
+    public function getUserPredictionStats(int $userId): array
+    {
+        // Implementation
+    }
+}
+```
+
+### 5. Form Request Type Enhancements
+
+#### Example Form Request
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+/**
+ * @property array<string, mixed> $prediction_data
+ * @property string $type
+ * @property int $season
+ * @property int|null $race_round
+ */
+class StorePredictionRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'type' => ['required', 'string', 'in:race,preseason,midseason'],
+            'season' => ['required', 'integer', 'min:2020', 'max:2030'],
+            'race_round' => ['nullable', 'integer', 'min:1', 'max:25'],
+            'prediction_data' => ['required', 'array'],
+            'prediction_data.driver_order' => ['required_if:type,race', 'array'],
+            'prediction_data.driver_order.*' => ['string', 'exists:drivers,id'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'type.in' => 'Prediction type must be race, preseason, or midseason.',
+            'season.min' => 'Season must be 2020 or later.',
+            'season.max' => 'Season must be 2030 or earlier.',
+        ];
+    }
+}
+```
+
+### 6. Controller Type Enhancements
+
+#### Example Controller
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StorePredictionRequest;
+use App\Models\Prediction;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\View\View;
+
+class PredictionController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request): View
+    {
+        /** @var User $user */
+        $user = $request->user();
+        
+        $predictions = $user->predictions()
+            ->with('race')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('predictions.index', compact('predictions'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StorePredictionRequest $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $prediction = $user->predictions()->create([
+            'type' => $request->type,
+            'season' => $request->season,
+            'race_round' => $request->race_round,
+            'prediction_data' => $request->prediction_data,
+            'status' => 'draft',
+        ]);
+
+        return redirect()
+            ->route('predictions.show', $prediction)
+            ->with('success', 'Prediction created successfully.');
+    }
+}
+```
+
+### 7. Test Type Enhancements
+
+#### Example Test with Types
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Models\Prediction;
+use App\Models\Races;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class PredictionTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_user_can_create_prediction(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        
+        /** @var Races $race */
+        $race = Races::factory()->create();
+
+        $predictionData = [
+            'driver_order' => ['driver1', 'driver2', 'driver3'],
+            'fastest_lap' => 'driver1',
+        ];
+
+        $response = $this->actingAs($user)
+            ->post(route('predictions.store'), [
+                'type' => 'race',
+                'season' => 2024,
+                'race_round' => $race->round,
+                'prediction_data' => $predictionData,
+            ]);
+
+        $response->assertRedirect();
+        
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'type' => 'race',
+            'season' => 2024,
+        ]);
+    }
+}
+```
+
+### 8. Livewire Component Type Enhancements
+
+#### Example Livewire Component
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire;
+
+use App\Models\Prediction;
+use App\Models\Races;
+use Illuminate\Database\Eloquent\Collection;
+use Livewire\Component;
+use Livewire\Attributes\Rule;
+
+class PredictionForm extends Component
+{
+    #[Rule('required|string|in:race,preseason,midseason')]
+    public string $type = 'race';
+
+    #[Rule('required|integer|min:2020|max:2030')]
+    public int $season = 2024;
+
+    #[Rule('nullable|integer|min:1|max:25')]
+    public ?int $raceRound = null;
+
+    #[Rule('required|array')]
+    public array $predictionData = [];
+
+    public ?Races $race = null;
+
+    public function mount(?Races $race = null): void
+    {
+        $this->race = $race;
+        if ($race !== null) {
+            $this->season = $race->season;
+            $this->raceRound = $race->round;
+        }
+    }
+
+    public function save(): void
+    {
+        $this->validate();
+
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $prediction = $user->predictions()->create([
+            'type' => $this->type,
+            'season' => $this->season,
+            'race_round' => $this->raceRound,
+            'prediction_data' => $this->predictionData,
+            'status' => 'draft',
+        ]);
+
+        $this->redirect(route('predictions.show', $prediction));
+    }
+
+    public function render(): \Illuminate\View\View
+    {
+        return view('livewire.prediction-form');
+    }
+}
+```
+
+## Implementation Checklist
+
+### Phase 1: Foundation
+- [ ] Add `declare(strict_types=1);` to all PHP files
+- [ ] Install and configure PHPStan
+- [ ] Install and configure Psalm (optional)
+- [ ] Add type analysis scripts to composer.json
+
+### Phase 2: Model Enhancement
+- [ ] Add comprehensive PHPDoc annotations to all models
+- [ ] Add property type annotations
+- [ ] Add return type hints to all methods
+- [ ] Add parameter type hints to all methods
+
+### Phase 3: Service Layer
+- [ ] Add type hints to all service classes
+- [ ] Add array shape annotations for complex return types
+- [ ] Add generic type annotations for collections
+
+### Phase 4: Controllers & Requests
+- [ ] Add type hints to all controllers
+- [ ] Add property annotations to form requests
+- [ ] Add return type hints to all methods
+
+### Phase 5: Tests
+- [ ] Add type hints to all test methods
+- [ ] Add proper type annotations for model factories
+- [ ] Add return type hints to test methods
+
+### Phase 6: Livewire Components
+- [ ] Add type hints to all Livewire components
+- [ ] Add property type annotations
+- [ ] Add method return type hints
+
+### Phase 7: Validation & CI
+- [ ] Run type analysis in CI/CD pipeline
+- [ ] Set up pre-commit hooks for type checking
+- [ ] Configure IDE integration for type checking
+
+## Benefits
+
+1. **Early Error Detection**: Catch type-related errors before runtime
+2. **Better IDE Support**: Improved autocomplete and refactoring
+3. **Code Documentation**: Types serve as living documentation
+4. **Refactoring Safety**: Confident refactoring with type safety
+5. **Team Collaboration**: Clear interfaces and contracts
+6. **Performance**: Potential for better optimization
+
+## Best Practices
+
+1. **Start with Models**: Models are the foundation of the application
+2. **Use Array Shapes**: For complex return types, use array shape annotations
+3. **Generic Collections**: Use generic type annotations for collections
+4. **Strict Types**: Always use `declare(strict_types=1);`
+5. **Property Annotations**: Add PHPDoc annotations for all model properties
+6. **Return Types**: Always specify return types for methods
+7. **Parameter Types**: Always specify parameter types for methods
+8. **Test Types**: Add type hints to test methods for better test documentation
+
+## Commands
+
+```bash
+# Install PHPStan
+composer require --dev phpstan/phpstan phpstan/phpstan-laravel phpstan/phpstan-phpunit
+
+# Install Psalm (alternative)
+composer require --dev vimeo/psalm psalm/plugin-laravel
+
+# Run type analysis
+composer analyse
+
+# Run Psalm analysis
+composer analyse:psalm
+
+# Run both
+composer type-check
+```
+description:
+globs:
+alwaysApply: true
+---

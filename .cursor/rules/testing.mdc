@@ -1,0 +1,54 @@
+# Testing Standards & Best Practices
+
+## Test-Driven Development (TDD)
+- Write tests before implementing features
+- Use descriptive test names that explain the expected behavior
+- Follow the Red-Green-Refactor cycle
+- Ensure all business logic is covered by tests
+
+## Test Structure
+- **Feature Tests**: Test complete user workflows and API endpoints
+- **Unit Tests**: Test individual methods and business logic
+- **Browser Tests**: Test user interactions and UI behavior
+- **Integration Tests**: Test external service integrations
+
+## Testing Patterns
+- Use factories for test data creation
+- Mock external services (F1 API)
+- Test both happy paths and edge cases
+- Use datasets for validation testing
+- Implement proper test isolation
+
+## Coverage Requirements
+- Minimum 80% code coverage
+- 100% coverage for critical business logic (scoring algorithms)
+- Test all prediction types and edge cases
+- Cover all user roles and permissions
+
+## Test Data Management
+- Use Laravel factories for model creation
+- Implement database seeding for consistent test data
+- Use test databases for isolation
+- Clean up test data after each test
+
+## Assertion Best Practices
+- Use specific assertion methods (assertForbidden, assertNotFound)
+- Test both positive and negative scenarios
+- Verify database state after operations
+- Test response structure and content
+
+## Mocking Guidelines
+- Mock external API calls
+- Use partial mocks for complex dependencies
+- Verify mock interactions when necessary
+- Keep mocks simple and focused
+
+## Performance Testing
+- Test database query performance
+- Monitor N+1 query issues
+- Test with realistic data volumes
+- Profile critical user workflows
+description:
+globs:
+alwaysApply: true
+---

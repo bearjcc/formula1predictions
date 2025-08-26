@@ -1,0 +1,61 @@
+# Deployment & DevOps Standards
+
+## Environment Management
+- Use environment-specific configurations
+- Secure sensitive configuration data
+- Implement proper logging strategies
+- Use Laravel Herd for development
+- Maintain consistent environments
+
+## Version Control
+- Use conventional commits
+- Implement proper branching strategy
+- Review all code changes
+- Maintain clean git history
+- Use semantic versioning
+
+## Monitoring & Maintenance
+- Implement proper error tracking
+- Monitor application performance
+- Set up automated backups
+- Plan for scalability
+- Monitor server health
+
+## CI/CD Pipeline
+- Automate testing on every commit
+- Implement automated deployment
+- Use proper staging environments
+- Test deployment rollbacks
+- Monitor deployment success rates
+
+## Security in Deployment
+- Use secure deployment practices
+- Implement proper access controls
+- Secure production environments
+- Use HTTPS for all communications
+- Implement proper backup security
+
+## Performance Monitoring
+- Monitor application performance
+- Track user experience metrics
+- Monitor server resource usage
+- Set up performance alerts
+- Implement proper logging
+
+## Backup & Recovery
+- Implement automated backups
+- Test backup restoration procedures
+- Use multiple backup locations
+- Document recovery procedures
+- Regular backup testing
+
+## Infrastructure
+- Use scalable infrastructure
+- Implement proper load balancing
+- Use CDN for global performance
+- Monitor infrastructure costs
+- Plan for growth and scaling
+description:
+globs:
+alwaysApply: true
+---

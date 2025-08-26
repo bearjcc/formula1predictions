@@ -1,0 +1,61 @@
+# Code Quality & Standards
+
+## PHP Standards
+- Follow PSR-12 coding standards
+- Use Laravel Pint for code formatting
+- Implement proper type hints and return types
+- Use PHP 8.4 features appropriately
+- Follow Laravel conventions
+
+## Architecture Patterns
+- Follow SOLID principles
+- Use dependency injection
+- Implement proper separation of concerns
+- Use service classes for business logic
+- Follow Laravel's MVC pattern
+
+## Documentation
+- Use PHPDoc for all public methods
+- Document complex business logic
+- Maintain up-to-date README
+- Document API endpoints
+- Use inline comments sparingly
+
+## Code Organization
+- Use proper namespacing
+- Organize classes in appropriate directories
+- Follow Laravel's directory structure
+- Use consistent file naming conventions
+- Group related functionality together
+
+## Error Handling
+- Use proper exception handling
+- Implement custom exception classes
+- Log errors appropriately
+- Provide meaningful error messages
+- Handle edge cases gracefully
+
+## Code Review Standards
+- Review all code changes
+- Check for security vulnerabilities
+- Ensure proper test coverage
+- Verify performance implications
+- Follow coding standards
+
+## Refactoring Guidelines
+- Refactor code regularly
+- Extract reusable components
+- Remove code duplication
+- Improve code readability
+- Maintain backward compatibility
+
+## Version Control
+- Use conventional commits
+- Write descriptive commit messages
+- Keep commits focused and atomic
+- Use proper branching strategies
+- Review changes before merging
+description:
+globs:
+alwaysApply: true
+---
