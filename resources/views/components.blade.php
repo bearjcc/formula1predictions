@@ -2,43 +2,43 @@
     <div class="space-y-12">
         <!-- Header -->
         <div class="text-center">
-            <flux:heading size="2xl" class="mb-4">Flux UI Components Demo</flux:heading>
-            <flux:text class="text-lg text-zinc-600 dark:text-zinc-400">
-                Explore all available Flux UI components and their variants
-            </flux:text>
+            <h1 class="text-3xl font-bold mb-4">Mary UI Components Demo</h1>
+            <p class="text-lg text-zinc-600 dark:text-zinc-400">
+                Explore all available Mary UI components and their variants
+            </p>
         </div>
 
         <!-- Buttons Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Buttons</flux:heading>
+            <h2 class="text-2xl font-bold">Buttons</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="space-y-4">
-                    <flux:subheading>Variants</flux:subheading>
+                    <h3 class="text-lg font-semibold">Variants</h3>
                     <div class="flex flex-wrap gap-2">
-                        <flux:button variant="primary">Primary</flux:button>
-                        <flux:button variant="secondary">Secondary</flux:button>
-                        <flux:button variant="outline">Outline</flux:button>
-                        <flux:button variant="ghost">Ghost</flux:button>
-                        <flux:button variant="danger">Danger</flux:button>
+                        <x-mary-button variant="primary">Primary</x-mary-button>
+                        <x-mary-button variant="secondary">Secondary</x-mary-button>
+                        <x-mary-button variant="outline">Outline</x-mary-button>
+                        <x-mary-button variant="ghost">Ghost</x-mary-button>
+                        <x-mary-button variant="danger">Danger</x-mary-button>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
-                    <flux:subheading>Sizes</flux:subheading>
+                    <h3 class="text-lg font-semibold">Sizes</h3>
                     <div class="flex flex-wrap items-center gap-2">
-                        <flux:button size="xs">XS</flux:button>
-                        <flux:button size="sm">Small</flux:button>
-                        <flux:button size="base">Base</flux:button>
-                        <flux:button size="lg">Large</flux:button>
+                        <x-mary-button size="xs">XS</x-mary-button>
+                        <x-mary-button size="sm">Small</x-mary-button>
+                        <x-mary-button size="md">Base</x-mary-button>
+                        <x-mary-button size="lg">Large</x-mary-button>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
-                    <flux:subheading>With Icons</flux:subheading>
+                    <h3 class="text-lg font-semibold">With Icons</h3>
                     <div class="flex flex-wrap gap-2">
-                        <flux:button icon-leading="plus">Add Item</flux:button>
-                        <flux:button icon-trailing="arrow-right">Continue</flux:button>
-                        <flux:button icon-leading="star" variant="outline">Favorite</flux:button>
+                        <x-mary-button icon="o-plus">Add Item</x-mary-button>
+                        <x-mary-button icon="o-arrow-right">Continue</x-mary-button>
+                        <x-mary-button icon="o-star" variant="outline">Favorite</x-mary-button>
                     </div>
                 </div>
             </div>
@@ -46,263 +46,297 @@
 
         <!-- Typography Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Typography</flux:heading>
+            <h2 class="text-2xl font-bold">Typography</h2>
             <div class="space-y-4">
-                <flux:heading size="4xl">Heading 4XL</flux:heading>
-                <flux:heading size="3xl">Heading 3XL</flux:heading>
-                <flux:heading size="2xl">Heading 2XL</flux:heading>
-                <flux:heading size="xl">Heading XL</flux:heading>
-                <flux:heading size="lg">Heading LG</flux:heading>
-                <flux:heading size="base">Heading Base</flux:heading>
-                <flux:heading size="sm">Heading SM</flux:heading>
-                <flux:heading size="xs">Heading XS</flux:heading>
+                <h1 class="text-4xl font-bold">Heading 4XL</h1>
+                <h1 class="text-3xl font-bold">Heading 3XL</h1>
+                <h2 class="text-2xl font-bold">Heading 2XL</h2>
+                <h3 class="text-xl font-bold">Heading XL</h3>
+                <h4 class="text-lg font-bold">Heading LG</h4>
+                <h5 class="text-base font-bold">Heading Base</h5>
+                <h6 class="text-sm font-bold">Heading SM</h6>
+                <h6 class="text-xs font-bold">Heading XS</h6>
                 
-                <flux:subheading>Subheading Example</flux:subheading>
+                <p class="text-lg text-zinc-600 dark:text-zinc-400">Subheading Example</p>
                 
-                <flux:text>Regular text with <flux:text variant="strong">strong emphasis</flux:text> and <flux:text variant="em">italic emphasis</flux:text>.</flux:text>
-                <flux:text variant="muted">Muted text for secondary information.</flux:text>
+                <p>Regular text with <strong>strong emphasis</strong> and <em>italic emphasis</em>.</p>
+                <p class="text-zinc-600 dark:text-zinc-400">Muted text for secondary information.</p>
             </div>
         </section>
 
         <!-- Badges Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Badges</flux:heading>
+            <h2 class="text-2xl font-bold">Badges</h2>
             <div class="flex flex-wrap gap-4">
-                <flux:badge>Default</flux:badge>
-                <flux:badge variant="outline">Outline</flux:badge>
-                <flux:badge variant="filled">Filled</flux:badge>
-                <flux:badge variant="tinted">Tinted</flux:badge>
-                <flux:badge variant="soft">Soft</flux:badge>
-                <flux:badge variant="surface">Surface</flux:badge>
+                <x-mary-badge>Default</x-mary-badge>
+                <x-mary-badge variant="outline">Outline</x-mary-badge>
+                <x-mary-badge variant="filled">Filled</x-mary-badge>
+                <x-mary-badge variant="tinted">Tinted</x-mary-badge>
+                <x-mary-badge variant="soft">Soft</x-mary-badge>
+                <x-mary-badge variant="surface">Surface</x-mary-badge>
             </div>
         </section>
 
         <!-- Inputs Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Inputs</flux:heading>
+            <h2 class="text-2xl font-bold">Inputs</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
-                    <flux:field>
-                        <flux:field.label>Text Input</flux:field.label>
-                        <flux:input placeholder="Enter text..." />
-                    </flux:field>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Text Input</label>
+                        <x-mary-input placeholder="Enter text..." />
+                    </div>
                     
-                    <flux:field>
-                        <flux:field.label>Email Input</flux:field.label>
-                        <flux:input type="email" placeholder="email@example.com" />
-                    </flux:field>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email Input</label>
+                        <x-mary-input type="email" placeholder="email@example.com" />
+                    </div>
                     
-                    <flux:field>
-                        <flux:field.label>Password Input</flux:field.label>
-                        <flux:input type="password" placeholder="Enter password" />
-                    </flux:field>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Password Input</label>
+                        <x-mary-input type="password" placeholder="Enter password" />
+                    </div>
                 </div>
                 
                 <div class="space-y-4">
-                    <flux:field>
-                        <flux:field.label>Select Dropdown</flux:field.label>
-                        <flux:select>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Select Dropdown</label>
+                        <x-mary-select>
                             <option>Choose an option</option>
                             <option>Option 1</option>
                             <option>Option 2</option>
                             <option>Option 3</option>
-                        </flux:select>
-                    </flux:field>
+                        </x-mary-select>
+                    </div>
                     
-                    <flux:field>
-                        <flux:field.label>Textarea</flux:field.label>
-                        <flux:textarea placeholder="Enter your message..." rows="3" />
-                    </flux:field>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Textarea</label>
+                        <x-mary-textarea placeholder="Enter your message..." rows="3" />
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Dropdowns Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Dropdowns</flux:heading>
+            <h2 class="text-2xl font-bold">Dropdowns</h2>
             <div class="flex flex-wrap gap-4">
-                <flux:dropdown>
-                    <flux:button>Click to open</flux:button>
-                    <flux:menu>
-                        <flux:menu.item>Item 1</flux:menu.item>
-                        <flux:menu.item>Item 2</flux:menu.item>
-                        <flux:menu.separator />
-                        <flux:menu.item>Item 3</flux:menu.item>
-                    </flux:menu>
-                </flux:dropdown>
+                <div class="dropdown">
+                    <div tabindex="0" role="button">
+                        <x-mary-button>Click to open</x-mary-button>
+                    </div>
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><a>Item 1</a></li>
+                        <li><a>Item 2</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a>Item 3</a></li>
+                    </ul>
+                </div>
                 
-                <flux:dropdown>
-                    <flux:button variant="outline" icon-trailing="chevron-down">With Icon</flux:button>
-                    <flux:menu>
-                        <flux:menu.item icon="user">Profile</flux:menu.item>
-                        <flux:menu.item icon="cog">Settings</flux:menu.item>
-                        <flux:menu.separator />
-                        <flux:menu.item icon="arrow-right-start-on-rectangle">Logout</flux:menu.item>
-                    </flux:menu>
-                </flux:dropdown>
+                <div class="dropdown">
+                    <div tabindex="0" role="button">
+                        <x-mary-button variant="outline" icon="o-chevron-down">With Icon</x-mary-button>
+                    </div>
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-user" class="w-4 h-4" /><span>Profile</span></a></li>
+                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-cog" class="w-4 h-4" /><span>Settings</span></a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-arrow-right-start-on-rectangle" class="w-4 h-4" /><span>Logout</span></a></li>
+                    </ul>
+                </div>
             </div>
         </section>
 
         <!-- Navigation Lists Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Navigation Lists</flux:heading>
+            <h2 class="text-2xl font-bold">Navigation Lists</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="border rounded-lg p-4">
-                    <flux:navlist>
-                        <flux:navlist.item icon="home" href="#" current>Home</flux:navlist.item>
-                        <flux:navlist.item icon="user" href="#">Profile</flux:navlist.item>
-                        <flux:navlist.item icon="cog" href="#">Settings</flux:navlist.item>
-                        <flux:navlist.item icon="chart-bar" href="#">Analytics</flux:navlist.item>
-                    </flux:navlist>
+                    <nav class="space-y-1">
+                        <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                            <x-mary-icon name="o-home" class="w-4 h-4" />
+                            <span>Home</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <x-mary-icon name="o-user" class="w-4 h-4" />
+                            <span>Profile</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <x-mary-icon name="o-cog" class="w-4 h-4" />
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
+                            <span>Analytics</span>
+                        </a>
+                    </nav>
                 </div>
                 
                 <div class="border rounded-lg p-4">
-                    <flux:navlist variant="outline">
-                        <flux:navlist.group heading="Main">
-                            <flux:navlist.item icon="home" href="#">Dashboard</flux:navlist.item>
-                            <flux:navlist.item icon="users" href="#">Team</flux:navlist.item>
-                        </flux:navlist.group>
-                        <flux:navlist.group heading="Settings">
-                            <flux:navlist.item icon="cog" href="#">Preferences</flux:navlist.item>
-                            <flux:navlist.item icon="shield" href="#">Security</flux:navlist.item>
-                        </flux:navlist.group>
-                    </flux:navlist>
+                    <nav class="space-y-4">
+                        <div>
+                            <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">Main</h3>
+                            <div class="space-y-1">
+                                <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                    <x-mary-icon name="o-home" class="w-4 h-4" />
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                    <x-mary-icon name="o-users" class="w-4 h-4" />
+                                    <span>Team</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">Settings</h3>
+                            <div class="space-y-1">
+                                <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                    <x-mary-icon name="o-cog" class="w-4 h-4" />
+                                    <span>Preferences</span>
+                                </a>
+                                <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                    <x-mary-icon name="o-shield" class="w-4 h-4" />
+                                    <span>Security</span>
+                                </a>
+                            </div>
+                        </div>
+                    </nav>
                 </div>
             </div>
         </section>
 
         <!-- Icons Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Icons</flux:heading>
+            <h2 class="text-2xl font-bold">Icons</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <div class="flex flex-col items-center space-y-2 p-4 border rounded-lg">
-                    <flux:icon icon="home" size="lg" />
-                    <flux:text size="sm">home</flux:text>
+                    <x-mary-icon name="o-home" class="w-6 h-6" />
+                    <p class="text-sm">home</p>
                 </div>
                 <div class="flex flex-col items-center space-y-2 p-4 border rounded-lg">
-                    <flux:icon icon="user" size="lg" />
-                    <flux:text size="sm">user</flux:text>
+                    <x-mary-icon name="o-user" class="w-6 h-6" />
+                    <p class="text-sm">user</p>
                 </div>
                 <div class="flex flex-col items-center space-y-2 p-4 border rounded-lg">
-                    <flux:icon icon="cog" size="lg" />
-                    <flux:text size="sm">cog</flux:text>
+                    <x-mary-icon name="o-cog" class="w-6 h-6" />
+                    <p class="text-sm">cog</p>
                 </div>
                 <div class="flex flex-col items-center space-y-2 p-4 border rounded-lg">
-                    <flux:icon icon="star" size="lg" />
-                    <flux:text size="sm">star</flux:text>
+                    <x-mary-icon name="o-star" class="w-6 h-6" />
+                    <p class="text-sm">star</p>
                 </div>
                 <div class="flex flex-col items-center space-y-2 p-4 border rounded-lg">
-                    <flux:icon icon="heart" size="lg" />
-                    <flux:text size="sm">heart</flux:text>
+                    <x-mary-icon name="o-heart" class="w-6 h-6" />
+                    <p class="text-sm">heart</p>
                 </div>
                 <div class="flex flex-col items-center space-y-2 p-4 border rounded-lg">
-                    <flux:icon icon="trophy" size="lg" />
-                    <flux:text size="sm">trophy</flux:text>
+                    <x-mary-icon name="o-trophy" class="w-6 h-6" />
+                    <p class="text-sm">trophy</p>
                 </div>
             </div>
         </section>
 
         <!-- Profile Components Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Profile Components</flux:heading>
+            <h2 class="text-2xl font-bold">Profile Components</h2>
             <div class="flex flex-wrap gap-4">
-                <flux:profile
-                    name="John Doe"
-                    initials="JD"
-                    description="john@example.com"
-                />
+                <x-mary-avatar placeholder="JD" />
                 
-                <flux:profile
-                    name="Jane Smith"
-                    initials="JS"
-                    description="jane@example.com"
-                    icon-trailing="chevron-down"
-                />
+                <x-mary-avatar placeholder="JS" />
             </div>
         </section>
 
         <!-- Separators & Spacers Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Separators & Spacers</flux:heading>
+            <h2 class="text-2xl font-bold">Separators & Spacers</h2>
             <div class="space-y-4">
-                <flux:text>Content above</flux:text>
-                <flux:separator />
-                <flux:text>Content below</flux:text>
+                <p>Content above</p>
+                <hr class="my-4 border-zinc-200 dark:border-zinc-700" />
+                <p>Content below</p>
                 
-                <flux:spacer />
+                <div class="h-8"></div>
                 
                 <div class="flex items-center space-x-4">
-                    <flux:text>Left content</flux:text>
-                    <flux:separator orientation="vertical" />
-                    <flux:text>Right content</flux:text>
+                    <p>Left content</p>
+                    <div class="w-px h-6 bg-zinc-200 dark:bg-zinc-700"></div>
+                    <p>Right content</p>
                 </div>
             </div>
         </section>
 
-        <!-- Button Groups Section -->
+        <!-- Cards Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Button Groups</flux:heading>
-            <div class="space-y-4">
-                <flux:button.group>
-                    <flux:button variant="outline">Left</flux:button>
-                    <flux:button variant="outline">Center</flux:button>
-                    <flux:button variant="outline">Right</flux:button>
-                </flux:button.group>
+            <h2 class="text-2xl font-bold">Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <x-mary-card>
+                    <h3 class="text-lg font-bold mb-2">Card Title</h3>
+                    <p class="text-zinc-600 dark:text-zinc-400">This is a basic card component with some content.</p>
+                </x-mary-card>
                 
-                <flux:button.group>
-                    <flux:button variant="filled">Save</flux:button>
-                    <flux:button variant="filled">Save & Continue</flux:button>
-                </flux:button.group>
+                <x-mary-card>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">Card with Actions</h3>
+                        <x-mary-button size="sm" variant="outline">Action</x-mary-button>
+                    </div>
+                    <p class="text-zinc-600 dark:text-zinc-400">This card includes action buttons and more content.</p>
+                </x-mary-card>
+                
+                <x-mary-card>
+                    <h3 class="text-lg font-bold mb-2">Interactive Card</h3>
+                    <p class="text-zinc-600 dark:text-zinc-400 mb-4">This card demonstrates interactive elements.</p>
+                    <div class="flex gap-2">
+                        <x-mary-button size="sm" variant="primary">Primary</x-mary-button>
+                        <x-mary-button size="sm" variant="outline">Secondary</x-mary-button>
+                    </div>
+                </x-mary-card>
             </div>
         </section>
 
         <!-- Interactive Demo Section -->
         <section class="space-y-6">
-            <flux:heading size="xl">Interactive Demo</flux:heading>
+            <h2 class="text-2xl font-bold">Interactive Demo</h2>
             <div class="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
-                        <flux:field>
-                            <flux:field.label>Name</flux:field.label>
-                            <flux:input placeholder="Enter your name" />
-                        </flux:field>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Name</label>
+                            <x-mary-input placeholder="Enter your name" />
+                        </div>
                         
-                        <flux:field>
-                            <flux:field.label>Favorite Color</flux:field.label>
-                            <flux:select>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Favorite Color</label>
+                            <x-mary-select>
                                 <option>Choose a color</option>
                                 <option>Red</option>
                                 <option>Blue</option>
                                 <option>Green</option>
                                 <option>Yellow</option>
-                            </flux:select>
-                        </flux:field>
+                            </x-mary-select>
+                        </div>
                         
-                        <flux:field>
-                            <flux:field.label>Message</flux:field.label>
-                            <flux:textarea placeholder="Tell us about yourself..." rows="3" />
-                        </flux:field>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Message</label>
+                            <x-mary-textarea placeholder="Tell us about yourself..." rows="3" />
+                        </div>
                         
                         <div class="flex gap-2">
-                            <flux:button variant="primary" icon-leading="paper-airplane">Submit</flux:button>
-                            <flux:button variant="outline">Cancel</flux:button>
+                            <x-mary-button variant="primary" icon="o-paper-airplane">Submit</x-mary-button>
+                            <x-mary-button variant="outline">Cancel</x-mary-button>
                         </div>
                     </div>
                     
                     <div class="space-y-4">
-                        <flux:heading size="lg">Preview</flux:heading>
-                        <div class="bg-white dark:bg-zinc-900 rounded-lg p-4 border">
-                            <flux:profile
-                                name="Preview User"
-                                initials="PU"
-                                description="preview@example.com"
-                            />
-                            <flux:separator class="my-4" />
+                        <h3 class="text-lg font-bold">Preview</h3>
+                        <x-mary-card>
+                            <x-mary-avatar class="mb-4" placeholder="PU" />
+                            <h4 class="font-semibold">Preview User</h4>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-400">preview@example.com</p>
+                            <hr class="my-4 border-zinc-200 dark:border-zinc-700" />
                             <div class="space-y-2">
-                                <flux:badge variant="tinted">Active</flux:badge>
-                                <flux:badge variant="outline">New</flux:badge>
+                                <x-mary-badge variant="tinted">Active</x-mary-badge>
+                                <x-mary-badge variant="outline">New</x-mary-badge>
                             </div>
-                        </div>
+                        </x-mary-card>
                     </div>
                 </div>
             </div>

@@ -3,9 +3,9 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">Race #{{ $id }}</h1>
+                <h1 class="text-3xl font-bold mb-2">{{ ucfirst(str_replace('-', ' ', $slug)) }}</h1>
                 <p class="text-zinc-600 dark:text-zinc-400">
-                    Complete race information and results for Race #{{ $id }}
+                    Complete race information and results for {{ ucfirst(str_replace('-', ' ', $slug)) }}
                 </p>
             </div>
             <div class="flex items-center space-x-3">
@@ -31,7 +31,7 @@
 
             <!-- Race Info -->
             <div class="flex-1">
-                <h2 class="text-2xl font-bold mb-2">Race #{{ $id }}</h2>
+                <h2 class="text-2xl font-bold mb-2">{{ ucfirst(str_replace('-', ' ', $slug)) }}</h2>
                 <p class="text-zinc-600 dark:text-zinc-400 mb-4">
                     Silverstone Circuit • United Kingdom • July 9, 2023
                 </p>
@@ -67,7 +67,7 @@
             <div class="space-y-4">
                 <div class="flex justify-between">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">Race Name</p>
-                    <p class="font-medium">Race #{{ $id }}</p>
+                    <p class="font-medium">{{ ucfirst(str_replace('-', ' ', $slug)) }}</p>
                 </div>
                 <div class="flex justify-between">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">Circuit</p>

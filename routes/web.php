@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\RacesController;
+use App\Http\Controllers\PredictionController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -10,6 +12,10 @@ Route::get('/', function () {
 Route::get('/components', function () {
     return view('components');
 })->name('components');
+
+Route::get('/draggable-demo', function () {
+    return view('draggable-demo');
+})->name('draggable-demo');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -24,6 +30,17 @@ Route::middleware(['auth'])->group(function () {
 
     Volt::route('predict/{slug}', 'predict.create')->name('predict.create');
     Volt::route('predict/{slug}', 'predict.edit')->name('predict.edit');
+    
+    // Prediction routes
+    Route::resource('predictions', PredictionController::class);
+});
+
+// F1 API Test Routes
+Route::prefix('api/f1')->group(function () {
+    Route::get('/test', [RacesController::class, 'testApi'])->name('f1.test');
+    Route::get('/races/{year}', [RacesController::class, 'index'])->name('f1.races');
+    Route::get('/races/{year}/{round}', [RacesController::class, 'show'])->name('f1.race');
+    Route::delete('/cache/{year}', [RacesController::class, 'clearCache'])->name('f1.clear-cache');
 });
 
 // Year specific routes
@@ -81,7 +98,7 @@ Route::get('/country/{slug}', function ($slug) {
 })->name('country');
 
 Route::get('/race/{slug}', function ($slug) {
-    return view('race', ['slug' => $slug]);
+    return view('race-detail', ['slug' => $slug]);
 })->name('race.detail');
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
