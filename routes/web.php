@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\RacesController;
-use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\PredictionController;
+use App\Http\Controllers\RacesController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
-use App\Http\Controllers\LeaderboardController;
 
 Route::get('/', function () {
     return view('home');
@@ -30,12 +30,17 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 
-    Volt::route('predict/{slug}', 'predict.create')->name('predict.create');
-    Volt::route('predict/{slug}', 'predict.edit')->name('predict.edit');
+    Route::get('predict/create', function () {
+        return view('predictions.create-livewire');
+    })->name('predict.create');
+
+    Route::get('predictions/{prediction}/edit', function ($prediction) {
+        return view('predictions.edit-livewire', compact('prediction'));
+    })->name('predictions.edit');
 
     // Prediction routes
     Route::resource('predictions', PredictionController::class);
-    
+
     // Admin routes
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
@@ -43,14 +48,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
         Route::get('/races', [AdminController::class, 'races'])->name('races');
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-        
+
         // Prediction management actions
         Route::post('/predictions/{prediction}/score', [AdminController::class, 'scorePrediction'])->name('predictions.score');
         Route::post('/predictions/{prediction}/lock', [AdminController::class, 'lockPrediction'])->name('predictions.lock');
         Route::post('/predictions/{prediction}/unlock', [AdminController::class, 'unlockPrediction'])->name('predictions.unlock');
         Route::delete('/predictions/{prediction}', [AdminController::class, 'deletePrediction'])->name('predictions.delete');
     });
-    
+
     // Leaderboard routes
     Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
         Route::get('/', [LeaderboardController::class, 'index'])->name('index');

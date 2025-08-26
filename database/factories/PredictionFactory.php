@@ -22,7 +22,7 @@ class PredictionFactory extends Factory
             'type' => $this->faker->randomElement(['race', 'preseason', 'midseason']),
             'season' => $this->faker->numberBetween(2020, 2025),
             'race_round' => $this->faker->numberBetween(1, 24),
-            'race_id' => $this->faker->uuid(),
+            'race_id' => null,
             'prediction_data' => [
                 'driver_order' => $this->faker->shuffleArray(range(1, 20)),
                 'fastest_lap' => $this->faker->randomElement(['max_verstappen', 'lewis_hamilton', 'charles_leclerc']),
