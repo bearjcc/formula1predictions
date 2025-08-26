@@ -76,7 +76,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form method="POST" wire:submit="resetPassword" class="flex flex-col gap-6">
         <!-- Email Address -->
-        <flux:input
+        <x-mary-input
             wire:model="email"
             :label="__('Email')"
             type="email"
@@ -85,31 +85,27 @@ new #[Layout('components.layouts.auth')] class extends Component {
         />
 
         <!-- Password -->
-        <flux:input
+        <x-mary-input
             wire:model="password"
             :label="__('Password')"
             type="password"
             required
             autocomplete="new-password"
-            :placeholder="__('Password')"
-            viewable
+            placeholder="Password"
         />
 
         <!-- Confirm Password -->
-        <flux:input
+        <x-mary-input
             wire:model="password_confirmation"
             :label="__('Confirm password')"
             type="password"
             required
             autocomplete="new-password"
-            :placeholder="__('Confirm password')"
-            viewable
+            placeholder="Confirm password"
         />
 
-        <div class="flex items-center justify-end">
-            <flux:button type="submit" variant="primary" class="w-full">
-                {{ __('Reset password') }}
-            </flux:button>
-        </div>
+        <x-mary-button type="submit" class="w-full justify-center">
+            {{ __('Reset password') }}
+        </x-mary-button>
     </form>
 </div>

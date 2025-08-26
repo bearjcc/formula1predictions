@@ -1,0 +1,388 @@
+/* F1 Predictions Design System */
+/* WCAG 2.1 AA Compliant Color Palette */
+
+@layer base {
+  /* Design System Variables */
+  :root {
+    /* Primary Colors - Red Theme (F1 Brand) */
+    --color-primary-50: #fef2f2;
+    --color-primary-100: #fee2e2;
+    --color-primary-200: #fecaca;
+    --color-primary-300: #fca5a5;
+    --color-primary-400: #f87171;
+    --color-primary-500: #ef4444;
+    --color-primary-600: #dc2626;
+    --color-primary-700: #b91c1c;
+    --color-primary-800: #991b1b;
+    --color-primary-900: #7f1d1d;
+    --color-primary-950: #450a0a;
+
+    /* Neutral Colors - High Contrast */
+    --color-neutral-50: #fafafa;
+    --color-neutral-100: #f5f5f5;
+    --color-neutral-200: #e5e5e5;
+    --color-neutral-300: #d4d4d4;
+    --color-neutral-400: #a3a3a3;
+    --color-neutral-500: #737373;
+    --color-neutral-600: #525252;
+    --color-neutral-700: #404040;
+    --color-neutral-800: #262626;
+    --color-neutral-900: #171717;
+    --color-neutral-950: #0a0a0a;
+
+    /* Semantic Colors */
+    --color-success-500: #10b981;
+    --color-success-600: #059669;
+    --color-warning-500: #f59e0b;
+    --color-warning-600: #d97706;
+    --color-error-500: #ef4444;
+    --color-error-600: #dc2626;
+    --color-info-500: #3b82f6;
+    --color-info-600: #2563eb;
+
+    /* Text Colors - High Contrast */
+    --color-text-primary: #171717;
+    --color-text-secondary: #525252;
+    --color-text-tertiary: #737373;
+    --color-text-inverse: #ffffff;
+    --color-text-muted: #a3a3a3;
+
+    /* Background Colors */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #fafafa;
+    --color-bg-tertiary: #f5f5f5;
+    --color-bg-inverse: #171717;
+
+    /* Border Colors */
+    --color-border-primary: #e5e5e5;
+    --color-border-secondary: #d4d4d4;
+    --color-border-focus: #3b82f6;
+
+    /* Shadow Colors */
+    --color-shadow-light: rgba(0, 0, 0, 0.05);
+    --color-shadow-medium: rgba(0, 0, 0, 0.1);
+    --color-shadow-heavy: rgba(0, 0, 0, 0.2);
+
+    /* Focus Colors */
+    --color-focus-ring: #3b82f6;
+    --color-focus-ring-offset: #ffffff;
+  }
+
+  /* Dark Mode Variables */
+  .dark {
+    /* Text Colors - High Contrast */
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #e5e5e5;
+    --color-text-tertiary: #d4d4d4;
+    --color-text-inverse: #171717;
+    --color-text-muted: #a3a3a3;
+
+    /* Background Colors */
+    --color-bg-primary: #0a0a0a;
+    --color-bg-secondary: #171717;
+    --color-bg-tertiary: #262626;
+    --color-bg-inverse: #ffffff;
+
+    /* Border Colors */
+    --color-border-primary: #404040;
+    --color-border-secondary: #525252;
+    --color-border-focus: #60a5fa;
+
+    /* Shadow Colors */
+    --color-shadow-light: rgba(0, 0, 0, 0.3);
+    --color-shadow-medium: rgba(0, 0, 0, 0.5);
+    --color-shadow-heavy: rgba(0, 0, 0, 0.7);
+
+    /* Focus Colors */
+    --color-focus-ring: #60a5fa;
+    --color-focus-ring-offset: #0a0a0a;
+  }
+
+  /* Auto-switching text colors for common elements */
+  p, h1, h2, h3, h4, h5, h6, span, div, li, label {
+    @apply text-zinc-900 dark:text-zinc-100;
+  }
+
+  /* Auto-switching secondary text */
+  .text-auto-secondary {
+    @apply text-zinc-700 dark:text-zinc-300;
+  }
+
+  /* Auto-switching muted text */
+  .text-auto-muted {
+    @apply text-zinc-500 dark:text-zinc-400;
+  }
+
+  /* Auto-switching inverse text */
+  .text-auto-inverse {
+    @apply text-white dark:text-zinc-900;
+  }
+}
+
+/* Auto-switching background utilities */
+@layer utilities {
+  .bg-auto-primary {
+    @apply bg-white dark:bg-zinc-900;
+  }
+  
+  .bg-auto-secondary {
+    @apply bg-zinc-50 dark:bg-zinc-800;
+  }
+  
+  .bg-auto-tertiary {
+    @apply bg-zinc-100 dark:bg-zinc-700;
+  }
+  
+  .bg-card {
+    @apply bg-white dark:bg-zinc-800;
+  }
+}
+
+/* Typography System */
+@layer components {
+  .text-display-1 {
+    @apply text-5xl font-bold leading-tight;
+    color: var(--color-text-primary);
+  }
+
+  .text-display-2 {
+    @apply text-4xl font-bold leading-tight;
+    color: var(--color-text-primary);
+  }
+
+  .text-heading-1 {
+    @apply text-3xl font-bold leading-tight;
+    color: var(--color-text-primary);
+  }
+
+  .text-heading-2 {
+    @apply text-2xl font-semibold leading-tight;
+    color: var(--color-text-primary);
+  }
+
+  .text-heading-3 {
+    @apply text-xl font-semibold leading-tight;
+    color: var(--color-text-primary);
+  }
+
+  .text-body-large {
+    @apply text-lg leading-relaxed;
+    color: var(--color-text-primary);
+  }
+
+  .text-body {
+    @apply text-base leading-relaxed;
+    color: var(--color-text-primary);
+  }
+
+  .text-body-small {
+    @apply text-sm leading-relaxed;
+    color: var(--color-text-secondary);
+  }
+
+  .text-caption {
+    @apply text-xs leading-relaxed;
+    color: var(--color-text-tertiary);
+  }
+
+  .text-muted {
+    color: var(--color-text-muted);
+  }
+}
+
+/* Button System */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    background-color: var(--color-primary-600);
+    color: var(--color-text-inverse);
+    border: 1px solid var(--color-primary-600);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-700);
+    border-color: var(--color-primary-700);
+  }
+
+  .btn-primary:focus {
+    box-shadow: 0 0 0 2px var(--color-focus-ring-offset), 0 0 0 4px var(--color-focus-ring);
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-primary);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-bg-tertiary);
+    border-color: var(--color-border-secondary);
+  }
+
+  .btn-secondary:focus {
+    box-shadow: 0 0 0 2px var(--color-focus-ring-offset), 0 0 0 4px var(--color-focus-ring);
+  }
+
+  .btn-outline {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-primary);
+  }
+
+  .btn-outline:hover {
+    background-color: var(--color-bg-secondary);
+    border-color: var(--color-border-secondary);
+  }
+
+  .btn-outline:focus {
+    box-shadow: 0 0 0 2px var(--color-focus-ring-offset), 0 0 0 4px var(--color-focus-ring);
+  }
+}
+
+/* Card System */
+@layer components {
+  .card {
+    @apply rounded-lg border transition-all duration-200;
+    background-color: var(--color-bg-primary);
+    border-color: var(--color-border-primary);
+    box-shadow: 0 1px 3px var(--color-shadow-light);
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 6px var(--color-shadow-medium);
+  }
+
+  .card-header {
+    @apply p-6 border-b;
+    border-color: var(--color-border-primary);
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  .card-footer {
+    @apply p-6 border-t;
+    border-color: var(--color-border-primary);
+  }
+}
+
+/* Form System */
+@layer components {
+  .form-input {
+    @apply w-full px-3 py-2 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-primary);
+  }
+
+  .form-input:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 2px var(--color-focus-ring-offset), 0 0 0 4px var(--color-focus-ring);
+  }
+
+  .form-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .form-label {
+    @apply block text-sm font-medium mb-2;
+    color: var(--color-text-primary);
+  }
+
+  .form-error {
+    @apply text-sm mt-1;
+    color: var(--color-error-600);
+  }
+}
+
+/* Navigation System */
+@layer components {
+  .nav-link {
+    @apply flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    color: var(--color-text-secondary);
+  }
+
+  .nav-link:hover {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .nav-link.active {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .nav-link:focus {
+    box-shadow: 0 0 0 2px var(--color-focus-ring-offset), 0 0 0 4px var(--color-focus-ring);
+  }
+}
+
+/* Accessibility Utilities */
+@layer utilities {
+  /* Screen reader only text */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+  }
+
+  /* Focus visible styles */
+  .focus-visible {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    box-shadow: 0 0 0 2px var(--color-focus-ring-offset), 0 0 0 4px var(--color-focus-ring);
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .card {
+      border-width: 2px;
+    }
+    
+    .btn-primary,
+    .btn-secondary,
+    .btn-outline {
+      border-width: 2px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Color Contrast Validation */
+@layer utilities {
+  /* Ensure minimum contrast ratios */
+  .text-high-contrast {
+    color: var(--color-text-primary);
+  }
+
+  .text-medium-contrast {
+    color: var(--color-text-secondary);
+  }
+
+  .text-low-contrast {
+    color: var(--color-text-tertiary);
+  }
+
+  .bg-high-contrast {
+    background-color: var(--color-bg-primary);
+  }
+
+  .bg-medium-contrast {
+    background-color: var(--color-bg-secondary);
+  }
+
+  .bg-low-contrast {
+    background-color: var(--color-bg-tertiary);
+  }
+}
+
