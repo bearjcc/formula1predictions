@@ -121,353 +121,189 @@ Users predict driver finishing positions for each race using drag-and-drop order
 - **Season Opener**: Due same time as the first race of the season
 - **Summer Break**: Midseason predictions (if applicable) due before the first race of the second half
 
-## Migration from Previous Attempts
+## Consolidated TODO List
 
-After reviewing the previous attempts in the `@previous/` folder, the following components and features should be migrated to this Laravel project:
-
-### From BearsF1Prediction (PHP-based)
-- **Database Schema Insights**: The `create_database.sql` shows a comprehensive schema with users, players, drivers, constructors, circuits, races, and predictions tables
-- **Class Structure**: PHP classes for Circuits, Drivers, Constructors, Races, Users, and Players provide good reference for Laravel model relationships
-- **Prediction Types**: Support for different prediction types (race, preseason, midseason) with JSON storage for flexible prediction data
-- **Scoring System**: Basic scoring framework that can be enhanced in Laravel
-
-**Migration Strategy**: 
-- Convert the MySQL schema to Laravel migrations with proper Eloquent relationships
-- Implement the prediction types as enums or constants in Laravel
-- Use JSON columns for flexible prediction data storage
-- Create comprehensive model relationships following Laravel conventions
-
-### From f1-predictions-angular (Angular-based)
-- **Component Architecture**: Well-structured component organization for drivers, races, users, circuits, and countries
-- **Material Design UI**: Comprehensive Angular Material integration for modern UI components
-- **Service Worker**: PWA capabilities with offline support
-
-**Migration Strategy**:
-- Convert Angular components to Blade components or LiveWire components
-- Implement Material Design principles using Tailwind CSS or DaisyUI
-- Consider PWA features using Laravel's service worker capabilities
-- Use the component structure as reference for organizing Laravel views
-
-### From f1-prediction (Next.js-based)
-- **Modern Frontend Architecture**: Next.js App Router structure with hooks and data fetching
-- **Supabase Integration**: Edge Functions for leaderboard calculations and data aggregation
-- **Analytics Dashboard**: Charts and data visualization using Recharts
-- **Theme System**: Light/dark theme implementation
-
-**Migration Strategy**:
-- Convert Next.js pages to Laravel routes and Blade views
-- Implement Supabase-like functionality using Laravel's queue system and scheduled jobs
-- Use Laravel's charting libraries (Chart.js, ApexCharts) for analytics
-- Implement theme switching using Laravel's session management
-
-### From Prediction Files (Markdown-based)
-- **Scoring System**: Detailed prediction format showing driver order and fastest lap predictions
-- **Season Structure**: Support for multiple races per season with consistent prediction format
-- **User Predictions**: Historical prediction data that can be used for testing and validation
-
-**Migration Strategy**:
-- Parse the markdown prediction files to create seed data for testing
-- Implement the prediction format as a structured JSON schema
-- Use the historical data to validate scoring algorithms
-- Create admin tools to import and manage prediction data
-
-### From F12024 (Database-focused)
-- **Enhanced Database Schema**: More detailed schema with proper relationships and constraints
-- **Prediction Types**: Clear distinction between race, preseason, and midseason predictions
-- **JSON Storage**: Flexible JSON storage for complex prediction data
-
-**Migration Strategy**:
-- Enhance current migrations based on the F12024 schema
-- Implement the prediction type system as Laravel enums
-- Use JSON columns for storing driver order predictions and additional data
-- Create comprehensive database relationships
-
-### Key Features to Migrate
-
-1. **Prediction System**:
-   - Race predictions (driver finishing order + fastest lap)
-   - Preseason predictions (championship orders, superlatives)
-   - Midseason predictions (updated championship orders)
-   - JSON-based flexible prediction storage
-
-2. **Scoring Algorithm**:
-   - Position-based scoring (correct = 25pts, 1 position off = 18pts, etc.)
-   - Fastest lap bonus points
-   - DNF prediction handling
-   - Season-long prediction scoring
-
-3. **User Management**:
-   - Player/User distinction (players represent yearly participation)
-   - Points tracking per season
-   - Prediction history and statistics
-
-4. **Data Visualization**:
-   - Leaderboards with real-time updates
-   - Analytics dashboards with charts
-   - Season progression tracking
-
-5. **Admin Features**:
-   - Race result import and processing
-   - Prediction deadline management
-   - User and data management tools
-
-## Development Roadmap
-
-This project serves as a comprehensive learning journey through modern Laravel development. The roadmap is structured to build skills progressively, from fundamental concepts to advanced features.
-
-### Development Approach
-The project follows a structured learning path designed to:
-- Build Laravel fundamentals through hands-on practice
-- Implement core features using industry-standard patterns
-- Integrate advanced Laravel ecosystem tools as skills develop
-- Demonstrate full-stack development capabilities
-
-### Technology Stack
-- **Backend**: Laravel 11, PHP 8.4, SQLite (development)
-- **Frontend**: Blade templates, Tailwind CSS, Vite
-- **Future**: LiveWire, Volt, DaisyUI (planned)
-- **Testing**: PEST framework
-- **API**: F1 API integration
-
-### 🎯 Phase 1: Laravel Fundamentals
-- [x] **Development Environment Setup**
-  - [x] Configure Laravel Herd development environment
-  - [x] Initialize Laravel 11 project with SQLite database
-  - [x] Set up environment configuration and Git repository
-  - [x] Establish development workflow and version control
-
-- [x] **Routing & View Architecture**
-  - [x] Implement RESTful routing for application pages
-  - [x] Design responsive layout components with Blade
-  - [x] Create reusable UI components following Laravel conventions
-  - [x] Implement dynamic navigation with active state management
-
-- [x] **Database Design & Eloquent ORM**
-  - [x] Design and implement database migrations for core entities
-  - [x] Create Eloquent models with proper relationships and constraints
-  - [x] Implement database interaction testing with Artisan Tinker
-  - [x] Apply mass assignment protection and model security
-
-- [x] **Advanced Model Relationships**
-  - [x] Implement complex database relationships (one-to-many, many-to-many)
-  - [x] Design pivot tables for complex data associations
-  - [x] Optimize database queries with eager loading
-  - [x] Resolve N+1 query problems through proper relationship design
-
-- [x] **Testing & Data Seeding**
-  - [x] Implement comprehensive test suite using PEST framework
-  - [x] Create database factories and seeders for development data
-  - [x] Import and validate historical F1 prediction data
-  - [x] Establish automated testing pipeline with SQLite in-memory database
-
-- [x] **Form Handling & Validation**
-  - [x] Build secure forms with CSRF protection and validation
-  - [x] Implement comprehensive server-side validation rules
-  - [x] Create reusable form components with error handling
-  - [x] Design user-friendly validation feedback systems
-
-- [x] **Controller Architecture**
-  - [x] Implement resource controllers following REST conventions
-  - [x] Utilize route model binding for clean, maintainable code
-  - [x] Organize application logic with proper separation of concerns
-  - [x] Implement middleware for route protection and filtering
-
-### 🚀 Phase 2: Core Application Features
-- [x] **Authentication & Authorization System**
-  - [x] Implement custom authentication system with Laravel best practices
-  - [x] Design secure user registration and login workflows
-  - [ ] Implement role-based access control with Gates and Policies
-  - [x] Create middleware for route protection and user authorization
-
-- [x] **Prediction Management System**
-  - [x] Design comprehensive prediction creation and editing interfaces
-  - [x] Implement preseason prediction system (championship orders, superlatives)
-  - [x] Create midseason prediction update functionality
-  - [x] Build prediction deadline enforcement and validation system
-
-- [ ] **Advanced Prediction Interface (Future: LiveWire Integration)**
-  - [ ] Implement real-time prediction forms with LiveWire components
-  - [ ] Create interactive drag-and-drop driver ordering system
-  - [ ] Design dynamic form sections with conditional logic
-  - [ ] Build real-time validation and user feedback systems
-
-- [x] **User Dashboard & Analytics**
-  - [x] Create comprehensive user dashboard with statistics and rankings
-  - [x] Implement user profile management with prediction history
-  - [ ] Design leaderboard system with real-time updates
-  - [ ] Build admin interface for data management and analytics
-
-- [ ] **Advanced Admin Features (Future: Volt Integration)**
-  - [ ] Implement Volt-powered admin dashboard with real-time updates
-  - [ ] Create advanced user management and analytics tools
-  - [ ] Design comprehensive admin reporting and data visualization
-
-- [x] **Scoring & Results Processing**
-  - [x] Implement complex scoring algorithms for all prediction types
-  - [x] Handle edge cases including DNF, DNS, DNQ, DSQ scenarios
-  - [x] Support special race conditions (cancelled races, half-points)
-  - [ ] Calculate statistical analysis including expected results and score ranges
-
-### 🔧 Phase 3: Advanced Laravel Features
-- [ ] **Performance Optimization**
-  - [ ] Implement efficient pagination for large datasets
-  - [ ] Optimize database queries with advanced eager loading
-  - [ ] Integrate Laravel Debugbar for performance monitoring
-  - [ ] Apply database query optimization and caching strategies
-
-- [ ] **Email & Notification System**
-  - [ ] Design mailable classes for user notifications and confirmations
-  - [ ] Implement email preview and testing functionality
-  - [ ] Configure multi-environment mail settings
-  - [ ] Build queue-based background processing for email delivery
-
-### 🌐 Phase 4: External Data Integration
-- [x] **F1 API Integration & Data Management**
-  - [x] Integrate F1 API SDK with comprehensive error handling
-  - [x] Implement robust race data fetching and processing
-  - [x] Design driver and team data retrieval systems
-  - [x] Create circuit information and historical data pages
-  - [x] Build real-time standings calculation and update system
-  - [x] Implement intelligent caching strategies for API responses
-
-### 🤖 Phase 5: Automation & Bot Systems
-- [ ] **Automated Prediction System Architecture**
-  - [ ] Design scalable bot prediction system with queue-based processing
-  - [ ] Implement secure bot user account management
-  - [ ] Create scheduled task system for automated predictions
-  - [ ] Build modular bot algorithm framework
-
-- [ ] **Advanced Prediction Algorithms**
-  - [ ] Implement historical data analysis bot (previous race results)
-  - [ ] Create current standings-based prediction bot
-  - [ ] Design previous year performance analysis bot
-  - [ ] Build statistical analysis bots (random, weighted, average-based)
-  - [ ] Implement machine learning-inspired prediction algorithms
-
-### 📄 Phase 6: User Interface & Experience
-- [x] **Public Information Pages**
-  - [x] Design responsive home page with dynamic race information
-  - [x] Create comprehensive team and driver information pages
-  - [x] Build circuit and historical data presentation systems
-  - [x] Implement race schedule and results display interfaces
-  - [ ] Design country-based F1 information and statistics pages
-  - [ ] Create real-time standings and championship tracking pages
-
-- [x] **User Management Interfaces**
-  - [x] Build personalized user dashboard with comprehensive statistics
-  - [x] Design intuitive prediction creation and management interfaces
-  - [x] Create detailed user profile and prediction history pages
-  - [ ] Implement comprehensive admin interface for data management
-
-### 🎨 Phase 7: Frontend Development & Asset Management
-- [x] **Modern Asset Pipeline**
-  - [x] Configure Vite build system for optimal development workflow
-  - [x] Implement Tailwind CSS for responsive design system
-  - [x] Set up hot module replacement for efficient development
-  - [x] Optimize production asset bundling and delivery
-
-- [x] **Component-Based UI Architecture**
-  - [x] Design reusable Blade components following modern UI patterns
-  - [x] Implement responsive design system with mobile-first approach
-  - [x] Create accessible and user-friendly interface components
-  - [x] Build smooth animations and interactive user experiences
-
-### 🎨 Phase 8: Advanced Frontend Technologies (Future)
-- [ ] **Component Library Integration**
-  - [ ] Integrate DaisyUI component library for enhanced UI consistency
-  - [ ] Design custom F1-themed component system
-  - [ ] Implement advanced animations and micro-interactions
-  - [ ] Create comprehensive design system documentation
-
-- [x] **Real-Time User Experience**
-  - [x] Integrate Laravel LiveWire for dynamic, reactive interfaces
-  - [x] Implement real-time form validation and user feedback
-  - [ ] Create interactive drag-and-drop prediction interfaces
-  - [x] Build seamless real-time data updates and notifications
-
-- [ ] **Advanced Admin Interfaces**
-  - [ ] Implement Laravel Volt for complex admin workflows
-  - [ ] Design real-time admin dashboard with live data updates
-  - [ ] Create advanced user management and analytics interfaces
-  - [ ] Build comprehensive reporting and data visualization tools
-
-### 🛠️ Phase 9: Technical Infrastructure & DevOps
-- [x] **Application Architecture & Configuration**
-  - [x] Establish Laravel project structure following industry best practices
-  - [x] Implement environment-specific configuration management
-  - [x] Design comprehensive error handling and logging systems
-  - [ ] Configure development, staging, and production environments
-
-- [x] **Performance & Security Implementation**
-  - [x] Implement intelligent caching strategies for API and database operations
-  - [x] Design and implement security middleware including rate limiting
-  - [x] Optimize database performance through query optimization and indexing
-  - [ ] Integrate monitoring, debugging, and performance analysis tools
-
-### 📊 Phase 10: Data Visualization & Analytics (Future)
-- [ ] **Interactive Data Visualization System**
-  - [ ] Design and implement comprehensive charting system with LiveWire
-  - [ ] Create interactive driver standings progression charts
-  - [ ] Build team performance tracking and visualization tools
-  - [ ] Implement prediction accuracy and trend analysis charts
-  - [ ] Design real-time chart controls with dynamic data filtering
-  - [ ] Optimize chart performance through intelligent data caching
-
-### 🔄 Phase 11: Advanced Data Processing & Business Logic
-- [ ] **Complex Scoring & Results Processing**
-  - [ ] Implement statistical analysis including score range calculations
-  - [ ] Design expected results and probability calculation systems
-  - [ ] Handle complex race scenarios (DNF, DNS, DQ, etc.)
-  - [ ] Build prediction deadline enforcement and validation systems
-  - [ ] Create comprehensive race result processing and analysis tools
-
-- [ ] **Edge Case & Special Scenario Handling**
-  - [ ] Implement comprehensive handling of race anomalies and edge cases
-  - [ ] Design systems for cancelled races and special scoring scenarios
-  - [ ] Build driver and team change management throughout seasons
-
-- [ ] **Superlatives & Special Predictions Management**
-  - [ ] Design preseason prediction scoring algorithms
-  - [ ] Implement comprehensive superlatives prediction system
-  - [ ] Create admin interface for manual data entry and management
-  - [ ] Build automated superlatives calculation from available API data
-  - [ ] Design fallback systems for data not available through APIs
-
-## TODO
-
-### Immediate Next Steps (High Priority)
-- [x] **Complete Model Relationships**: Add missing foreign key relationships between models ✅
-- [x] **Implement Role-Based Access Control**: Add Gates and Policies for user authorization ✅
-- [x] **Create Prediction Forms**: Build forms for creating and editing predictions
-- [x] **Add Data Import/Export**: Create tools to import historical F1 data and export predictions
-- [x] **Implement Leaderboard System**: Build real-time leaderboard with user rankings
-- [x] **Add Admin Interface**: Create comprehensive admin dashboard for data management
-
-### Medium Priority
-- [x] **Interactive Prediction Interface**: Implement drag-and-drop driver ordering with LiveWire ✅
+### 🚨 Critical Priority (Fix Issues & Core Functionality)
+- [x] **Fix Failing Tests**: Resolve all test failures and ensure 100% test pass rate ✅
 - [ ] **Real-Time Notifications**: Add notifications for race results and prediction scoring
 - [ ] **Data Visualization**: Add charts and graphs for standings progression
 - [ ] **Mobile Optimization**: Ensure all interfaces work well on mobile devices
 - [ ] **Performance Optimization**: Add caching and optimize database queries
 
-### Future Enhancements
-- [ ] **Bot Prediction System**: Implement automated prediction bots
-- [ ] **Advanced Analytics**: Add statistical analysis and prediction accuracy tracking
-- [ ] **Social Features**: Add user profiles, comments, and social interactions
-- [ ] **API Development**: Create REST API for external integrations
-- [ ] **PWA Features**: Add offline support and app-like experience
+### 🔧 High Priority (Core Features & User Experience)
+- [ ] **Interactive Drag-and-Drop Prediction Interface**: Enhance LiveWire components for better UX
+- [ ] **Advanced Admin Dashboard**: Create comprehensive admin interface with Volt
+- [ ] **Leaderboard System**: Build real-time leaderboard with user rankings
+- [ ] **Email & Notification System**: Implement mailable classes and queue-based processing
+- [ ] **Prediction Deadline Enforcement**: Add validation and deadline management
+- [ ] **Role-Based Access Control**: Implement Gates and Policies for user authorization
 
-### Technical Debt
-- [ ] **Type Systems Implementation**: Implement comprehensive type systems with PHPStan/Psalm
+### 📊 Medium Priority (Advanced Features & Analytics)
+- [ ] **Bot Prediction System**: Implement automated prediction bots with queue processing
+- [ ] **Advanced Analytics**: Add statistical analysis and prediction accuracy tracking
+- [ ] **Data Import/Export Tools**: Create tools to import historical F1 data and export predictions
+- [ ] **Country-based F1 Information**: Design country-based F1 information and statistics pages
+- [ ] **Real-time Standings**: Create real-time standings and championship tracking pages
+- [ ] **Statistical Analysis**: Calculate expected results and probability calculations
+- [ ] **Performance Monitoring**: Integrate monitoring, debugging, and performance analysis tools
+
+### 🎨 Medium Priority (UI/UX Enhancements)
+- [ ] **Component Library Integration**: Integrate DaisyUI for enhanced UI consistency
+- [ ] **Advanced Animations**: Implement micro-interactions and smooth transitions
+- [ ] **Design System Documentation**: Create comprehensive design system documentation
+- [ ] **Theme System**: Implement light/dark theme switching
+- [ ] **PWA Features**: Add offline support and app-like experience
+- [ ] **Custom F1-Themed Component System**: Design F1-specific UI components
+
+### 🔄 Medium Priority (Advanced Data Processing)
+- [ ] **Complex Scoring Algorithms**: Implement statistical analysis and score range calculations
+- [ ] **Edge Case Handling**: Handle DNF, DNS, DQ, cancelled races, and special scenarios
+- [ ] **Superlatives Management**: Implement comprehensive superlatives prediction system
+- [ ] **Driver/Team Change Management**: Build systems for mid-season changes
+- [ ] **Prediction History Analytics**: Track and analyze user prediction patterns
+- [ ] **Race Result Processing**: Create comprehensive race result processing and analysis tools
+
+### 🤖 Medium Priority (Automation & Bot Systems)
+- [ ] **Automated Prediction System Architecture**: Design scalable bot prediction system
+- [ ] **Bot User Account Management**: Implement secure bot user account management
+- [ ] **Scheduled Task System**: Create scheduled task system for automated predictions
+- [ ] **Modular Bot Algorithm Framework**: Build framework for different bot algorithms
+- [ ] **Historical Data Analysis Bot**: Implement bot based on previous race results
+- [ ] **Current Standings-Based Bot**: Create bot using current championship standings
+- [ ] **Previous Year Performance Bot**: Design bot analyzing previous year performance
+- [ ] **Statistical Analysis Bots**: Build random, weighted, and average-based bots
+- [ ] **Machine Learning-Inspired Algorithms**: Implement ML-inspired prediction algorithms
+
+### 🛠️ Medium Priority (Technical Infrastructure)
+- [ ] **Environment Configuration**: Configure development, staging, and production environments
+- [ ] **API Development**: Create REST API for external integrations
+- [ ] **Social Features**: Add user profiles, comments, and social interactions
+- [ ] **Advanced Caching**: Implement intelligent caching strategies for all operations
+- [ ] **Efficient Pagination**: Implement pagination for large datasets
+- [ ] **Database Query Optimization**: Optimize queries with advanced eager loading
+- [ ] **Laravel Debugbar Integration**: Add performance monitoring
+- [ ] **Queue-Based Background Processing**: Implement for email delivery and heavy tasks
+
+### 📈 Low Priority (Future Enhancements)
+- [ ] **Machine Learning Integration**: Implement ML-inspired prediction algorithms
+- [ ] **Advanced Charting**: Interactive driver standings progression charts
+- [ ] **Team Performance Tracking**: Build team performance tracking and visualization tools
+- [ ] **Prediction Accuracy Analysis**: Implement prediction accuracy and trend analysis charts
+- [ ] **Real-time Chart Controls**: Design dynamic data filtering for charts
+- [ ] **Chart Performance Optimization**: Optimize chart performance through intelligent data caching
+
+### 🧹 Technical Debt (Code Quality & Maintenance)
+- [ ] **Type Systems Implementation**: Add comprehensive type systems with PHPStan/Psalm
   - [ ] Add `declare(strict_types=1);` to all PHP files
   - [ ] Install and configure PHPStan for static analysis
   - [ ] Add comprehensive PHPDoc annotations to all models and classes
   - [ ] Add return type hints and parameter type hints to all methods
   - [ ] Configure type checking in CI/CD pipeline
-  - [ ] See `.cursor/rules/type-systems.mdc` for detailed implementation guide
 - [ ] **Code Documentation**: Add comprehensive PHPDoc comments
 - [ ] **Test Coverage**: Increase test coverage to 90%+
 - [ ] **Error Handling**: Improve error handling and user feedback
 - [ ] **Security Audit**: Conduct security review and implement improvements
 - [ ] **Performance Monitoring**: Add monitoring and logging for production
+
+### 📋 Migration Tasks (From Previous Attempts)
+- [ ] **Enhanced Database Schema**: Migrate and enhance schema from F12024 project
+- [ ] **Prediction Type System**: Implement prediction types as Laravel enums
+- [ ] **JSON Storage Optimization**: Enhance JSON columns for complex prediction data
+- [ ] **Historical Data Import**: Parse markdown prediction files for seed data
+- [ ] **Component Architecture**: Migrate Angular component structure to Blade/LiveWire
+- [ ] **Material Design Principles**: Implement using Tailwind CSS or DaisyUI
+- [ ] **PWA Capabilities**: Add service worker capabilities for offline support
+- [ ] **Theme System**: Implement light/dark theme switching from Next.js project
+- [ ] **Analytics Dashboard**: Migrate charting system from Next.js using Laravel libraries
+- [ ] **Edge Functions**: Implement Supabase-like functionality using Laravel queues
+- [ ] **Prediction Format**: Implement structured JSON schema from markdown files
+- [ ] **Admin Tools**: Create tools to import and manage prediction data
+- [ ] **Player/User Distinction**: Implement yearly participation tracking
+- [ ] **Points Tracking**: Add per-season points tracking system
+- [ ] **Race Result Import**: Create race result import and processing system
+
+### 🎯 Priority Order for Implementation:
+1. **Critical Priority** - Fix any remaining issues and ensure core functionality works
+2. **High Priority** - Complete core features that users need immediately
+3. **Medium Priority** - Add advanced features that enhance user experience
+4. **Low Priority** - Future enhancements and nice-to-have features
+5. **Technical Debt** - Code quality improvements (can be done in parallel)
+6. **Migration Tasks** - Integrate useful components from previous attempts
+
+### 🚨 Critical Priority (Fix Issues & Core Functionality)
+- [x] **Fix Failing Tests**: Resolve all test failures and ensure 100% test pass rate ✅
+- [ ] **Real-Time Notifications**: Add notifications for race results and prediction scoring
+- [ ] **Data Visualization**: Add charts and graphs for standings progression
+- [ ] **Mobile Optimization**: Ensure all interfaces work well on mobile devices
+- [ ] **Performance Optimization**: Add caching and optimize database queries
+
+### 🔧 High Priority (Core Features & User Experience)
+- [ ] **Interactive Drag-and-Drop Prediction Interface**: Enhance LiveWire components for better UX
+- [ ] **Advanced Admin Dashboard**: Create comprehensive admin interface with Volt
+- [ ] **Leaderboard System**: Build real-time leaderboard with user rankings
+- [ ] **Email & Notification System**: Implement mailable classes and queue-based processing
+- [ ] **Prediction Deadline Enforcement**: Add validation and deadline management
+
+### 📊 Medium Priority (Advanced Features & Analytics)
+- [ ] **Bot Prediction System**: Implement automated prediction bots with queue processing
+- [ ] **Advanced Analytics**: Add statistical analysis and prediction accuracy tracking
+- [ ] **Data Import/Export Tools**: Create tools to import historical F1 data and export predictions
+- [ ] **Country-based F1 Information**: Design country-based F1 information and statistics pages
+- [ ] **Real-time Standings**: Create real-time standings and championship tracking pages
+
+### 🎨 Medium Priority (UI/UX Enhancements)
+- [ ] **Component Library Integration**: Integrate DaisyUI for enhanced UI consistency
+- [ ] **Advanced Animations**: Implement micro-interactions and smooth transitions
+- [ ] **Design System Documentation**: Create comprehensive design system documentation
+- [ ] **Theme System**: Implement light/dark theme switching
+- [ ] **PWA Features**: Add offline support and app-like experience
+
+### 🔄 Medium Priority (Advanced Data Processing)
+- [ ] **Complex Scoring Algorithms**: Implement statistical analysis and score range calculations
+- [ ] **Edge Case Handling**: Handle DNF, DNS, DQ, cancelled races, and special scenarios
+- [ ] **Superlatives Management**: Implement comprehensive superlatives prediction system
+- [ ] **Driver/Team Change Management**: Build systems for mid-season changes
+- [ ] **Prediction History Analytics**: Track and analyze user prediction patterns
+
+### 🛠️ Medium Priority (Technical Infrastructure)
+- [ ] **Environment Configuration**: Configure development, staging, and production environments
+- [ ] **Monitoring & Debugging**: Integrate monitoring, debugging, and performance analysis tools
+- [ ] **API Development**: Create REST API for external integrations
+- [ ] **Social Features**: Add user profiles, comments, and social interactions
+- [ ] **Advanced Caching**: Implement intelligent caching strategies for all operations
+
+### 📈 Low Priority (Future Enhancements)
+- [ ] **Machine Learning Integration**: Implement ML-inspired prediction algorithms
+- [ ] **Advanced Charting**: Interactive driver standings progression charts
+- [ ] **Team Performance Tracking**: Build team performance tracking and visualization tools
+- [ ] **Prediction Accuracy Analysis**: Implement prediction accuracy and trend analysis charts
+- [ ] **Real-time Chart Controls**: Design dynamic data filtering for charts
+
+### 🧹 Technical Debt (Code Quality & Maintenance)
+- [ ] **Type Systems Implementation**: Add comprehensive type systems with PHPStan/Psalm
+  - [ ] Add `declare(strict_types=1);` to all PHP files
+  - [ ] Install and configure PHPStan for static analysis
+  - [ ] Add comprehensive PHPDoc annotations to all models and classes
+  - [ ] Add return type hints and parameter type hints to all methods
+  - [ ] Configure type checking in CI/CD pipeline
+- [ ] **Code Documentation**: Add comprehensive PHPDoc comments
+- [ ] **Test Coverage**: Increase test coverage to 90%+
+- [ ] **Error Handling**: Improve error handling and user feedback
+- [ ] **Security Audit**: Conduct security review and implement improvements
+- [ ] **Performance Monitoring**: Add monitoring and logging for production
+
+### 📋 Migration Tasks (From Previous Attempts)
+- [ ] **Enhanced Database Schema**: Migrate and enhance schema from F12024 project
+- [ ] **Prediction Type System**: Implement prediction types as Laravel enums
+- [ ] **JSON Storage Optimization**: Enhance JSON columns for complex prediction data
+- [ ] **Historical Data Import**: Parse markdown prediction files for seed data
+- [ ] **Component Architecture**: Migrate Angular component structure to Blade/LiveWire
+
+### 🎯 Priority Order for Implementation:
+1. **Critical Priority** - Fix any remaining issues and ensure core functionality works
+2. **High Priority** - Complete core features that users need immediately
+3. **Medium Priority** - Add advanced features that enhance user experience
+4. **Low Priority** - Future enhancements and nice-to-have features
+5. **Technical Debt** - Code quality improvements (can be done in parallel)
+6. **Migration Tasks** - Integrate useful components from previous attempts
 

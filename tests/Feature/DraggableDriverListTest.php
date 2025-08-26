@@ -112,7 +112,7 @@ test('draggable driver list can set fastest lap', function () {
 
     // Unset fastest lap (click same driver again)
     $component->call('setFastestLap', 2);
-    expect($component->get('fastestLapDriverId'))->toBe(2); // The method doesn't toggle, it sets
+    expect($component->get('fastestLapDriverId'))->toBeNull(); // The method toggles, so clicking same driver unsets it
 });
 
 test('draggable driver list returns correct prediction data', function () {

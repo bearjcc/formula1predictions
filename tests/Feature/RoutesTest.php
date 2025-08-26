@@ -110,12 +110,13 @@ describe('Authentication required routes', function () {
     });
 
     it('redirects to login for predict create when not authenticated', function () {
-        $response = $this->get('/predict/test-race');
+        $response = $this->get('/predictions/create');
         $response->assertRedirect('/login');
     });
 
     it('redirects to login for predict edit when not authenticated', function () {
-        $response = $this->get('/predict/test-race');
+        $prediction = \App\Models\Prediction::factory()->create();
+        $response = $this->get("/predictions/{$prediction->id}/edit");
         $response->assertRedirect('/login');
     });
 });

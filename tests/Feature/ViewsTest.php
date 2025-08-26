@@ -61,7 +61,7 @@ describe('Non-year-specific views load correctly', function () {
         '/driver/lewis-hamilton' => 'driver',
         '/circuit/silverstone' => 'circuit',
         '/country/belgium' => 'country',
-        '/race/british-grand-prix' => 'race-detail',
+        '/race/british-grand-prix' => 'race',
     ];
 
     foreach ($routes as $route => $view) {
