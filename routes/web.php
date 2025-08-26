@@ -23,6 +23,10 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::get('/analytics', function () {
+    return view('livewire.pages.analytics');
+})->middleware(['auth'])->name('analytics');
+
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
