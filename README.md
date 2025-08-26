@@ -28,25 +28,26 @@ A comprehensive web application for Formula 1 fans to predict race outcomes and 
 - `/` - Home page with hero section, last race details, and next race information
 - `/login` - User authentication (Laravel built-in)
 - `/register` - User registration (Laravel built-in)
-- `/{year}/teams` - Championship team standings
-- `/{year}/drivers` - Championship driver standings
-- `/{year}/circuits` - Circuit information
 - `/{year}/races` - Race schedule and results
-- `/countries` - All F1 countries
 - `/{year}/standings` - Championship standings
+- `/{year}/standings/drivers` - Driver championship standings (ordered by championship position)
+- `/{year}/standings/teams` - Team championship standings (ordered by championship position)
+- `/{year}/standings/predictions` - General prediction standings
+- `/{year}/standings/predictions/{username}` - User's predictions for the year
+- `/{year}/race/{id}` - Specific race details and results
+- `/countries` - All F1 countries
+- `/country/{slug}` - Country information, drivers, teams, and circuits
+- `/team/{slug}` - Team details, drivers, history, and current season stats
+- `/driver/{slug}` - Driver details, career stats, and current season performance
+- `/circuit/{slug}` - Circuit information and recent race results
+- `/race/{slug}` - Race details, results, and weather information
 
 ### Protected Pages (Require Authentication)
 - `/dashboard` - User dashboard with points, rankings, and prediction history
+- `/settings/profile` - User profile settings
+- `/settings/password` - Password change settings
+- `/settings/appearance` - Appearance settings
 - `/predict/{slug}` - Create or edit race predictions
-- `/profile/{username?}` - User profile (defaults to current user if no username)
-
-### Detail Pages
-- `/team/{slug}` - Team details, drivers, history, and current season stats
-- `/driver/{slug}` - Driver details, career stats, and current season performance
-- `/{year}/circuit/{slug}` - Circuit information and recent race results
-- `/race/{slug}` - Race details, results, and weather information
-- `/country/{slug}` - Country information, drivers, teams, and circuits
-- `/{year}/standings/predictions/{username}` - User's predictions for the year
 
 ## API Integration
 

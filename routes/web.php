@@ -24,15 +24,6 @@ Route::middleware(['auth'])->group(function () {
 
 // Year specific routes
 Route::middleware(['validate.year'])->group(function () {
-
-    Route::get('/{year}/teams', function ($year) {
-        return view('teams', ['year' => $year]);
-    })->name('teams');
-
-    Route::get('/{year}/drivers', function ($year) {
-        return view('drivers', ['year' => $year]);
-    })->name('drivers');
-
     Route::get('/{year}/races', function ($year) {
         return view('races', ['year' => $year]);
     })->name('races');
@@ -40,10 +31,6 @@ Route::middleware(['validate.year'])->group(function () {
     Route::get('/{year}/standings', function ($year) {
         return view('standings', ['year' => $year]);
     })->name('standings');
-
-    Route::get('/{year}/standings/drivers', function ($year) {
-        return view('standings.drivers', ['year' => $year]);
-    })->name('standings.drivers');
 
     Route::get('/{year}/standings/drivers', function ($year) {
         return view('standings.drivers', ['year' => $year]);
@@ -61,7 +48,7 @@ Route::middleware(['validate.year'])->group(function () {
 
     Route::get('/{year}/standings/predictions/{username}', function ($year, $username) {
         return view('standings.predictions', ['year' => $year, 'username' => $username]);
-    })->name('standings.predictions');
+    })->name('standings.predictions.user');
 
     Route::get('/{year}/race/{id}', function ($year, $id) {
         return view('race', ['year' => $year, 'id' => $id]);
@@ -85,5 +72,12 @@ Route::get('/circuit/{slug}', function ($slug) {
     return view('circuit', ['slug' => $slug]);
 })->name('circuit');
 
+Route::get('/country/{slug}', function ($slug) {
+    return view('country', ['slug' => $slug]);
+})->name('country');
+
+Route::get('/race/{slug}', function ($slug) {
+    return view('race', ['slug' => $slug]);
+})->name('race.detail');
 
 require __DIR__ . '/auth.php';
