@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\NotificationReceived;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
@@ -19,10 +20,23 @@ class NotificationService
     {
         $users = User::whereHas('predictions', function ($query) use ($race) {
             $query->where('race_id', $race->id)
-                  ->where('type', 'race');
+                ->where('type', 'race');
         })->get();
 
         Notification::send($users, new RaceResultsAvailable($race));
+
+        // Dispatch real-time events for each user
+        foreach ($users as $user) {
+            event(new NotificationReceived($user, [
+                'type' => 'race_results_available',
+                'race_id' => $race->id,
+                'race_name' => $race->race_name,
+                'season' => $race->season,
+                'round' => $race->round,
+                'message' => "Race results for {$race->race_name} are now available",
+                'action_url' => "/{$race->season}/race/{$race->id}",
+            ]));
+        }
     }
 
     /**
@@ -31,6 +45,18 @@ class NotificationService
     public function sendPredictionScoredNotification(Prediction $prediction, int $score, float $accuracy): void
     {
         $prediction->user->notify(new PredictionScored($prediction, $score, $accuracy));
+
+        // Dispatch real-time event
+        event(new NotificationReceived($prediction->user, [
+            'type' => 'prediction_scored',
+            'prediction_id' => $prediction->id,
+            'prediction_type' => $prediction->type,
+            'season' => $prediction->season,
+            'score' => $score,
+            'accuracy' => $accuracy,
+            'message' => "Your {$prediction->type} prediction has been scored: {$score} points",
+            'action_url' => '/predictions',
+        ]));
     }
 
     /**
@@ -49,7 +75,7 @@ class NotificationService
     {
         $users = User::whereDoesntHave('predictions', function ($query) use ($race) {
             $query->where('race_id', $race->id)
-                  ->where('type', 'race');
+                ->where('type', 'race');
         })->get();
 
         Notification::send($users, new PredictionDeadlineReminder($race, $deadlineType));
@@ -61,7 +87,7 @@ class NotificationService
     public function sendPreseasonDeadlineReminder(int $season): void
     {
         $users = User::all();
-        
+
         // Create a dummy race object for the notification
         $race = new Races([
             'season' => $season,
@@ -78,7 +104,7 @@ class NotificationService
     public function sendMidseasonDeadlineReminder(int $season): void
     {
         $users = User::all();
-        
+
         // Create a dummy race object for the notification
         $race = new Races([
             'season' => $season,

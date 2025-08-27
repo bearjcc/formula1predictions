@@ -87,7 +87,7 @@
                         @dragend="dragEnd()"
                     >
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2 sm:space-x-4">
                                 <!-- Position Number -->
                                 <div class="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-600 rounded-full flex items-center justify-center">
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="index + 1"></span>
@@ -95,8 +95,8 @@
                                 
                                 <!-- Driver Info -->
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="getDriverById(driverId)?.name + ' ' + getDriverById(driverId)?.surname"></span>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white truncate" x-text="getDriverById(driverId)?.name + ' ' + getDriverById(driverId)?.surname"></span>
                                         <span class="text-xs text-gray-500 dark:text-gray-400" x-text="getDriverById(driverId)?.nationality"></span>
                                     </div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400" x-text="getDriverById(driverId)?.team?.team_name || 'Unknown Team'"></div>

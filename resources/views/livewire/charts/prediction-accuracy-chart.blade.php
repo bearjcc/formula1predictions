@@ -1,5 +1,5 @@
 <div class="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                 Prediction Accuracy Analytics
@@ -9,7 +9,7 @@
             </p>
         </div>
         
-        <div class="flex items-center space-x-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div class="flex items-center space-x-2">
                 <label for="accuracy-chart-type" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     View:
@@ -42,7 +42,7 @@
         </div>
     </div>
 
-    <div class="relative" style="height: 400px;">
+    <div class="relative" style="height: 300px; sm:height: 400px;">
         <canvas id="{{ $chartId }}" wire:ignore></canvas>
     </div>
 

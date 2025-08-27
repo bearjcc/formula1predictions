@@ -45,9 +45,9 @@ $chartService = computed(fn() => app(ChartDataService::class));
         </div>
 
         <!-- Main Content -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
             <!-- Stats Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
                 <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -106,7 +106,7 @@ $chartService = computed(fn() => app(ChartDataService::class));
             </div>
 
             <!-- Charts Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <!-- Standings Progression Chart -->
                 <div class="lg:col-span-2">
                     <livewire:charts.standings-chart :chart-type="'driver'" :season="$selectedSeason" />
@@ -167,7 +167,7 @@ $chartService = computed(fn() => app(ChartDataService::class));
             </div>
 
             <!-- Additional Analytics -->
-            <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <!-- Race Accuracy Trends -->
                 <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
                     <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">

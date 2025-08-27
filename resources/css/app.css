@@ -4,6 +4,9 @@
 /* Design System */
 @import "./design-system.css";
 
+/* Mobile Optimizations */
+@import "./mobile.css";
+
 /* daisyUI */
 @plugin "daisyui" {
     themes: light --default, dark --prefersdark;

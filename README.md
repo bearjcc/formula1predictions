@@ -50,6 +50,38 @@ A comprehensive web application for Formula 1 fans to predict race outcomes and 
 - `/settings/appearance` - Appearance settings
 - `/predict/{slug}` - Create or edit race predictions
 
+## Real-Time Notification System
+
+The application includes a comprehensive real-time notification system that provides instant updates to users about race results and prediction scoring.
+
+### Features Implemented
+
+- **Real-Time Notifications**: Instant browser notifications using Laravel Echo and WebSockets
+- **Notification Dropdown**: LiveWire component in the header showing unread notification count
+- **Notification Management**: Mark as read, mark all as read, and delete notifications
+- **Email Notifications**: Queue-based email notifications for race results and prediction scoring
+- **Database Storage**: All notifications are stored in the database for persistence
+- **Toast Notifications**: Real-time toast notifications for immediate user feedback
+
+### Components
+
+- `NotificationDropdown` - LiveWire component for the header notification bell
+- `NotificationReceived` - Event for broadcasting real-time notifications
+- `NotificationService` - Service for sending notifications
+- `/notifications` - Full notifications page with pagination
+
+### Testing
+
+```bash
+# Run notification tests
+php artisan test tests/Feature/NotificationTest.php
+php artisan test tests/Feature/RealTimeNotificationTest.php
+
+# Send test notifications
+php artisan notifications:test --type=race
+php artisan notifications:test --type=prediction --user=1
+```
+
 ## API Integration
 
 This application uses the [F1 API](https://f1api.dev/docs/sdk) for real-time Formula 1 data.
@@ -125,7 +157,7 @@ Users predict driver finishing positions for each race using drag-and-drop order
 
 ### 🚨 Critical Priority (Fix Issues & Core Functionality)
 - [x] **Fix Failing Tests**: Resolve all test failures and ensure 100% test pass rate ✅
-- [ ] **Real-Time Notifications**: Add notifications for race results and prediction scoring
+- [x] **Real-Time Notifications**: Add notifications for race results and prediction scoring ✅
 - [ ] **Data Visualization**: Add charts and graphs for standings progression
 - [ ] **Mobile Optimization**: Ensure all interfaces work well on mobile devices
 - [ ] **Performance Optimization**: Add caching and optimize database queries
@@ -134,7 +166,7 @@ Users predict driver finishing positions for each race using drag-and-drop order
 - [ ] **Interactive Drag-and-Drop Prediction Interface**: Enhance LiveWire components for better UX
 - [ ] **Advanced Admin Dashboard**: Create comprehensive admin interface with Volt
 - [ ] **Leaderboard System**: Build real-time leaderboard with user rankings
-- [ ] **Email & Notification System**: Implement mailable classes and queue-based processing
+- [x] **Email & Notification System**: Implement mailable classes and queue-based processing ✅
 - [ ] **Prediction Deadline Enforcement**: Add validation and deadline management
 - [ ] **Role-Based Access Control**: Implement Gates and Policies for user authorization
 

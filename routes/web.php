@@ -34,6 +34,9 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 
+    // Notifications route
+    Volt::route('notifications', 'pages.notifications.index')->name('notifications.index');
+
     Route::get('predict/create', function () {
         return view('predictions.create-livewire');
     })->name('predict.create');
