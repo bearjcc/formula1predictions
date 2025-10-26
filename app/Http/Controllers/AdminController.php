@@ -12,6 +12,10 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use App\Jobs\ScoreRacePredictionsJob;
+use App\Services\ScoringService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 class AdminController extends Controller
 {
@@ -20,11 +24,9 @@ class AdminController extends Controller
     /**
      * Create a new controller instance.
      */
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('admin');
-    }
+    public function __construct(
+        private ScoringService $scoringService
+    ) {}
 
     /**
      * Show the admin dashboard.
@@ -146,5 +148,181 @@ class AdminController extends Controller
     public function settings(): View
     {
         return view('admin.settings');
+    }
+
+    /**
+     * Show scoring management page.
+     */
+    public function scoring(): View
+    {
+        $races = Races::withCount(['predictions' => function ($query) {
+            $query->whereIn('status', ['submitted', 'locked']);
+        }])
+        ->orderBy('date', 'desc')
+        ->paginate(20);
+
+        return view('admin.scoring', compact('races'));
+    }
+
+    /**
+     * Automatically score predictions for a race.
+     */
+    public function scoreRace(Request $request, Races $race): RedirectResponse
+    {
+        $this->authorize('manageResults', $race);
+
+        try {
+            $results = $this->scoringService->scoreRacePredictions($race);
+
+            $message = "Successfully scored {$results['scored_predictions']} predictions for {$results['total_score']} total points.";
+            
+            if ($results['failed_predictions'] > 0) {
+                $message .= " {$results['failed_predictions']} predictions failed to score.";
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', "Failed to score race: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Queue background scoring for a race.
+     */
+    public function queueRaceScoring(Request $request, Races $race): RedirectResponse
+    {
+        $this->authorize('manageResults', $race);
+
+        try {
+            ScoreRacePredictionsJob::dispatch($race->id, $request->boolean('force_update'));
+
+            return redirect()->back()->with('success', "Scoring job queued for {$race->race_name}");
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', "Failed to queue scoring: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Override prediction score manually.
+     */
+    public function overridePredictionScore(Request $request, Prediction $prediction): RedirectResponse
+    {
+        $this->authorize('score', $prediction);
+
+        $request->validate([
+            'score' => 'required|integer|min:-100|max:500',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $this->scoringService->overridePredictionScore(
+                $prediction,
+                $request->integer('score'),
+                $request->string('reason')
+            );
+
+            return redirect()->back()->with('success', "Prediction score overridden to {$request->score} points");
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', "Failed to override score: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Handle driver substitutions for a race.
+     */
+    public function handleDriverSubstitutions(Request $request, Races $race): RedirectResponse
+    {
+        $this->authorize('manageResults', $race);
+
+        $request->validate([
+            'substitutions' => 'required|array',
+            'substitutions.*.old_driver_id' => 'required|string',
+            'substitutions.*.new_driver_id' => 'required|string',
+        ]);
+
+        try {
+            $substitutions = [];
+            foreach ($request->input('substitutions') as $sub) {
+                $substitutions[$sub['old_driver_id']] = $sub['new_driver_id'];
+            }
+
+            $this->scoringService->handleDriverSubstitutions($race, $substitutions);
+
+            return redirect()->back()->with('success', 'Driver substitutions applied successfully');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', "Failed to apply substitutions: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Handle race cancellation.
+     */
+    public function handleRaceCancellation(Request $request, Races $race): RedirectResponse
+    {
+        $this->authorize('manageResults', $race);
+
+        $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $this->scoringService->handleRaceCancellation($race, $request->string('reason'));
+
+            return redirect()->back()->with('success', 'Race cancelled and predictions marked accordingly');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', "Failed to cancel race: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Get scoring statistics for a race.
+     */
+    public function getRaceScoringStats(Races $race): JsonResponse
+    {
+        $this->authorize('view', $race);
+
+        try {
+            $stats = $this->scoringService->getRaceScoringStats($race);
+
+            return response()->json($stats);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Bulk score multiple races.
+     */
+    public function bulkScoreRaces(Request $request): RedirectResponse
+    {
+        $this->authorize('manageResults', Races::class);
+
+        $request->validate([
+            'race_ids' => 'required|array',
+            'race_ids.*' => 'integer|exists:races,id',
+        ]);
+
+        $successCount = 0;
+        $failureCount = 0;
+
+        foreach ($request->input('race_ids') as $raceId) {
+            try {
+                $race = Races::find($raceId);
+                $results = $this->scoringService->scoreRacePredictions($race);
+                $successCount++;
+            } catch (\Exception $e) {
+                $failureCount++;
+                Log::error("Bulk scoring failed for race {$raceId}: {$e->getMessage()}");
+            }
+        }
+
+        $message = "Bulk scoring completed: {$successCount} successful, {$failureCount} failed";
+        return redirect()->back()->with('success', $message);
     }
 }
