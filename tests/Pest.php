@@ -30,6 +30,10 @@ expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
+expect()->extend('toBeSlug', function () {
+    return $this->toMatch('/^[a-z0-9]+(?:-[a-z0-9]+)*$/');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Functions
