@@ -5,7 +5,7 @@ namespace App\Livewire\Charts;
 use App\Services\ChartDataService;
 use Livewire\Component;
 
-class PredictionAccuracyChart extends Component
+class DriverConsistencyChart extends Component
 {
     public int $season = 2024;
     public string $chartId;
@@ -15,7 +15,7 @@ class PredictionAccuracyChart extends Component
     public function mount(int $season = 2024)
     {
         $this->season = $season;
-        $this->chartId = 'prediction-accuracy-chart-' . uniqid();
+        $this->chartId = 'driver-consistency-chart-' . uniqid();
         $this->loadChartData();
     }
 
@@ -27,12 +27,12 @@ class PredictionAccuracyChart extends Component
     private function loadChartData()
     {
         $chartService = app(ChartDataService::class);
-        $this->chartData = $chartService->getPredictionAccuracyByType($this->season);
-        $this->chartConfig = $chartService->getChartConfig('doughnut', $this->chartData);
+        $this->chartData = $chartService->getDriverConsistencyAnalysis($this->season);
+        $this->chartConfig = $chartService->getChartConfig('bar', $this->chartData);
     }
 
     public function render()
     {
-        return view('livewire.charts.prediction-accuracy-chart');
+        return view('livewire.charts.driver-consistency-chart');
     }
 }

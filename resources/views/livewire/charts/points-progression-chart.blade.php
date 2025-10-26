@@ -8,8 +8,8 @@
             wire:model.live="chartType"
             class="text-sm border border-zinc-300 dark:border-zinc-600 rounded-md px-3 py-2 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
         >
-            <option value="driver">Driver Standings</option>
-            <option value="team">Team Standings</option>
+            <option value="driver">Driver Points</option>
+            <option value="team">Team Points</option>
         </select>
     </div>
 

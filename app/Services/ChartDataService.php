@@ -257,6 +257,248 @@ class ChartDataService
     }
 
     /**
+     * Get driver points progression over races.
+     */
+    public function getDriverPointsProgression(int $season): array
+    {
+        $races = Races::where('season', $season)
+            ->whereNotNull('results')
+            ->orderBy('round')
+            ->get();
+
+        $drivers = Drivers::all()->keyBy('id');
+        $driverPoints = [];
+        $chartData = [];
+
+        foreach ($races as $race) {
+            $results = $race->results ?? [];
+            $raceData = [
+                'race' => $race->race_name,
+                'round' => $race->round,
+                'date' => $race->date->format('M j'),
+            ];
+
+            // Calculate cumulative points for each driver
+            foreach ($results as $position => $driverData) {
+                $driverId = $driverData['driver_id'] ?? null;
+                if ($driverId && isset($drivers[$driverId])) {
+                    $driverName = $drivers[$driverId]->name . ' ' . $drivers[$driverId]->surname;
+                    $points = $this->calculatePoints($position);
+                    $driverPoints[$driverName] = ($driverPoints[$driverName] ?? 0) + $points;
+                    $raceData[$driverName] = $driverPoints[$driverName];
+                }
+            }
+
+            $chartData[] = $raceData;
+        }
+
+        return $chartData;
+    }
+
+    /**
+     * Get team points progression over races.
+     */
+    public function getTeamPointsProgression(int $season): array
+    {
+        $races = Races::where('season', $season)
+            ->whereNotNull('results')
+            ->orderBy('round')
+            ->get();
+
+        $teams = Teams::all()->keyBy('id');
+        $teamPoints = [];
+        $chartData = [];
+
+        foreach ($races as $race) {
+            $results = $race->results ?? [];
+            $raceData = [
+                'race' => $race->race_name,
+                'round' => $race->round,
+                'date' => $race->date->format('M j'),
+            ];
+
+            // Calculate cumulative points for each team
+            foreach ($results as $position => $driverData) {
+                $driverId = $driverData['driver_id'] ?? null;
+                if ($driverId) {
+                    $driver = Drivers::find($driverId);
+                    if ($driver && $driver->team) {
+                        $teamName = $driver->team->team_name;
+                        $points = $this->calculatePoints($position);
+                        $teamPoints[$teamName] = ($teamPoints[$teamName] ?? 0) + $points;
+                        $raceData[$teamName] = $teamPoints[$teamName];
+                    }
+                }
+            }
+
+            $chartData[] = $raceData;
+        }
+
+        return $chartData;
+    }
+
+    /**
+     * Get prediction accuracy by prediction type.
+     */
+    public function getPredictionAccuracyByType(int $season): array
+    {
+        $predictions = Prediction::where('season', $season)
+            ->whereNotNull('accuracy')
+            ->get()
+            ->groupBy('type');
+
+        $chartData = [];
+        foreach ($predictions as $type => $typePredictions) {
+            $avgAccuracy = $typePredictions->avg('accuracy');
+            $totalPredictions = $typePredictions->count();
+            $totalScore = $typePredictions->sum('score');
+
+            $chartData[] = [
+                'type' => ucfirst($type),
+                'avg_accuracy' => round($avgAccuracy, 1),
+                'total_predictions' => $totalPredictions,
+                'total_score' => $totalScore,
+                'avg_score' => round($totalScore / $totalPredictions, 1),
+            ];
+        }
+
+        // Sort by average accuracy descending
+        usort($chartData, fn($a, $b) => $b['avg_accuracy'] <=> $a['avg_accuracy']);
+
+        return $chartData;
+    }
+
+    /**
+     * Get user performance trends over time.
+     */
+    public function getUserPerformanceTrends(User $user, int $season): array
+    {
+        $predictions = $user->predictions()
+            ->where('season', $season)
+            ->whereNotNull('accuracy')
+            ->orderBy('submitted_at')
+            ->get();
+
+        $chartData = [];
+        $cumulativeScore = 0;
+        $cumulativeAccuracy = 0;
+        $predictionCount = 0;
+
+        foreach ($predictions as $prediction) {
+            $cumulativeScore += $prediction->score;
+            $cumulativeAccuracy += $prediction->accuracy;
+            $predictionCount++;
+
+            $chartData[] = [
+                'prediction' => $prediction->type . ' #' . $prediction->id,
+                'date' => $prediction->submitted_at->format('M j'),
+                'accuracy' => round($prediction->accuracy, 1),
+                'score' => $prediction->score,
+                'cumulative_score' => $cumulativeScore,
+                'avg_accuracy' => round($cumulativeAccuracy / $predictionCount, 1),
+                'type' => $prediction->type,
+            ];
+        }
+
+        return $chartData;
+    }
+
+    /**
+     * Get race result distribution (podiums, points, DNFs).
+     */
+    public function getRaceResultDistribution(int $season): array
+    {
+        $races = Races::where('season', $season)
+            ->whereNotNull('results')
+            ->orderBy('round')
+            ->get();
+
+        $chartData = [];
+        foreach ($races as $race) {
+            $results = $race->results ?? [];
+            $podiums = 0;
+            $points = 0;
+            $dnfs = 0;
+
+            foreach ($results as $position => $driverData) {
+                if ($position < 3) {
+                    $podiums++;
+                }
+                if ($position < 10) {
+                    $points++;
+                }
+                if (isset($driverData['status']) && in_array($driverData['status'], ['DNF', 'DNS', 'DQ'])) {
+                    $dnfs++;
+                }
+            }
+
+            $chartData[] = [
+                'race' => $race->race_name,
+                'round' => $race->round,
+                'podiums' => $podiums,
+                'points_finishers' => $points,
+                'dnfs' => $dnfs,
+                'date' => $race->date->format('M j'),
+            ];
+        }
+
+        return $chartData;
+    }
+
+    /**
+     * Get driver consistency analysis (standard deviation of positions).
+     */
+    public function getDriverConsistencyAnalysis(int $season): array
+    {
+        $races = Races::where('season', $season)
+            ->whereNotNull('results')
+            ->orderBy('round')
+            ->get();
+
+        $drivers = Drivers::all()->keyBy('id');
+        $driverPositions = [];
+
+        // Collect all positions for each driver
+        foreach ($races as $race) {
+            $results = $race->results ?? [];
+            foreach ($results as $position => $driverData) {
+                $driverId = $driverData['driver_id'] ?? null;
+                if ($driverId && isset($drivers[$driverId])) {
+                    $driverName = $drivers[$driverId]->name . ' ' . $drivers[$driverId]->surname;
+                    if (!isset($driverPositions[$driverName])) {
+                        $driverPositions[$driverName] = [];
+                    }
+                    // Use the 'position' field from driverData, not the array key
+                    $actualPosition = $driverData['position'] ?? $position;
+                    $driverPositions[$driverName][] = $actualPosition + 1; // Convert to 1-based position
+                }
+            }
+        }
+
+        $chartData = [];
+        foreach ($driverPositions as $driverName => $positions) {
+            if (count($positions) > 1) {
+                $avgPosition = array_sum($positions) / count($positions);
+                $variance = array_sum(array_map(fn($pos) => pow($pos - $avgPosition, 2), $positions)) / count($positions);
+                $stdDev = sqrt($variance);
+
+                $chartData[] = [
+                    'driver' => $driverName,
+                    'avg_position' => round($avgPosition, 1),
+                    'std_deviation' => round($stdDev, 2),
+                    'consistency_score' => round(100 - ($stdDev * 10), 1), // Higher is more consistent
+                    'races' => count($positions),
+                ];
+            }
+        }
+
+        // Sort by consistency score descending
+        usort($chartData, fn($a, $b) => $b['consistency_score'] <=> $a['consistency_score']);
+
+        return $chartData;
+    }
+
+    /**
      * Calculate points for a given position (F1 scoring system).
      */
     private function calculatePoints(int $position): int

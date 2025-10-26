@@ -5,7 +5,7 @@ namespace App\Livewire\Charts;
 use App\Services\ChartDataService;
 use Livewire\Component;
 
-class StandingsChart extends Component
+class PointsProgressionChart extends Component
 {
     public int $season = 2024;
     public string $chartType = 'driver'; // 'driver' or 'team'
@@ -17,7 +17,7 @@ class StandingsChart extends Component
     {
         $this->season = $season;
         $this->chartType = $chartType;
-        $this->chartId = 'standings-chart-' . uniqid();
+        $this->chartId = 'points-progression-chart-' . uniqid();
         $this->loadChartData();
     }
 
@@ -36,9 +36,9 @@ class StandingsChart extends Component
         $chartService = app(ChartDataService::class);
 
         if ($this->chartType === 'driver') {
-            $this->chartData = $chartService->getDriverStandingsProgression($this->season);
+            $this->chartData = $chartService->getDriverPointsProgression($this->season);
         } else {
-            $this->chartData = $chartService->getTeamStandingsProgression($this->season);
+            $this->chartData = $chartService->getTeamPointsProgression($this->season);
         }
 
         $this->chartConfig = $chartService->getChartConfig('line', $this->chartData);
@@ -46,6 +46,6 @@ class StandingsChart extends Component
 
     public function render()
     {
-        return view('livewire.charts.standings-chart');
+        return view('livewire.charts.points-progression-chart');
     }
 }
