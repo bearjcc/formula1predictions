@@ -179,6 +179,10 @@ class Races extends Model
      */
     public function getResultsArray(): array
     {
+        if (is_string($this->results)) {
+            return json_decode($this->results, true) ?? [];
+        }
+        
         return $this->results ?? [];
     }
 

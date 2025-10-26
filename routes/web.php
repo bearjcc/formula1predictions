@@ -23,9 +23,7 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/analytics', function () {
-    return view('livewire.pages.analytics');
-})->middleware(['auth'])->name('analytics');
+Route::get('/analytics', App\Livewire\Pages\Analytics::class)->middleware(['auth'])->name('analytics');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
@@ -54,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
         Route::get('/races', [AdminController::class, 'races'])->name('races');
+        Route::get('/scoring', [AdminController::class, 'scoring'])->name('scoring');
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
 
         // Prediction management actions
@@ -61,6 +60,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/predictions/{prediction}/lock', [AdminController::class, 'lockPrediction'])->name('predictions.lock');
         Route::post('/predictions/{prediction}/unlock', [AdminController::class, 'unlockPrediction'])->name('predictions.unlock');
         Route::delete('/predictions/{prediction}', [AdminController::class, 'deletePrediction'])->name('predictions.delete');
+
+        // Scoring management
+        Route::post('/races/{race}/score', [AdminController::class, 'scoreRace'])->name('races.score');
+        Route::post('/races/{race}/queue-scoring', [AdminController::class, 'queueRaceScoring'])->name('races.queue-scoring');
+        Route::post('/races/{race}/substitutions', [AdminController::class, 'handleDriverSubstitutions'])->name('races.substitutions');
+        Route::post('/races/{race}/cancel', [AdminController::class, 'handleRaceCancellation'])->name('races.cancel');
+        Route::get('/races/{race}/scoring-stats', [AdminController::class, 'getRaceScoringStats'])->name('races.scoring-stats');
+        Route::post('/bulk-score', [AdminController::class, 'bulkScoreRaces'])->name('bulk-score');
+
+        // Score overrides
+        Route::post('/predictions/{prediction}/override-score', [AdminController::class, 'overridePredictionScore'])->name('predictions.override-score');
     });
 
     // Leaderboard routes
