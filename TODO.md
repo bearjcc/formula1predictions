@@ -245,7 +245,7 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
 - **id**: F1-006A
   - **title**: Design and implement legacy data import pipeline
   - **type**: feature
-  - **status**: todo
+  - **status**: blocked
   - **priority**: P1
   - **risk_level**: high
   - **owner**: mixed
@@ -266,11 +266,15 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Extend `tests/Feature/HistoricalDataImportTest.php` and related seeders/factories.
   - **notes**:
     - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. For MVP, implement a minimal “Phase 1” import for a small set of recent seasons; broader historical backfill can follow after launch.
+  - **blockers**:
+    - Representative legacy CSV/JSON or database dumps are not yet available in this repo for mapping and test fixtures.
+    - High-risk migrations and data-shaping decisions require explicit human approval before implementation.
+    - Need human-provided examples of legacy schemas and target seasons to include in the initial Phase 1 import.
 
 - **id**: F1-007
   - **title**: Normalize ChartDataService queries and reduce per-row model lookups
   - **type**: chore
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: medium
   - **owner**: agent
@@ -288,6 +292,9 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Extend `tests/Feature/ChartDataServiceTest.php` to assert on data shapes and, where feasible, query counts using Laravel’s query listener.
   - **notes**:
     - Primary: Maintenance & Refactorer; Consulted: Test & QA.
+  - **completed_summary**:
+    - Refactored `ChartDataService` to batch-load drivers and teams for team standings, team points progression, and driver/team performance comparisons, removing repeated `Drivers::find` / `Teams::find` calls inside result loops while preserving existing output shapes.
+    - Added a regression test in `ChartDataServiceTest` that exercises team points progression and asserts that the number of executed queries stays within a reasonable bound, then ran `php artisan test tests/Feature/ChartDataServiceTest.php` successfully.
 
 - **id**: F1-008
   - **title**: Enhance notifications UX and coverage for scored predictions

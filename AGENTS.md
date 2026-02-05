@@ -196,3 +196,16 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Added a `savePredictionScore` regression test in `ScoringServiceTest` and verified the full scoring feature suite via `php artisan test tests/Feature/ScoringServiceTest.php` after running `vendor/bin/pint --dirty`.
 
 **Tests:** `php artisan test tests/Feature/ScoringServiceTest.php`
+
+---
+
+## Recent Completion (F1-007)
+
+**Task:** Normalize ChartDataService queries and reduce per-row model lookups — done
+
+**What was done:**
+- Updated `ChartDataService` to pre-load related drivers and teams for team standings progression, team points progression, and driver/team performance comparison, eliminating repeated `find()` calls inside tight loops to avoid N+1-style query patterns.
+- Kept all chart data shapes and semantics intact, with existing tests still green after the refactor.
+- Added a lightweight query-count regression test in `ChartDataServiceTest` around team points progression to ensure query volume remains bounded.
+
+**Tests:** `php artisan test tests/Feature/ChartDataServiceTest.php`

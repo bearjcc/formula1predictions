@@ -8,7 +8,6 @@ use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
 use App\Models\User;
-use Illuminate\Support\Collection;
 
 class ChartDataService
 {
@@ -44,7 +43,7 @@ class ChartDataService
             foreach ($results as $position => $driverData) {
                 $driverId = $driverData['driver_id'] ?? null;
                 if ($driverId && isset($drivers[$driverId])) {
-                    $driverName = $drivers[$driverId]->name . ' ' . $drivers[$driverId]->surname;
+                    $driverName = $drivers[$driverId]->name.' '.$drivers[$driverId]->surname;
                     $raceData[$driverName] = $position + 1; // Convert to 1-based position
                 }
             }
@@ -65,7 +64,7 @@ class ChartDataService
             ->orderBy('round')
             ->get();
 
-        $teams = Teams::all()->keyBy('id');
+        $drivers = Drivers::with('team')->get()->keyBy('id');
         $chartData = [];
 
         foreach ($races as $race) {
@@ -76,13 +75,12 @@ class ChartDataService
                 'date' => $race->date->format('M j'),
             ];
 
-            // Group results by team
             $teamPoints = [];
             foreach ($results as $position => $driverData) {
                 $driverId = $driverData['driver_id'] ?? null;
-                if ($driverId) {
-                    $driver = Drivers::find($driverId);
-                    if ($driver && $driver->team) {
+                if ($driverId && isset($drivers[$driverId])) {
+                    $driver = $drivers[$driverId];
+                    if ($driver->team) {
                         $teamName = $driver->team->team_name;
                         $points = $this->calculatePoints($position);
                         $teamPoints[$teamName] = ($teamPoints[$teamName] ?? 0) + $points;
@@ -118,7 +116,7 @@ class ChartDataService
         $chartData = [];
         foreach ($predictions as $prediction) {
             $chartData[] = [
-                'prediction' => $prediction->type . ' #' . $prediction->id,
+                'prediction' => $prediction->type.' #'.$prediction->id,
                 'date' => $prediction->submitted_at->format('M j'),
                 'accuracy' => round($prediction->accuracy, 1),
                 'score' => $prediction->score,
@@ -136,7 +134,7 @@ class ChartDataService
     {
         $users = User::with(['predictions' => function ($query) use ($season) {
             $query->where('season', $season)
-                  ->whereNotNull('accuracy');
+                ->whereNotNull('accuracy');
         }])->get();
 
         $chartData = [];
@@ -156,7 +154,7 @@ class ChartDataService
         }
 
         // Sort by average accuracy descending
-        usort($chartData, fn($a, $b) => $b['avg_accuracy'] <=> $a['avg_accuracy']);
+        usort($chartData, fn ($a, $b) => $b['avg_accuracy'] <=> $a['avg_accuracy']);
 
         return $chartData;
     }
@@ -205,12 +203,24 @@ class ChartDataService
             ->whereNull('round') // Current standings
             ->get();
 
+        $driverIds = $standings->pluck('entity_id')
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        $drivers = Drivers::with('team')
+            ->whereIn('id', $driverIds)
+            ->get()
+            ->keyBy('id');
+
         $chartData = [];
         foreach ($standings as $standing) {
-            $driver = Drivers::find((int) $standing->entity_id);
-            if ($driver) {
+            $driverId = (int) $standing->entity_id;
+            if ($driverId && isset($drivers[$driverId])) {
+                $driver = $drivers[$driverId];
                 $chartData[] = [
-                    'driver' => $driver->name . ' ' . $driver->surname,
+                    'driver' => $driver->name.' '.$driver->surname,
                     'team' => $driver->team?->team_name ?? 'Unknown',
                     'points' => $standing->points,
                     'position' => $standing->position,
@@ -221,7 +231,7 @@ class ChartDataService
         }
 
         // Sort by points descending
-        usort($chartData, fn($a, $b) => $b['points'] <=> $a['points']);
+        usort($chartData, fn ($a, $b) => $b['points'] <=> $a['points']);
 
         return $chartData;
     }
@@ -236,10 +246,21 @@ class ChartDataService
             ->whereNull('round') // Current standings
             ->get();
 
+        $teamIds = $standings->pluck('entity_id')
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        $teams = Teams::whereIn('id', $teamIds)
+            ->get()
+            ->keyBy('id');
+
         $chartData = [];
         foreach ($standings as $standing) {
-            $team = Teams::find((int) $standing->entity_id);
-            if ($team) {
+            $teamId = (int) $standing->entity_id;
+            if ($teamId && isset($teams[$teamId])) {
+                $team = $teams[$teamId];
                 $chartData[] = [
                     'team' => $team->team_name,
                     'points' => $standing->points,
@@ -251,7 +272,7 @@ class ChartDataService
         }
 
         // Sort by points descending
-        usort($chartData, fn($a, $b) => $b['points'] <=> $a['points']);
+        usort($chartData, fn ($a, $b) => $b['points'] <=> $a['points']);
 
         return $chartData;
     }
@@ -282,7 +303,7 @@ class ChartDataService
             foreach ($results as $position => $driverData) {
                 $driverId = $driverData['driver_id'] ?? null;
                 if ($driverId && isset($drivers[$driverId])) {
-                    $driverName = $drivers[$driverId]->name . ' ' . $drivers[$driverId]->surname;
+                    $driverName = $drivers[$driverId]->name.' '.$drivers[$driverId]->surname;
                     $points = $this->calculatePoints($position);
                     $driverPoints[$driverName] = ($driverPoints[$driverName] ?? 0) + $points;
                     $raceData[$driverName] = $driverPoints[$driverName];
@@ -305,7 +326,7 @@ class ChartDataService
             ->orderBy('round')
             ->get();
 
-        $teams = Teams::all()->keyBy('id');
+        $drivers = Drivers::with('team')->get()->keyBy('id');
         $teamPoints = [];
         $chartData = [];
 
@@ -317,12 +338,11 @@ class ChartDataService
                 'date' => $race->date->format('M j'),
             ];
 
-            // Calculate cumulative points for each team
             foreach ($results as $position => $driverData) {
                 $driverId = $driverData['driver_id'] ?? null;
-                if ($driverId) {
-                    $driver = Drivers::find($driverId);
-                    if ($driver && $driver->team) {
+                if ($driverId && isset($drivers[$driverId])) {
+                    $driver = $drivers[$driverId];
+                    if ($driver->team) {
                         $teamName = $driver->team->team_name;
                         $points = $this->calculatePoints($position);
                         $teamPoints[$teamName] = ($teamPoints[$teamName] ?? 0) + $points;
@@ -363,7 +383,7 @@ class ChartDataService
         }
 
         // Sort by average accuracy descending
-        usort($chartData, fn($a, $b) => $b['avg_accuracy'] <=> $a['avg_accuracy']);
+        usort($chartData, fn ($a, $b) => $b['avg_accuracy'] <=> $a['avg_accuracy']);
 
         return $chartData;
     }
@@ -390,7 +410,7 @@ class ChartDataService
             $predictionCount++;
 
             $chartData[] = [
-                'prediction' => $prediction->type . ' #' . $prediction->id,
+                'prediction' => $prediction->type.' #'.$prediction->id,
                 'date' => $prediction->submitted_at->format('M j'),
                 'accuracy' => round($prediction->accuracy, 1),
                 'score' => $prediction->score,
@@ -464,8 +484,8 @@ class ChartDataService
             foreach ($results as $position => $driverData) {
                 $driverId = $driverData['driver_id'] ?? null;
                 if ($driverId && isset($drivers[$driverId])) {
-                    $driverName = $drivers[$driverId]->name . ' ' . $drivers[$driverId]->surname;
-                    if (!isset($driverPositions[$driverName])) {
+                    $driverName = $drivers[$driverId]->name.' '.$drivers[$driverId]->surname;
+                    if (! isset($driverPositions[$driverName])) {
                         $driverPositions[$driverName] = [];
                     }
                     // Use the 'position' field from driverData, not the array key
@@ -479,7 +499,7 @@ class ChartDataService
         foreach ($driverPositions as $driverName => $positions) {
             if (count($positions) > 1) {
                 $avgPosition = array_sum($positions) / count($positions);
-                $variance = array_sum(array_map(fn($pos) => pow($pos - $avgPosition, 2), $positions)) / count($positions);
+                $variance = array_sum(array_map(fn ($pos) => pow($pos - $avgPosition, 2), $positions)) / count($positions);
                 $stdDev = sqrt($variance);
 
                 $chartData[] = [
@@ -493,7 +513,7 @@ class ChartDataService
         }
 
         // Sort by consistency score descending
-        usort($chartData, fn($a, $b) => $b['consistency_score'] <=> $a['consistency_score']);
+        usort($chartData, fn ($a, $b) => $b['consistency_score'] <=> $a['consistency_score']);
 
         return $chartData;
     }
@@ -503,7 +523,7 @@ class ChartDataService
      */
     private function calculatePoints(int $position): int
     {
-        return match($position) {
+        return match ($position) {
             0 => 25, // 1st place
             1 => 18, // 2nd place
             2 => 15, // 3rd place
@@ -523,7 +543,7 @@ class ChartDataService
      */
     public function getChartConfig(string $type, array $data): array
     {
-        return match($type) {
+        return match ($type) {
             'line' => $this->getLineChartConfig($data),
             'bar' => $this->getBarChartConfig($data),
             'radar' => $this->getRadarChartConfig($data),

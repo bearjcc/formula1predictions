@@ -8,6 +8,7 @@ use App\Models\Teams;
 use App\Models\User;
 use App\Services\ChartDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -302,4 +303,33 @@ test('chart data service calculates F1 points correctly', function () {
         ->and($method->invoke($service, 2))->toBe(15) // 3rd place
         ->and($method->invoke($service, 9))->toBe(1)  // 10th place
         ->and($method->invoke($service, 10))->toBe(0); // 11th place
+});
+
+test('team points progression avoids excessive driver queries', function () {
+    $service = app(ChartDataService::class);
+
+    $team = Teams::factory()->create();
+    $drivers = Drivers::factory()->count(3)->create([
+        'team_id' => $team->id,
+    ]);
+
+    Races::factory()->create([
+        'season' => 2024,
+        'round' => 1,
+        'race_name' => 'Test GP',
+        'results' => [
+            ['driver_id' => $drivers[0]->id, 'position' => 0],
+            ['driver_id' => $drivers[1]->id, 'position' => 1],
+            ['driver_id' => $drivers[2]->id, 'position' => 2],
+        ],
+    ]);
+
+    DB::enableQueryLog();
+    DB::flushQueryLog();
+
+    $service->getTeamPointsProgression(2024);
+
+    $queries = DB::getQueryLog();
+
+    expect(count($queries))->toBeLessThanOrEqual(10);
 });
