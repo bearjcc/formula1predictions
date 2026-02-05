@@ -222,3 +222,16 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Extended `NotificationTest` and `RealTimeNotificationTest` to cover the new data shape and dropdown rendering for prediction-scored notifications, then ran `php artisan test tests/Feature/NotificationTest.php tests/Feature/RealTimeNotificationTest.php` successfully.
 
 **Tests:** `php artisan test tests/Feature/NotificationTest.php tests/Feature/RealTimeNotificationTest.php`
+
+---
+
+## Recent Completion (F1-009)
+
+**Task:** Add backtest harness for alternative scoring experiments — done
+
+**What was done:**
+- Created `tests/Support/BacktestScoringHarness` with production, linear, and flatter position-scoring variants. Harness is compute-only (no DB persistence).
+- `compareVariants()` returns production_scores, alternative_scores, score_deltas, and rank_changes for experiment analysis.
+- Extended `ScoringServiceTest` and `SimpleHistoricalDataTest` with backtest harness tests; production variant matches ScoringService output.
+
+**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/SimpleHistoricalDataTest.php`

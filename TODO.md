@@ -329,13 +329,12 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
 - **id**: F1-009
   - **title**: Add backtest harness for alternative scoring experiments
   - **type**: experiment
-  - **status**: todo
+  - **status**: done
   - **priority**: P3
   - **risk_level**: high
   - **owner**: mixed
   - **affected_areas**:
-    - app/Services/ScoringService.php
-    - database/seeders/HistoricalPredictionsSeeder.php
+    - tests/Support/BacktestScoringHarness.php
     - tests/Feature/ScoringServiceTest.php
     - tests/Feature/SimpleHistoricalDataTest.php
   - **description**: Create a testing harness and fixtures that allow running multiple scoring variants against historical predictions without affecting production scores.
@@ -349,6 +348,10 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Extend `tests/Feature/ScoringServiceTest.php` and `tests/Feature/SimpleHistoricalDataTest.php` with experiment-focused cases.
   - **notes**:
     - Primary: Data/Scoring Scientist; Consulted: Test & QA. Human review required before any production rollout.
+  - **completed_summary**:
+    - Added `tests/Support/BacktestScoringHarness` with production, linear, and flatter position-scoring variants; compute-only (no DB persistence).
+    - `compareVariants()` returns production_scores, alternative_scores, score_deltas, and rank_changes.
+    - Extended ScoringServiceTest and SimpleHistoricalDataTest with backtest harness tests; all scoring tests pass.
 
 ---
 

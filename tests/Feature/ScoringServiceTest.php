@@ -517,6 +517,87 @@ test('prediction model score method delegates to scoring service', function () {
     expect($prediction->scored_at)->not->toBeNull();
 });
 
+test('backtest harness computes production scores matching ScoringService', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'charles_leclerc'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton', 'charles_leclerc'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $productionScore = $service->calculatePredictionScore($prediction, $race);
+
+    $harness = new \Tests\Support\BacktestScoringHarness;
+    $harnessScore = $harness->computeScore($prediction, $race);
+
+    expect($harnessScore)->toBe($productionScore);
+});
+
+test('backtest harness compares two scoring variants and outputs summary stats', function () {
+    $user1 = User::factory()->create();
+    $user2 = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'charles_leclerc'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $p1 = Prediction::factory()->create([
+        'user_id' => $user1->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton', 'charles_leclerc'],
+        ],
+        'status' => 'submitted',
+    ]);
+    $p2 = Prediction::factory()->create([
+        'user_id' => $user2->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['charles_leclerc', 'max_verstappen', 'lewis_hamilton'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $harness = new \Tests\Support\BacktestScoringHarness;
+    $result = $harness->compareVariants([$p1, $p2], 'linear');
+
+    expect($result)->toHaveKeys(['production_scores', 'alternative_scores', 'score_deltas', 'rank_changes']);
+    expect($result['production_scores'])->toHaveCount(2);
+    expect($result['alternative_scores'])->toHaveCount(2);
+    expect($result['score_deltas'])->toHaveCount(2);
+    expect($result['rank_changes'])->toHaveCount(2);
+
+    $prodScores = array_values($result['production_scores']);
+    expect($prodScores[0])->toBeGreaterThan($prodScores[1]);
+
+    $deltas = array_values($result['score_deltas']);
+    expect($deltas)->not->toBe([0, 0]);
+});
+
 test('savePredictionScore updates core fields consistently', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create([
