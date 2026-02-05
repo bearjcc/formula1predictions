@@ -1,6 +1,9 @@
 <?php
 
+use App\Exceptions\F1ApiException;
 use App\Services\F1ApiService;
+use Illuminate\Support\Facades\Http;
+
 use function Pest\Laravel\mock;
 
 test('f1 api service can be instantiated', function () {
@@ -86,7 +89,7 @@ test('f1 api can fetch specific race result', function () {
 
 test('f1 api service determines race status correctly', function () {
     // Use a fresh instance to avoid mocking for private method reflection
-    $service = new F1ApiService();
+    $service = new F1ApiService;
 
     // Test with a completed race (has results)
     $completedRace = [
@@ -209,5 +212,35 @@ test('f1 api service handles api errors gracefully', function () {
 
     // Ensure clearAllCache does not throw
     expect(fn () => $service->clearAllCache())
-        ->not->toThrow(Exception::class);
+        ->not->toThrow(\Exception::class);
+});
+
+test('f1 api service throws F1ApiException when API returns 500', function () {
+    Http::fake([
+        'f1api.dev/api/*' => Http::response(null, 500),
+    ]);
+
+    $service = new F1ApiService;
+
+    expect(fn () => $service->getRacesForYear(2024))
+        ->toThrow(F1ApiException::class);
+});
+
+test('f1 api service throws F1ApiException when connection fails', function () {
+    Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('Connection refused'));
+
+    $service = new F1ApiService;
+
+    expect(fn () => $service->getRaceResults(2024, 1))
+        ->toThrow(F1ApiException::class);
+});
+
+test('F1ApiException carries log context for debugging', function () {
+    $e = new F1ApiException('Failed', 500, '/2024/1/race', 2024);
+
+    expect($e->getLogContext())->toBe([
+        'year' => 2024,
+        'endpoint' => '/2024/1/race',
+        'status' => 500,
+    ]);
 });

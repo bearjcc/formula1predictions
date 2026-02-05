@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\F1ApiService;
+
 use function Pest\Laravel\mock;
 
 test('races page loads successfully', function () {
@@ -15,8 +16,8 @@ test('races page loads successfully', function () {
                     'date' => '2024-03-15',
                     'time' => '14:00:00Z',
                     'status' => 'upcoming',
-                    'results' => []
-                ]
+                    'results' => [],
+                ],
             ]);
     });
 
@@ -28,17 +29,43 @@ test('races page loads successfully', function () {
 });
 
 test('races page shows error state when API fails', function () {
-    // Mock the F1ApiService to throw an exception, which will show the error state
     mock(F1ApiService::class, function ($mock) {
         $mock->shouldReceive('getRacesForYear')
             ->with(2024)
-            ->andThrow(new \Exception('API Error'));
+            ->andThrow(new \App\Exceptions\F1ApiException('API Error', 500, '/2024/1/race', 2024));
     });
 
     $response = $this->get('/2024/races');
 
     $response->assertSuccessful();
-    // The error state should be visible when API fails
     $response->assertSee('Error Loading Races');
-    $response->assertSee('Failed to load races: API Error');
+    $response->assertSee('We\'re having trouble loading race data right now');
+});
+
+test('races page shows user-friendly error for connection failures', function () {
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2024)
+            ->andThrow(new \Exception('Connection refused'));
+    });
+
+    $response = $this->get('/2024/races');
+
+    $response->assertSuccessful();
+    $response->assertSee('Error Loading Races');
+    $response->assertSee('We\'re having trouble loading race data right now');
+});
+
+test('races page does not expose technical error details to user', function () {
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2024)
+            ->andThrow(new \Exception('cURL error 28: Operation timed out'));
+    });
+
+    $response = $this->get('/2024/races');
+
+    $response->assertSuccessful();
+    $response->assertDontSee('cURL error');
+    $response->assertDontSee('Operation timed out');
 });

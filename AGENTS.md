@@ -106,3 +106,17 @@ When ending a session with incomplete work, generate a handoff block for the nex
 ```
 
 Put commands and key paths in handoffs so the next agent can resume immediately.
+
+---
+
+## Recent Completion (F1-002)
+
+**Task:** Improve F1 API error reporting in races list — done
+
+**What was done:**
+- Added `App\Exceptions\F1ApiException` with `getLogContext()` for structured logging
+- Updated `F1ApiService` to throw `F1ApiException` on API/connection failures; `fetchAllRacesForYear` now throws when 0 races due to API failure
+- Updated `RacesList` to show user-friendly message ("We're having trouble loading race data right now...") and log with year/endpoint/status
+- Extended `F1ApiTest` and `RacesPageTest` for 500, connection failure, and no-technical-details-exposed scenarios
+
+**Tests:** `php artisan test tests/Feature/F1ApiTest.php tests/Feature/RacesPageTest.php` (note: F1Api 500 test ~48s due to 24-round loop)

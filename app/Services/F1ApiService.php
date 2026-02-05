@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Exceptions\F1ApiException;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class F1ApiService
 {
@@ -17,19 +19,39 @@ class F1ApiService
 
     /**
      * Get race results for a specific year and round
+     *
+     * @throws F1ApiException when API is unreachable or returns non-2xx
      */
     public function getRaceResults(int $year, int $round): array
     {
         $cacheKey = "f1_race_{$year}_{$round}";
+        $endpoint = "/{$year}/{$round}/race";
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($year, $round) {
-            $response = $this->makeApiCall("/{$year}/{$round}/race");
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($year, $endpoint) {
+            try {
+                $response = $this->makeApiCall($endpoint);
 
-            if (! $response->successful()) {
-                throw new Exception('Failed to fetch race data: '.$response->status());
+                if (! $response->successful()) {
+                    throw new F1ApiException(
+                        'Failed to fetch race data',
+                        $response->status(),
+                        $endpoint,
+                        $year
+                    );
+                }
+
+                return $response->json();
+            } catch (F1ApiException $e) {
+                throw $e;
+            } catch (Throwable $e) {
+                throw new F1ApiException(
+                    'F1 API connection failed: '.$e->getMessage(),
+                    null,
+                    $endpoint,
+                    $year,
+                    $e instanceof Exception ? $e : null
+                );
             }
-
-            return $response->json();
         });
     }
 
@@ -47,11 +69,14 @@ class F1ApiService
 
     /**
      * Fetch all races for a year by making multiple API calls
+     *
+     * @throws F1ApiException when API fails and no races could be loaded
      */
     private function fetchAllRacesForYear(int $year): array
     {
         $races = [];
         $maxRounds = 24; // F1 typically has 20-24 races per season
+        $hadApiFailure = false;
 
         for ($round = 1; $round <= $maxRounds; $round++) {
             try {
@@ -61,14 +86,27 @@ class F1ApiService
                     $race['status'] = $this->determineRaceStatus($race);
                     $races[] = $race;
                 }
-            } catch (Exception $e) {
-                // If we get a 404, we've reached the end of the season
-                if (str_contains($e->getMessage(), '404')) {
+            } catch (F1ApiException $e) {
+                if ($e->statusCode === 404) {
                     break;
                 }
-                // Log other errors but continue
-                Log::warning("Failed to fetch race {$year}/{$round}: ".$e->getMessage());
+                $hadApiFailure = true;
+                Log::warning('F1 API fetch failed for race', array_merge(
+                    ['round' => $round, 'message' => $e->getMessage()],
+                    $e->getLogContext()
+                ));
+            } catch (Throwable $e) {
+                $hadApiFailure = true;
+                Log::warning('F1 API fetch failed for race', [
+                    'year' => $year,
+                    'round' => $round,
+                    'message' => $e->getMessage(),
+                ]);
             }
+        }
+
+        if (count($races) === 0 && $hadApiFailure) {
+            throw new F1ApiException('Unable to load race data', null, null, $year);
         }
 
         return $races;

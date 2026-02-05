@@ -92,7 +92,7 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
 - **id**: F1-002
   - **title**: Improve F1 API error reporting in races list
   - **type**: bug
-  - **status**: todo
+  - **status**: done
   - **priority**: P1
   - **risk_level**: medium
   - **owner**: agent

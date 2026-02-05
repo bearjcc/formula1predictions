@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Races;
 
+use App\Exceptions\F1ApiException;
 use App\Services\F1ApiService;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -34,9 +35,18 @@ class RacesList extends Component
         try {
             $f1ApiService = app(F1ApiService::class);
             $this->races = $f1ApiService->getRacesForYear($this->year);
-        } catch (\Exception $e) {
-            $this->error = 'Failed to load races: '.$e->getMessage();
-            Log::error('Failed to load races for year '.$this->year.': '.$e->getMessage());
+        } catch (F1ApiException $e) {
+            $this->error = 'We\'re having trouble loading race data right now. Please try again in a few moments.';
+            Log::error('F1 API races list failed', array_merge(
+                ['message' => $e->getMessage()],
+                $e->getLogContext()
+            ));
+        } catch (\Throwable $e) {
+            $this->error = 'We\'re having trouble loading race data right now. Please try again in a few moments.';
+            Log::error('F1 API races list failed', [
+                'year' => $this->year,
+                'message' => $e->getMessage(),
+            ]);
         } finally {
             $this->loading = false;
         }
