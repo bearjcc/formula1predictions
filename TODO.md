@@ -45,7 +45,7 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
 - **id**: F1-000
   - **title**: Define MVP scope, legacy data strategy, and release plan for 2026 season
   - **type**: docs
-  - **status**: todo
+  - **status**: done
   - **priority**: P0
   - **risk_level**: medium
   - **owner**: mixed
@@ -64,6 +64,11 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
     - Not testable via automated tests; verify by reviewing updated docs and TODO structure.
   - **notes**:
     - Target ship window: production-ready and deployed by **2026-02-20** at the latest.
+    - MVP scope, legacy boundaries, and milestones are documented in `AGENTS_PRD.md` under “1.2 2026 Season MVP (F1-000)”.
+  - **completed_summary**:
+    - Documented 2026 MVP capabilities, mapped them to TODO IDs (`F1-001`, `F1-003`, `F1-004`, `F1-005`, `F1-006`, `F1-006A`, `F1-007`, `F1-008`, `F1-009+`), and clarified which items are non-MVP.
+    - Scoped a Phase 1 legacy import (recent seasons only) and left older data as archive-only until after launch, reflected in `F1-006A` notes and dependencies.
+    - Left application code unchanged; this task is purely docs/backlog shaping to guide subsequent implementation work.
 
 - **id**: F1-001
   - **title**: Harden race prediction scoring around DNS/DSQ edge cases
@@ -240,7 +245,7 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
   - **test_expectations**:
     - Extend `tests/Feature/HistoricalDataImportTest.php` and related seeders/factories.
   - **notes**:
-    - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. Consider running only a minimal “Phase 1” import before the 2026 season start, with full backfill later.
+    - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. For MVP, implement a minimal “Phase 1” import for a small set of recent seasons; broader historical backfill can follow after launch.
 
 - **id**: F1-007
   - **title**: Normalize ChartDataService queries and reduce per-row model lookups

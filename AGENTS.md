@@ -120,3 +120,15 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Extended `F1ApiTest` and `RacesPageTest` for 500, connection failure, and no-technical-details-exposed scenarios
 
 **Tests:** `php artisan test tests/Feature/F1ApiTest.php tests/Feature/RacesPageTest.php` (note: F1Api 500 test ~48s due to 24-round loop)
+
+---
+
+## Recent Completion (F1-000)
+
+**Task:** Define 2026 season MVP scope, legacy data strategy, and release plan — done
+
+**What was done:**
+- Documented a 2026 MVP feature set, legacy-import boundaries, and milestone structure in `AGENTS_PRD.md` (see “1.2 2026 Season MVP (F1-000)”).
+- Updated `TODO.md` so `F1-000` is marked done, related tasks reference the MVP plan, and legacy/import work (`F1-006A`) is clearly scoped as a Phase 1 import.
+
+**Tests:** No application behavior changed (docs and backlog only), so no PHP tests were run for this task.

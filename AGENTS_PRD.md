@@ -39,6 +39,50 @@
   - NEVER read or write secrets or `.env`; use `config()` only.
   - Do not introduce new external services without explicit human approval.
 
+#### 1.2 2026 Season MVP (F1-000)
+
+The 2026 MVP is the smallest set of features that must be production-ready by **2026-02-20** (two weeks before the Australian GP) so predictors can play a full season with confidence.
+
+- **Core capabilities (must-have)**:
+  - Authenticated users can create, edit (while editable), and view race, preseason, and midseason predictions for the 2026 season.
+  - Races have official results stored and exposed in a way that `ScoringService` can reliably consume for scoring.
+  - Race predictions are scored via `ScoringService` with stable, well-tested handling of DNS/DSQ/DNF/cancellation and admin overrides.
+  - Users can view season standings/leaderboards for 2026 (drivers/constructors and predictors) with correct aggregation.
+  - Dashboard and at least one analytics view render successfully with basic charts driven by `ChartDataService`.
+  - Users receive in-app notifications when predictions are scored (and optionally key deadlines), surfaced via the notifications dropdown.
+
+- **Backlog mapping (MVP-relevant TODOs)**:
+  - **Scoring & predictions**: `F1-001`, `F1-003`, `F1-006` (stabilize race scoring, prediction validation/editing, and centralize scoring responsibilities into `ScoringService`).
+  - **Analytics & performance**: `F1-004`, `F1-007` (ensure dashboard/analytics smoke tests exist and chart data generation is efficient and predictable).
+  - **Notifications UX**: `F1-008` (surface scored-prediction notifications clearly in the UI; considered MVP-adjacent but targeted before launch if time permits).
+  - **Legacy data & history**: `F1-006A` (Phase 1 import pipeline so 2026 launch has enough historical data to validate scoring and analytics without a full historical backfill).
+  - **Experiments & future modes**: `F1-009+` (backtest harness, sprint-only predictions, “luck” analytics, social comparisons) are **non-MVP** and should remain in `Next`/`Later` unless explicitly promoted.
+
+- **Legacy data strategy (high level)**:
+  - For MVP, focus on a **Phase 1** import that brings in a **small, representative set of recent seasons** (for example, the last 1–2 full seasons) needed to:
+    - Validate scoring behavior and standings/leaderboards.
+    - Populate charts with realistic data for demos and early users.
+  - Older or lower-value historical data may be:
+    - Archived offline (e.g., CSV/JSON dumps) with mapping notes but not imported before 2026-02-20.
+    - Explicitly marked as out-of-scope for MVP in `F1-006A` notes.
+  - `F1-006A` is responsible for the concrete pipeline and fixtures; `F1-000` defines the **decision boundaries** (import vs archive vs ignore for launch).
+
+- **Milestones (high-level, pre-2026-02-20)**:
+  - **M1 – Scoring & prediction flows stable**:
+    - Focus TODOs: `F1-001`, `F1-003`, `F1-006`.
+    - Goal: users can submit/edit predictions and have them scored correctly for simple and edge-case races.
+  - **M2 – Dashboards & analytics smoke-tested**:
+    - Focus TODOs: `F1-004`, `F1-007`.
+    - Goal: dashboard and analytics pages render reliably with seeded data and no obvious N+1 query issues.
+  - **M3 – Notifications & UX polish**:
+    - Focus TODOs: `F1-008`, `F1-005`.
+    - Goal: users can easily discover scored predictions and use basic filters/search on key lists (races, etc.) without regressions.
+  - **M4 – Legacy data Phase 1 import ready**:
+    - Focus TODOs: `F1-006A`, MVP-scope pieces of `F1-009` (test-only backtests against imported data).
+    - Goal: a minimal, repeatable import exists for the chosen historical subset; it can be run safely before launch to validate scoring and analytics.
+
+Agents implementing or prioritizing work for the 2026 season SHOULD treat these milestones and TODO mappings as the default roadmap unless a human explicitly reprioritizes.
+
 ### 2. System Domains & Boundaries
 
 #### 2.1 Core Bounded Contexts
