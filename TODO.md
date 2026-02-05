@@ -245,7 +245,7 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
 - **id**: F1-006A
   - **title**: Design and implement legacy data import pipeline
   - **type**: feature
-  - **status**: blocked
+  - **status**: in_progress
   - **priority**: P1
   - **risk_level**: high
   - **owner**: mixed
@@ -266,10 +266,11 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Extend `tests/Feature/HistoricalDataImportTest.php` and related seeders/factories.
   - **notes**:
     - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. For MVP, implement a minimal “Phase 1” import for a small set of recent seasons; broader historical backfill can follow after launch.
+    - A first-pass Phase 1 pipeline is implemented via `Database\Seeders\HistoricalPredictionsSeeder`, with coverage in `tests/Feature/HistoricalDataImportTest.php` and `tests/Feature/SimpleHistoricalDataTest.php` using markdown fixtures under a `previous/` directory.
   - **blockers**:
-    - Representative legacy CSV/JSON or database dumps are not yet available in this repo for mapping and test fixtures.
-    - High-risk migrations and data-shaping decisions require explicit human approval before implementation.
-    - Need human-provided examples of legacy schemas and target seasons to include in the initial Phase 1 import.
+    - Representative legacy CSV/JSON or database dumps (beyond the in-repo markdown fixtures used in tests) are not yet available in this repo for full-fidelity mapping.
+    - High-risk migrations and data-shaping decisions for importing external legacy stores still require explicit human approval before implementation.
+    - Need human-provided examples of real legacy schemas and target seasons to include in the initial production Phase 1 import.
 
 - **id**: F1-007
   - **title**: Normalize ChartDataService queries and reduce per-row model lookups

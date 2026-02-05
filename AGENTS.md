@@ -235,3 +235,15 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Extended `ScoringServiceTest` and `SimpleHistoricalDataTest` with backtest harness tests; production variant matches ScoringService output.
 
 **Tests:** `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/SimpleHistoricalDataTest.php`
+
+---
+
+## Recent Progress (F1-006A)
+
+**Task:** Design and implement legacy data import pipeline — in progress
+
+**What was done:**
+- Confirmed and exercised the Phase 1 legacy import path implemented by `Database\Seeders\HistoricalPredictionsSeeder`, which ingests markdown-style prediction files from a `previous/` directory into `Prediction` and `Races` records.
+- Verified and documented the current test coverage in `tests/Feature/HistoricalDataImportTest.php` and `tests/Feature/SimpleHistoricalDataTest.php`, which cover user creation, graceful handling of missing legacy files, and importing representative historical-style predictions for recent seasons.
+
+**Tests:** `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`
