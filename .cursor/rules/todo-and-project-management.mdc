@@ -1,0 +1,312 @@
+<todo-and-project-management-guidelines>
+
+## Purpose
+
+- **Goal**: Provide a consistent, machine-usable way for AI coding agents (and humans) to manage work via a `TODO.md` (or equivalent) file, aligned with modern web app, Laravel, and AI-managed project-management best practices.
+- **Audience**: AI agents operating in this repo, plus humans who write/edit tasks for those agents.
+- **Scope**:
+  - Conventions for `TODO.md` structure and lifecycle.
+  - Guardrails for how agents read, interpret, and update TODO entries.
+  - High-level web/Laravel and project-management principles that SHOULD influence how tasks are written and prioritized.
+
+---
+
+## 1. TODO.md Design Principles (For AI Agents)
+
+- **Machine-first, human-friendly**:
+  - The file MUST be easy for agents to parse (clear headings, consistent bullet formats, stable field names).
+  - It SHOULD still be readable for humans without extra tooling.
+- **Single source of truth**:
+  - `TODO.md` SHOULD represent the current, authoritative backlog for this repo at a level of detail appropriate for agents.
+  - Avoid duplicating the same task in multiple sources with different wording/status.
+- **Small, actionable units**:
+  - Tasks SHOULD be small enough for an agent to complete in one focused session (ideally ≤ 2–4 hours of dev effort).
+  - Large initiatives SHOULD be broken into linked subtasks.
+- **Stable schema over time**:
+  - Field names and status values SHOULD change rarely.
+  - If the schema evolves, add a short changelog at the top and keep backward-compatible meanings where possible.
+
+---
+
+## 2. Recommended TODO.md Structure
+
+### 2.1 File Layout
+
+The `TODO.md` SHOULD be organized into clear, predictable sections:
+
+- **Metadata header**:
+  - Purpose of the file.
+  - Version of the schema (e.g. `schema_version: 1`).
+  - Any global conventions (priorities, statuses).
+- **Backlog sections** (suggested):
+  - `### Now` – actively prioritized work ready to start.
+  - `### Next` – upcoming tasks, usually for the next 1–2 weeks.
+  - `### Later / Ideas` – lower-priority or exploratory tasks.
+  - `### Done (recent)` – optional very short recent-completion list (rotating window), or omit if tracking is done elsewhere.
+
+Sections SHOULD be ordered by priority (`Now` at the top).
+
+### 2.2 Task Entry Schema
+
+Each task SHOULD follow a consistent, machine-parseable pattern such as:
+
+```markdown
+- **id**: F1-001
+  - **title**: Improve race list filtering
+  - **type**: feature | bug | chore | experiment | docs
+  - **status**: todo | in_progress | blocked | done | cancelled
+  - **priority**: P0 | P1 | P2 | P3
+  - **risk_level**: low | medium | high
+  - **owner**: human | agent | mixed
+  - **affected_areas**:
+    - app/Livewire/Races/RacesList.php
+    - resources/views/races.blade.php
+  - **description**: Short paragraph describing intent and constraints.
+  - **acceptance_criteria**:
+    - Users can filter races by season and status.
+    - Filters persist across pagination.
+  - **dependencies**:
+    - F1-000 (update race model fields)
+  - **test_expectations**:
+    - Feature tests in tests/Feature/RacesPageTest.php
+  - **notes**:
+    - Link to GitHub issue, design doc, or discussion if applicable.
+```
+
+### 2.3 Field Semantics (For Agents)
+
+- **id**:
+  - MUST be unique within the file.
+  - SHOULD be stable over time; do not reassign IDs to different work.
+- **title**:
+  - Short, imperative, and descriptive (e.g. "Add standings chart legend").
+- **type**:
+  - `feature`: net-new or extended functionality.
+  - `bug`: fixing incorrect behavior.
+  - `chore`: maintenance, refactor, infra, or small cleanups.
+  - `experiment`: scoring/analytics experiments, A/B trials, prototypes.
+  - `docs`: documentation or rule/PRD changes.
+- **status**:
+  - `todo`: not yet started.
+  - `in_progress`: currently being actively worked (ideally by one agent/human at a time).
+  - `blocked`: cannot proceed until dependencies or external questions are resolved.
+  - `done`: implemented and verified (tests added/updated and passing).
+  - `cancelled`: no longer relevant; kept for historical context.
+- **priority**:
+  - `P0`: production-down / critical (rare; usually requires human involvement).
+  - `P1`: important near-term work.
+  - `P2`: normal priority.
+  - `P3`: nice-to-have or speculative.
+- **risk_level**:
+  - Mirrors PRD rules:
+    - `high`: scoring changes, major migrations, auth/security, or anything that can retroactively change user-visible outcomes.
+    - `medium`: multi-module changes, performance-sensitive paths.
+    - `low`: localized UI tweaks, small refactors backed by tests.
+- **owner**:
+  - Indicates who is expected to drive the work:
+    - `human`: human-led, agents provide support.
+    - `agent`: agent-led, within guardrails.
+    - `mixed`: requires collaboration or human review at critical points.
+- **affected_areas**:
+  - MUST list at least rough paths or domains (e.g. `ScoringService`, `PredictionForm livewire component`, `ChartDataService`).
+  - Agents SHOULD use this to scope search and impact analysis.
+- **acceptance_criteria**:
+  - MUST be observable behaviors (e.g. "User can...", "System returns...", "Chart shows...").
+  - SHOULD avoid ambiguous terms (e.g. "better", "nicer") without concrete metrics or examples.
+- **dependencies**:
+  - List other task IDs or external preconditions.
+  - Agents MUST respect dependencies when sequencing work.
+- **test_expectations**:
+  - Explicit guidance on which tests to update/add and how to validate success.
+- **notes**:
+  - Optional free-form text; may include URLs, GitHub issues, or design references.
+
+---
+
+## 3. Agent Behaviors Around TODO.md
+
+### 3.1 Reading & Interpreting Tasks
+
+- Agents MUST:
+  - Treat `TODO.md` as an input alongside `AGENTS.md`, `AGENTS_PRD.md`, and `.cursor/rules/*.mdc`.
+  - Honor `risk_level` and `owner` when deciding whether to proceed autonomously or request human review.
+  - Use `affected_areas` to constrain their search and avoid unnecessary broad refactors.
+  - Use `type` to select appropriate workflows (bug fix vs feature vs experiment).
+
+- Agents SHOULD:
+  - Prefer tasks in the `Now` section and with higher `priority`.
+  - Defer `experiment` tasks if core bugs and features are pending, unless explicitly instructed otherwise.
+
+### 3.2 Updating Tasks
+
+- When agents complete work:
+  - Update `status` to `done`.
+  - Add a short note under `notes` or a sibling field such as `completed_summary` including:
+    - High-level description of changes.
+    - Key files touched.
+    - Tests added/updated.
+    - `php artisan test` commands run and their results.
+- When agents start working:
+  - Update `status` to `in_progress`.
+  - If multiple agents/humans might collide, add a `current_worker` field to identify the active agent/human.
+- When agents are blocked:
+  - Update `status` to `blocked`.
+  - Add a short `blockers` list describing what is needed (e.g. "clarification on scoring policy", "production data sample", "dependency task F1-023").
+
+Agents MUST avoid silently editing or deleting tasks whose `owner` is `human` unless explicitly instructed to help maintain or reorganize the backlog.
+
+### 3.3 Handoff & History
+
+- For complex or multi-session tasks:
+  - Use `notes` or an optional `handoff` subfield to describe:
+    - What was already done.
+    - What remains.
+    - Any tricky gotchas or design decisions.
+  - Keep this concise; link to more detailed docs if needed rather than embedding large narratives.
+- Completed tasks:
+  - MAY be moved to a `Done` section or archived file periodically to keep `TODO.md` focused.
+  - When archiving, keep IDs and core metadata intact for traceability.
+
+---
+
+## 4. Web App Development Best Practices (For Task Writing)
+
+Task descriptions and acceptance criteria SHOULD assume and reinforce modern web app practices:
+
+### 4.1 Security (OWASP-aligned)
+
+- Design tasks so agents:
+  - Validate and sanitize all user inputs; avoid trusting client-side validation alone.
+  - Use parameterized queries and Eloquent ORM (no string-concatenated SQL).
+  - Respect authentication and authorization layers; never introduce bypasses.
+  - Avoid leaking sensitive details in errors; tasks that change error handling MUST mention security implications.
+  - Consider CSRF, XSS, and injection risks for all UI and API changes.
+- When adding features that touch user data or authentication:
+  - Include explicit acceptance criteria for:
+    - Access control (who can do what).
+    - Logging and monitoring for sensitive actions.
+
+### 4.2 Performance & Scalability
+
+- Tasks SHOULD:
+  - Encourage efficient database access (eager loading, pagination, avoiding N+1).
+  - Specify performance expectations where relevant (e.g. "list page should remain fast up to N items").
+  - Prefer caching and simple optimizations before introducing complexity (e.g. queues, new services).
+  - Mention any SLOs or rough performance goals (e.g. "keep p95 latency under ~200ms for this endpoint").
+
+### 4.3 Maintainability & Readability
+
+- Tasks SHOULD:
+  - Explicitly mention when code should follow existing patterns (e.g. "mirror how standings charts are implemented").
+  - Avoid requesting ad hoc one-off patterns if an existing pattern or abstraction suffices.
+  - Encourage small, well-named functions and classes; one responsibility per unit.
+
+### 4.4 Testing & Observability
+
+- Every behavioral task MUST include:
+  - At least one acceptance criterion that can be validated via automated tests.
+  - A `test_expectations` field specifying whether unit, feature, or browser tests are expected.
+- Where appropriate:
+  - Acceptance criteria SHOULD mention logging/metrics if a change affects critical flows (e.g. scoring, authentication, API integrations).
+
+---
+
+## 5. Laravel-Specific Guidelines (For Tasks and Agents)
+
+Tasks that involve Laravel SHOULD reflect these principles so agents operate “the Laravel way”:
+
+- **Architecture**:
+  - Prefer Eloquent models and relationships over raw queries.
+  - Use services (`app/Services/*`) to encapsulate non-trivial domain logic rather than bloating controllers or Livewire components.
+  - Use policies (`app/Policies/*`) and gates for authorization rather than ad hoc checks.
+- **Validation**:
+  - Use Form Request classes for controllers where the pattern exists.
+  - Use Livewire/Volt’s validation features for component-level validation.
+  - Acceptance criteria SHOULD mention validation rules and example failure cases where relevant.
+- **Queues & Jobs**:
+  - For long-running work, tasks SHOULD mention use of jobs implementing `ShouldQueue`.
+  - Ensure tasks specify idempotency and retry expectations for jobs.
+- **Configuration**:
+  - Tasks MUST NOT request use of `env()` outside config files; `config()` is the correct pattern.
+- **Deployment & Environments**:
+  - Production tasks SHOULD assume:
+    - `APP_DEBUG` is disabled.
+    - Proper caching and queue workers are configured.
+  - Where deployment constraints matter (e.g. cache warming, config caching), mention them briefly.
+
+---
+
+## 6. AI-Managed Project Management Best Practices
+
+### 6.1 Roles & Single Responsibility
+
+- Leverage the existing agent roles (Navigator, Feature Implementer, Maintenance, Data/Scoring Scientist, Test & QA, Ops & Tooling).
+- TODO tasks SHOULD:
+  - Indicate which roles are primarily responsible when non-obvious.
+  - Be scoped such that a single role can drive the majority of the work.
+
+### 6.2 Planning & Prioritization
+
+- Use `priority`, `risk_level`, and `type` together to plan:
+  - High `priority` + `high` risk tasks typically require human review and more test coverage.
+  - `experiment` tasks SHOULD not displace critical bug fixes unless explicitly decided.
+  - Balance the backlog between:
+    - Maintenance (chore/bug).
+    - Features (feature).
+    - Experiments (experiment).
+- Agents SHOULD:
+  - Prefer a small number of `in_progress` tasks at any time.
+  - Finish tasks before starting new ones, unless blocked.
+
+### 6.3 Handoff & Multi-Agent Workflows
+
+- For larger efforts:
+  - Break work into chained tasks (e.g. design → implementation → testing).
+  - Each linked task SHOULD reference its neighbors in `dependencies`.
+  - Agents SHOULD write succinct `handoff` notes when pausing work so the next agent can resume with minimal rediscovery.
+
+### 6.4 Governance & Safety
+
+- High-risk tasks (e.g. scoring changes, migrations, security-sensitive changes) MUST:
+  - Clearly mark `risk_level: high`.
+  - Include acceptance criteria for rollback or safe failure behavior where relevant.
+  - Indicate if a human review is REQUIRED before merging/deploying changes.
+- Agents MUST:
+  - Escalate ambiguity for high-risk tasks by adding to `blockers` or `notes` rather than guessing.
+
+---
+
+## 7. Practical Patterns & Anti-Patterns
+
+### 7.1 Good Task Examples
+
+- **Good**:
+  - Clearly scoped.
+  - Has explicit acceptance criteria and test expectations.
+  - Mentions affected areas.
+  - Specifies risk level and owner.
+- **Bad**:
+  - Vague intent ("clean up code"), no acceptance criteria, no clear tests.
+  - Overly large, multi-week project bundled into one item.
+  - Conflicting instructions with PRD or `.cursor/rules` files.
+
+### 7.2 Things to Avoid in TODO.md
+
+- Embedding full design documents or large code snippets; instead link out.
+- Using inconsistent field names or ad hoc structures within the same file.
+- Changing status or semantics without updating other relevant metadata (e.g. leaving `blocked` when dependencies are resolved).
+
+---
+
+## 8. Adoption Notes for This Repo
+
+- `TODO.md` (or similarly named file) SHOULD:
+  - Live at the repo root or under `.cursor/` if primarily agent-facing.
+  - Follow the schema in this guideline.
+  - Be updated atomically alongside the corresponding code changes when work is completed.
+- Agents working here MUST:
+  - Read `AGENTS.md`, `AGENTS_PRD.md`, and `.cursor/rules/*.mdc` including this file.
+  - Treat this document as the canonical reference for how to structure and manage `TODO.md` entries for AI-assisted workflows.
+
+</todo-and-project-management-guidelines>
+
