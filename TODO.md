@@ -1,0 +1,400 @@
+## Formula1Predictions TODO Backlog
+
+- **schema_version**: 1
+- **purpose**: Authoritative, machine-parseable backlog for AI agents (and collaborators) working on the Formula1Predictions Laravel 12 + Livewire app.
+- **references**:
+  - [AGENTS.md](AGENTS.md)
+  - [AGENTS_PRD.md](AGENTS_PRD.md)
+  - [.cursor/rules/todo-and-project-management.mdc](.cursor/rules/todo-and-project-management.mdc)
+- **status_values**: `todo` | `in_progress` | `blocked` | `done` | `cancelled`
+- **owners**: This backlog is primarily for AI-executable work (**owner** `agent` or `mixed`), with humans free to add or adjust tasks.
+
+---
+
+### Task Schema (example)
+
+```markdown
+- **id**: F1-001
+  - **title**: Improve race list filtering
+  - **type**: feature | bug | chore | experiment | docs
+  - **status**: todo | in_progress | blocked | done | cancelled
+  - **priority**: P0 | P1 | P2 | P3
+  - **risk_level**: low | medium | high
+  - **owner**: agent | human | mixed
+  - **affected_areas**:
+    - app/Livewire/Races/RacesList.php
+    - resources/views/races.blade.php
+  - **description**: Short paragraph describing intent and constraints.
+  - **acceptance_criteria**:
+    - Users can filter races by season and status.
+    - Filters persist across pagination.
+  - **dependencies**:
+    - F1-000 (update race model fields)
+  - **test_expectations**:
+    - Feature tests in tests/Feature/RacesPageTest.php
+  - **notes**:
+    - Link to GitHub issue, design doc, or discussion if applicable.
+```
+
+---
+
+### Now
+
+Short-horizon, high-value tasks that are ready for agents to pick up immediately.
+
+- **id**: F1-000
+  - **title**: Define MVP scope, legacy data strategy, and release plan for 2026 season
+  - **type**: docs
+  - **status**: todo
+  - **priority**: P0
+  - **risk_level**: medium
+  - **owner**: mixed
+  - **affected_areas**:
+    - AGENTS_PRD.md
+    - TODO.md
+    - database/seeders/*
+  - **description**: Capture a concise MVP definition for the 2026 season (must-have features vs nice-to-haves), a decision on which legacy data sets to import, and a high-level milestone plan targeting a production deployment no later than 2026-02-20 (two weeks before the Australian GP on 2026-03-06).
+  - **acceptance_criteria**:
+    - MVP features are explicitly listed and mapped to existing or new TODO items, with non-MVP items demoted to `Next`/`Later`.
+    - A decision matrix exists for legacy data (which sources to port, what to archive, and what to ignore for this season).
+    - TODO items referencing legacy import and parity are linked via `dependencies` to this task.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - Not testable via automated tests; verify by reviewing updated docs and TODO structure.
+  - **notes**:
+    - Target ship window: production-ready and deployed by **2026-02-20** at the latest.
+
+- **id**: F1-001
+  - **title**: Harden race prediction scoring around DNS/DSQ edge cases
+  - **type**: bug
+  - **status**: todo
+  - **priority**: P1
+  - **risk_level**: high
+  - **owner**: mixed
+  - **affected_areas**:
+    - app/Services/ScoringService.php
+    - app/Models/Prediction.php
+    - tests/Feature/ScoringServiceTest.php
+  - **description**: Ensure race prediction scoring logic consistently handles DNS, DSQ, EXCLUDED, and other non-finished statuses, aligning `Prediction::calculateScore` with `ScoringService::calculatePredictionScore` or deprecating the former safely.
+  - **acceptance_criteria**:
+    - All existing scoring-related tests in `tests/Feature/ScoringServiceTest.php` remain green.
+    - New tests cover DNS/DSQ/EXCLUDED and missing driver scenarios without unexpected score inflation or negative scores beyond configured bounds.
+    - Either `Prediction::calculateScore` delegates to `ScoringService` or is clearly marked legacy and unused in production flows.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - Add or extend cases in `tests/Feature/ScoringServiceTest.php`.
+    - Run `php artisan test tests/Feature/ScoringServiceTest.php`.
+  - **notes**:
+    - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. Human review required before merging due to scoring impact.
+
+- **id**: F1-002
+  - **title**: Improve F1 API error reporting in races list
+  - **type**: bug
+  - **status**: todo
+  - **priority**: P1
+  - **risk_level**: medium
+  - **owner**: agent
+  - **affected_areas**:
+    - app/Livewire/Races/RacesList.php
+    - app/Services/F1ApiService.php
+    - tests/Feature/F1ApiTest.php
+    - tests/Feature/RacesPageTest.php
+  - **description**: Make race list error states more resilient and user-friendly when `F1ApiService` fails or returns unexpected data, while preserving caching and avoiding excessive logging.
+  - **acceptance_criteria**:
+    - When the API is unreachable or returns a non-2xx status, the races page renders with a clear, non-technical error message and does not crash.
+    - Logs include enough context (year, endpoint, status) for debugging without leaking sensitive data.
+    - Happy-path behavior and caching semantics remain unchanged.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - Extend `tests/Feature/F1ApiTest.php` to cover failure scenarios.
+    - Add/extend a test in `tests/Feature/RacesPageTest.php` asserting graceful error display.
+  - **notes**:
+    - Primary: Maintenance & Refactorer; Consulted: Test & QA.
+
+- **id**: F1-003
+  - **title**: Strengthen Livewire prediction form validation and editing flows
+  - **type**: bug
+  - **status**: todo
+  - **priority**: P1
+  - **risk_level**: medium
+  - **owner**: agent
+  - **affected_areas**:
+    - app/Livewire/Predictions/PredictionForm.php
+    - resources/views/livewire/predictions/*
+    - tests/Feature/LivewirePredictionFormTest.php
+    - tests/Feature/PredictionFormValidationTest.php
+  - **description**: Tighten validation and editing behavior in the Livewire prediction form so that invalid combinations of `type`, `season`, and `raceRound` are rejected and editing respects `Prediction::isEditable`.
+  - **acceptance_criteria**:
+    - Creating race, preseason, and midseason predictions enforces appropriate required fields (e.g., `raceRound` required for race predictions, not for preseason).
+    - Attempting to edit locked or scored predictions via the form is blocked with a clear message, and no changes are persisted.
+    - Existing tests in `LivewirePredictionFormTest` remain green, with new tests covering invalid state transitions and edge cases.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - Extend `tests/Feature/LivewirePredictionFormTest.php` and `tests/Feature/PredictionFormValidationTest.php`.
+    - Run `php artisan test tests/Feature/LivewirePredictionFormTest.php` and `php artisan test tests/Feature/PredictionFormValidationTest.php`.
+  - **notes**:
+    - Primary: Maintenance & Refactorer; Consulted: Feature Implementer, Test & QA.
+
+- **id**: F1-004
+  - **title**: Add basic analytics smoke tests for dashboard and analytics page
+  - **type**: chore
+  - **status**: todo
+  - **priority**: P2
+  - **risk_level**: low
+  - **owner**: agent
+  - **affected_areas**:
+    - app/Livewire/Charts/*
+    - app/Services/ChartDataService.php
+    - tests/Feature/ChartDataServiceTest.php
+    - tests/Feature/DashboardTest.php
+    - tests/Feature/DataVisualizationTest.php
+  - **description**: Ensure core analytics views render without errors and basic chart data pipelines remain intact via lightweight feature tests.
+  - **acceptance_criteria**:
+    - Dashboard and analytics routes render successfully and include key chart components in the response.
+    - At least one test asserts that `ChartDataService` methods used on these pages return non-empty arrays for seeded data.
+    - No new N+1 query warnings are introduced in these flows.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - Extend `tests/Feature/DashboardTest.php` and `tests/Feature/DataVisualizationTest.php`.
+    - Optionally extend `tests/Feature/ChartDataServiceTest.php` for service-level assertions.
+  - **notes**:
+    - Primary: Test & QA; Consulted: Maintenance & Refactorer.
+
+- **id**: F1-005
+  - **title**: Improve race list filtering UX for status and text search
+  - **type**: feature
+  - **status**: todo
+  - **priority**: P2
+  - **risk_level**: low
+  - **owner**: agent
+  - **affected_areas**:
+    - app/Livewire/Races/RacesList.php
+    - resources/views/livewire/races/races-list.blade.php
+    - tests/Feature/RacesPageTest.php
+  - **description**: Refine the races list filtering experience (status and search) to be more discoverable and responsive while preserving existing behavior.
+  - **acceptance_criteria**:
+    - Status filter and search input are clearly visible and labeled in the UI, using Flux UI components where appropriate.
+    - Changing filters updates the displayed races without a full page reload and preserves selections during navigation back to the page within a session.
+    - Tests verify that combinations of status and search filters yield expected subsets of races.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - Extend `tests/Feature/RacesPageTest.php` with additional filter scenarios.
+  - **notes**:
+    - Primary: Feature Implementer; Consulted: Test & QA.
+
+---
+
+### Next
+
+Medium-horizon improvements and experiments that are not yet top priority but should be tackled soon.
+
+- **id**: F1-006
+  - **title**: Refactor prediction scoring responsibilities out of the Prediction model
+  - **type**: chore
+  - **status**: todo
+  - **priority**: P2
+  - **risk_level**: medium
+  - **owner**: mixed
+  - **affected_areas**:
+    - app/Models/Prediction.php
+    - app/Services/ScoringService.php
+    - tests/Feature/ScoringServiceTest.php
+  - **description**: Consolidate scoring logic so that `ScoringService` is the single system of record and the `Prediction` model no longer contains duplicate or divergent scoring/accuracy implementations.
+  - **acceptance_criteria**:
+    - All score/accuracy calculations used in production go through `ScoringService`.
+    - Any remaining score-related helpers in `Prediction` are thin wrappers or deprecated with clear comments and no longer called.
+    - All scoring-related tests still pass and cover both service-level and integration behaviors.
+  - **dependencies**:
+    - F1-001 (Harden race prediction scoring around DNS/DSQ edge cases)
+  - **test_expectations**:
+    - Extend/refine `tests/Feature/ScoringServiceTest.php` to cover refactored call paths.
+  - **notes**:
+    - Primary: Maintenance & Refactorer; Consulted: Data/Scoring Scientist, Test & QA. Human review recommended.
+
+- **id**: F1-006A
+  - **title**: Design and implement legacy data import pipeline
+  - **type**: feature
+  - **status**: todo
+  - **priority**: P1
+  - **risk_level**: high
+  - **owner**: mixed
+  - **affected_areas**:
+    - database/migrations/*
+    - database/seeders/*
+    - app/Models/*
+    - app/Console/Commands/*
+    - tests/Feature/HistoricalDataImportTest.php
+  - **description**: Create a repeatable, test-backed process for importing selected legacy prediction game data and historical app data into the current schema while preserving referential integrity and avoiding double-counting.
+  - **acceptance_criteria**:
+    - Legacy sources (CSV/JSON/DB dumps) are documented and mapped to current models and fields.
+    - One or more artisan commands or seeders can ingest a representative subset of legacy data into a clean database.
+    - `HistoricalDataImportTest` (and/or new tests) verify that imported data produces sane standings, chart data, and scores without runtime errors.
+  - **dependencies**:
+    - F1-000 (MVP scope and legacy strategy).
+  - **test_expectations**:
+    - Extend `tests/Feature/HistoricalDataImportTest.php` and related seeders/factories.
+  - **notes**:
+    - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. Consider running only a minimal “Phase 1” import before the 2026 season start, with full backfill later.
+
+- **id**: F1-007
+  - **title**: Normalize ChartDataService queries and reduce per-row model lookups
+  - **type**: chore
+  - **status**: todo
+  - **priority**: P2
+  - **risk_level**: medium
+  - **owner**: agent
+  - **affected_areas**:
+    - app/Services/ChartDataService.php
+    - tests/Feature/ChartDataServiceTest.php
+  - **description**: Improve `ChartDataService` performance and readability by avoiding repeated `Drivers::find` calls inside loops and by leveraging eager loading or precomputed maps.
+  - **acceptance_criteria**:
+    - Chart data generation for typical seeded seasons runs with a bounded, predictable number of queries (no obvious N+1 patterns).
+    - Existing chart behaviors and shapes are unchanged, as confirmed by tests.
+    - Code paths clearly indicate expected input/output shapes and avoid unnecessary coupling to Eloquent within tight loops.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - Extend `tests/Feature/ChartDataServiceTest.php` to assert on data shapes and, where feasible, query counts using Laravel’s query listener.
+  - **notes**:
+    - Primary: Maintenance & Refactorer; Consulted: Test & QA.
+
+- **id**: F1-008
+  - **title**: Enhance notifications UX and coverage for scored predictions
+  - **type**: feature
+  - **status**: todo
+  - **priority**: P2
+  - **risk_level**: medium
+  - **owner**: agent
+  - **affected_areas**:
+    - app/Services/NotificationService.php
+    - app/Notifications/PredictionScored.php
+    - app/Livewire/Notifications/NotificationDropdown.php
+    - resources/views/livewire/notifications/*
+    - tests/Feature/NotificationTest.php
+    - tests/Browser/DashboardBrowserTest.php
+  - **description**: Make scored-prediction notifications more prominent and actionable in the UI while keeping notification dispatch logic centralized.
+  - **acceptance_criteria**:
+    - When a race is scored, affected users receive a clear notification including race name, score, and link to details.
+    - The notification dropdown surfaces recent prediction-scored notifications with sensible unread/read behavior.
+    - Tests cover both notification dispatch and basic rendering in dashboard/notification views.
+  - **dependencies**:
+    - F1-001 (scoring must be stable).
+  - **test_expectations**:
+    - Extend `tests/Feature/NotificationTest.php` and `tests/Browser/DashboardBrowserTest.php`.
+  - **notes**:
+    - Primary: Feature Implementer; Consulted: Test & QA.
+
+- **id**: F1-009
+  - **title**: Add backtest harness for alternative scoring experiments
+  - **type**: experiment
+  - **status**: todo
+  - **priority**: P3
+  - **risk_level**: high
+  - **owner**: mixed
+  - **affected_areas**:
+    - app/Services/ScoringService.php
+    - database/seeders/HistoricalPredictionsSeeder.php
+    - tests/Feature/ScoringServiceTest.php
+    - tests/Feature/SimpleHistoricalDataTest.php
+  - **description**: Create a testing harness and fixtures that allow running multiple scoring variants against historical predictions without affecting production scores.
+  - **acceptance_criteria**:
+    - A dedicated test/dataset can compute and compare at least two scoring variants for a sample of historical races and predictions.
+    - No production code path switches scoring formulas based on this experiment; it remains test-only or clearly feature-flagged.
+    - Experiments can output summary stats (e.g., rank changes, score deltas) via tests or logs.
+  - **dependencies**:
+    - F1-001, F1-006 (stable, refactored scoring core).
+  - **test_expectations**:
+    - Extend `tests/Feature/ScoringServiceTest.php` and `tests/Feature/SimpleHistoricalDataTest.php` with experiment-focused cases.
+  - **notes**:
+    - Primary: Data/Scoring Scientist; Consulted: Test & QA. Human review required before any production rollout.
+
+---
+
+### Later / Ideas
+
+Longer-horizon ideas, experiments, and aspirational improvements. These are not yet approved work items but provide direction for future planning.
+
+- **id**: F1-010
+  - **title**: Introduce sprint-only prediction mode
+  - **type**: feature
+  - **status**: todo
+  - **priority**: P3
+  - **risk_level**: high
+  - **owner**: mixed
+  - **affected_areas**:
+    - app/Models/Prediction.php
+    - app/Services/ScoringService.php
+    - app/Livewire/Predictions/PredictionForm.php
+    - resources/views/predictions/*
+    - tests/Feature/PredictionFormValidationTest.php
+    - tests/Feature/ScoringServiceTest.php
+  - **description**: Add a new prediction type for sprint races, including data model, form updates, and scoring rules, while keeping it separate from full-race predictions.
+  - **acceptance_criteria**:
+    - Users can create, view, and manage sprint-only predictions for races that have sprints.
+    - Sprint predictions are scored and surfaced on leaderboards without affecting existing race predictions.
+    - Tests cover creation, validation, scoring, and display of sprint predictions.
+  - **dependencies**:
+    - F1-001, F1-006, F1-009.
+  - **test_expectations**:
+    - New tests in prediction/scoring-related feature files; updates to `ScoringServiceTest.php`.
+  - **notes**:
+    - Primary: Feature Implementer; Consulted: Data/Scoring Scientist, Test & QA. Human approval required.
+
+- **id**: F1-011
+  - **title**: Add “luck” and variance analytics for predictors
+  - **type**: experiment
+  - **status**: todo
+  - **priority**: P3
+  - **risk_level**: high
+  - **owner**: mixed
+  - **affected_areas**:
+    - app/Services/ChartDataService.php
+    - app/Livewire/Charts/*
+    - resources/views/livewire/charts/*
+    - tests/Feature/ChartDataServiceTest.php
+    - tests/Feature/DataVisualizationTest.php
+  - **description**: Explore metrics that quantify how “lucky” or “consistent” predictors are over a season, potentially visualized as new charts or overlays.
+  - **acceptance_criteria**:
+    - Prototype metrics and chart data structures exist behind tests or feature flags without altering existing leaderboards.
+    - At least one chart or visualization demonstrates these metrics for a sample season.
+    - Experiment does not introduce noticeable performance regressions on analytics pages.
+  - **dependencies**:
+    - F1-009 (backtest harness).
+  - **test_expectations**:
+    - Extend `tests/Feature/ChartDataServiceTest.php` and `tests/Feature/DataVisualizationTest.php` with experiment cases.
+  - **notes**:
+    - Primary: Data/Scoring Scientist; Consulted: Feature Implementer, Test & QA. Human review required for production rollout.
+
+- **id**: F1-012
+  - **title**: Social and head-to-head comparison mode
+  - **type**: feature
+  - **status**: todo
+  - **priority**: P3
+  - **risk_level**: high
+  - **owner**: mixed
+  - **affected_areas**:
+    - app/Models/Prediction.php
+    - app/Models/User.php
+    - app/Services/ChartDataService.php
+    - app/Http/Controllers/LeaderboardController.php
+    - resources/views/leaderboard/*
+    - tests/Feature/Leaderboard-related tests
+  - **description**: Allow users to compare their performance directly against selected friends or rivals, with dedicated views and charts.
+  - **acceptance_criteria**:
+    - Users can select one or more other users and see head-to-head comparisons for scores and accuracy over a season.
+    - Leaderboard views support simple shareable comparison URLs or filters.
+    - Tests cover basic flows and ensure existing leaderboards remain unchanged by default.
+  - **dependencies**:
+    - F1-009, F1-011 (for richer analytics).
+  - **test_expectations**:
+    - New or extended tests under `tests/Feature` for leaderboard and analytics behavior.
+  - **notes**:
+    - Primary: Feature Implementer; Consulted: Data/Scoring Scientist, Test & QA. Human approval recommended.
+
+
