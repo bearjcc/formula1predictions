@@ -271,6 +271,7 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Made `HistoricalPredictionsSeeder` repeatable by creating or reusing legacy users via `firstOrCreate` with a default hashed password, so the seeder can be safely re-run without unique constraint violations.
     - Extended `HistoricalDataImportTest` with an idempotency test that asserts running the seeder multiple times does not duplicate imported predictions or races, and confirmed structure/association tests still pass.
     - Verified the Phase 1 markdown-based import path and backtest harness remain green via `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`, while CSV-based imports remain deferred pending external datasets and human-approved migrations.
+    - Added a historical analytics regression in `HistoricalDataImportTest` that seeds legacy-style predictions, assigns synthetic scores/accuracy, and exercises `ChartDataService` and standings-based comparison methods for a historical season so imported data can safely feed basic analytics without runtime errors.
   - **blockers**:
     - Representative legacy CSV/JSON or database dumps (beyond the in-repo markdown fixtures used in tests) are not yet available in this repo for full-fidelity mapping.
     - High-risk migrations and data-shaping decisions for importing external legacy stores still require explicit human approval before implementation.
