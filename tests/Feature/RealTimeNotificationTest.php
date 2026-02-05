@@ -55,8 +55,34 @@ test('notification received event is dispatched when prediction is scored', func
         return $event->user->id === $user->id &&
                $event->notificationData['type'] === 'prediction_scored' &&
                $event->notificationData['prediction_id'] === $prediction->id &&
-               $event->notificationData['score'] === 85;
+               $event->notificationData['score'] === 85 &&
+               $event->notificationData['race_name'] === $prediction->race->race_name;
     });
+});
+
+test('notification dropdown highlights prediction scored details', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'race_name' => 'Monaco Grand Prix',
+        'season' => 2024,
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+    ]);
+
+    // Store a real prediction scored notification using the notification class
+    $user->notify(new App\Notifications\PredictionScored($prediction, 95, 88.5));
+
+    $this->actingAs($user);
+
+    Livewire::test('notifications.notification-dropdown')
+        ->assertSee('Prediction scored')
+        ->assertSee('Monaco Grand Prix')
+        ->assertSee('95 pts')
+        ->assertSee('88.5%');
 });
 
 test('notification received event broadcasts to correct channel', function () {

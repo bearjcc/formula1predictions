@@ -54,7 +54,14 @@ class NotificationService
             'season' => $prediction->season,
             'score' => $score,
             'accuracy' => $accuracy,
-            'message' => "Your {$prediction->type} prediction has been scored: {$score} points",
+            'race_name' => $prediction->race?->race_name,
+            'message' => sprintf(
+                'Your %s prediction for %s has been scored: %d points (%.1f%% accuracy)',
+                $prediction->type,
+                $prediction->race?->race_name ?? "{$prediction->season} season",
+                $score,
+                $accuracy
+            ),
             'action_url' => '/predictions',
         ]));
     }

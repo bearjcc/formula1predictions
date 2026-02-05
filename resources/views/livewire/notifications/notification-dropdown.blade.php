@@ -56,9 +56,31 @@
                                     @if(!$notification->read_at)
                                         <div class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                                     @endif
-                                    <p class="text-sm font-medium text-zinc-900 dark:text-white truncate">
-                                        {{ $notification->data['message'] ?? 'New notification' }}
-                                    </p>
+
+                                    @php
+                                        $type = $notification->data['type'] ?? null;
+                                    @endphp
+
+                                    @if($type === 'prediction_scored')
+                                        <div class="flex flex-col">
+                                            <p class="text-sm font-semibold text-zinc-900 dark:text-white truncate">
+                                                Prediction scored
+                                            </p>
+                                            <p class="text-xs text-zinc-600 dark:text-zinc-300 truncate">
+                                                {{ $notification->data['race_name'] ?? ($notification->data['season'] ?? 'Season') }}
+                                                @if(isset($notification->data['score']))
+                                                    &nbsp;&middot;&nbsp;{{ $notification->data['score'] }} pts
+                                                @endif
+                                                @if(isset($notification->data['accuracy']))
+                                                    &nbsp;({{ number_format($notification->data['accuracy'], 1) }}%)
+                                                @endif
+                                            </p>
+                                        </div>
+                                    @else
+                                        <p class="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                                            {{ $notification->data['message'] ?? 'New notification' }}
+                                        </p>
+                                    @endif
                                 </div>
                                 
                                 <div class="mt-1 flex items-center justify-between">
@@ -72,7 +94,11 @@
                                             class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                                             wire:navigate
                                         >
-                                            View
+                                            @if($type === 'prediction_scored')
+                                                View prediction
+                                            @else
+                                                View
+                                            @endif
                                         </a>
                                     @endif
                                 </div>

@@ -299,7 +299,7 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
 - **id**: F1-008
   - **title**: Enhance notifications UX and coverage for scored predictions
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: medium
   - **owner**: agent
@@ -321,6 +321,10 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Extend `tests/Feature/NotificationTest.php` and `tests/Browser/DashboardBrowserTest.php`.
   - **notes**:
     - Primary: Feature Implementer; Consulted: Test & QA.
+  - **completed_summary**:
+    - Enriched `PredictionScored` and `NotificationService::sendPredictionScoredNotification` payloads with race name, score, and accuracy so stored and real-time notifications include clear, actionable context.
+    - Updated the `NotificationDropdown` Livewire view to visually highlight prediction-scored notifications (label, race name, points, accuracy, and “View prediction” CTA) while preserving existing unread/read behavior and other notification types.
+    - Extended `NotificationTest` and `RealTimeNotificationTest` to assert the new data shape and dropdown rendering for prediction-scored notifications, and ran `php artisan test tests/Feature/NotificationTest.php tests/Feature/RealTimeNotificationTest.php` successfully.
 
 - **id**: F1-009
   - **title**: Add backtest harness for alternative scoring experiments

@@ -28,7 +28,7 @@ test('race results available notification can be sent', function () {
         'type' => 'race',
     ]);
 
-    $notificationService = new NotificationService();
+    $notificationService = new NotificationService;
     $notificationService->sendRaceResultsAvailableNotification($race);
 
     Notification::assertSentTo($user, RaceResultsAvailable::class, function ($notification) use ($race) {
@@ -47,7 +47,7 @@ test('prediction scored notification can be sent', function () {
         'type' => 'race',
     ]);
 
-    $notificationService = new NotificationService();
+    $notificationService = new NotificationService;
     $notificationService->sendPredictionScoredNotification($prediction, 85, 75.5);
 
     Notification::assertSentTo($user, PredictionScored::class, function ($notification) use ($prediction) {
@@ -67,7 +67,7 @@ test('prediction deadline reminder can be sent to all users', function () {
         'round' => 12,
     ]);
 
-    $notificationService = new NotificationService();
+    $notificationService = new NotificationService;
     $notificationService->sendPredictionDeadlineReminder($race, 'qualifying');
 
     foreach ($users as $user) {
@@ -92,7 +92,7 @@ test('prediction deadline reminder can be sent to non-predictors only', function
         'type' => 'race',
     ]);
 
-    $notificationService = new NotificationService();
+    $notificationService = new NotificationService;
     $notificationService->sendPredictionDeadlineReminderToNonPredictors($race);
 
     // Should not send to user who already predicted
@@ -107,7 +107,7 @@ test('preseason deadline reminder can be sent', function () {
 
     $users = User::factory()->count(2)->create();
 
-    $notificationService = new NotificationService();
+    $notificationService = new NotificationService;
     $notificationService->sendPreseasonDeadlineReminder(2024);
 
     foreach ($users as $user) {
@@ -122,7 +122,7 @@ test('midseason deadline reminder can be sent', function () {
 
     $users = User::factory()->count(2)->create();
 
-    $notificationService = new NotificationService();
+    $notificationService = new NotificationService;
     $notificationService->sendMidseasonDeadlineReminder(2024);
 
     foreach ($users as $user) {
@@ -151,7 +151,10 @@ test('race results available notification has correct email content', function (
 
 test('prediction scored notification has correct email content', function () {
     $user = User::factory()->create(['name' => 'Jane Smith']);
-    $race = Races::factory()->create(['race_name' => 'Monaco Grand Prix']);
+    $race = Races::factory()->create([
+        'race_name' => 'Monaco Grand Prix',
+        'season' => 2024,
+    ]);
     $prediction = Prediction::factory()->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
@@ -165,6 +168,33 @@ test('prediction scored notification has correct email content', function () {
         ->and($mailMessage->greeting)->toBe('Hello Jane Smith!')
         ->and($mailMessage->introLines)->toContain('Your Race Prediction has been scored!')
         ->and($mailMessage->introLines)->toContain('Race: Monaco Grand Prix');
+});
+
+test('prediction scored notification stores detailed data for dropdown', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'race_name' => 'Monaco Grand Prix',
+        'season' => 2024,
+    ]);
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+    ]);
+
+    $notification = new PredictionScored($prediction, 95, 88.5);
+    $array = $notification->toArray($user);
+
+    expect($array)
+        ->toHaveKey('type', 'prediction_scored')
+        ->and($array['prediction_id'])->toBe($prediction->id)
+        ->and($array['race_name'])->toBe('Monaco Grand Prix')
+        ->and($array['score'])->toBe(95)
+        ->and($array['accuracy'])->toBe(88.5)
+        ->and($array['message'])->toContain('Monaco Grand Prix')
+        ->and($array['message'])->toContain('95 points')
+        ->and($array['message'])->toContain('88.5%')
+        ->and($array['action_url'])->toBe('/predictions');
 });
 
 test('prediction deadline reminder has correct email content', function () {

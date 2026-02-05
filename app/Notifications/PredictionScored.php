@@ -36,7 +36,7 @@ class PredictionScored extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $predictionType = match($this->prediction->type) {
+        $predictionType = match ($this->prediction->type) {
             'race' => 'Race Prediction',
             'preseason' => 'Preseason Prediction',
             'midseason' => 'Midseason Prediction',
@@ -50,13 +50,13 @@ class PredictionScored extends Notification implements ShouldQueue
 
         if ($this->prediction->type === 'race' && $this->prediction->race) {
             $message->line("Race: {$this->prediction->race->race_name}")
-                   ->action('View Race Results', url("/{$this->prediction->season}/race/{$this->prediction->race->id}"));
+                ->action('View Race Results', url("/{$this->prediction->season}/race/{$this->prediction->race->id}"));
         }
 
         $message->line("Score: {$this->score} points")
-               ->line("Accuracy: " . number_format($this->accuracy, 1) . "%")
-               ->action('View Your Predictions', url('/predictions'))
-               ->line('Keep up the great work!');
+            ->line('Accuracy: '.number_format($this->accuracy, 1).'%')
+            ->action('View Your Predictions', url('/predictions'))
+            ->line('Keep up the great work!');
 
         return $message;
     }
@@ -73,9 +73,16 @@ class PredictionScored extends Notification implements ShouldQueue
             'prediction_id' => $this->prediction->id,
             'prediction_type' => $this->prediction->type,
             'season' => $this->prediction->season,
+            'race_name' => $this->prediction->race?->race_name,
             'score' => $this->score,
             'accuracy' => $this->accuracy,
-            'message' => "Your {$this->prediction->type} prediction has been scored: {$this->score} points",
+            'message' => sprintf(
+                'Your %s prediction for %s has been scored: %d points (%.1f%% accuracy)',
+                $this->prediction->type,
+                $this->prediction->race?->race_name ?? "{$this->prediction->season} season",
+                $this->score,
+                $this->accuracy
+            ),
             'action_url' => '/predictions',
         ];
     }

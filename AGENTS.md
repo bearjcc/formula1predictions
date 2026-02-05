@@ -209,3 +209,16 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Added a lightweight query-count regression test in `ChartDataServiceTest` around team points progression to ensure query volume remains bounded.
 
 **Tests:** `php artisan test tests/Feature/ChartDataServiceTest.php`
+
+---
+
+## Recent Completion (F1-008)
+
+**Task:** Enhance notifications UX and coverage for scored predictions — done
+
+**What was done:**
+- Enriched `PredictionScored` and `NotificationService::sendPredictionScoredNotification` so prediction-scored notifications (stored and real-time) include race name, score, and accuracy in their payloads.
+- Updated the `NotificationDropdown` Livewire view to highlight prediction-scored notifications with a dedicated label, race name, points, and accuracy plus a “View prediction” call-to-action, while keeping existing unread/read behavior intact.
+- Extended `NotificationTest` and `RealTimeNotificationTest` to cover the new data shape and dropdown rendering for prediction-scored notifications, then ran `php artisan test tests/Feature/NotificationTest.php tests/Feature/RealTimeNotificationTest.php` successfully.
+
+**Tests:** `php artisan test tests/Feature/NotificationTest.php tests/Feature/RealTimeNotificationTest.php`
