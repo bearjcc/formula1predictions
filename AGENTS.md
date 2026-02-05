@@ -145,3 +145,16 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Added tests in `ScoringServiceTest` for EXCLUDED drivers and for `Prediction::score()` integration with `ScoringService` to verify consistent scores/accuracy and status updates.
 
 **Tests:** `php artisan test tests/Feature/ScoringServiceTest.php`
+
+---
+
+## Recent Completion (F1-003)
+
+**Task:** Strengthen Livewire prediction form validation and editing flows — done
+
+**What was done:**
+- Updated `PredictionForm` and HTTP Form Requests so race predictions require a `race_round`, preseason/midseason predictions prohibit it, and core prediction arrays are validated consistently with existing rules.
+- Enforced `Prediction::isEditable` and user ownership in the Livewire prediction form, blocking edits to locked/scored or non-owned predictions and surfacing a clear message/disabled UI state.
+- Extended `LivewirePredictionFormTest` and `PredictionFormValidationTest` to cover invalid `type`/`season`/`raceRound` combinations and blocked edit scenarios.
+
+**Tests:** `php artisan test tests/Feature/LivewirePredictionFormTest.php tests/Feature/PredictionFormValidationTest.php`

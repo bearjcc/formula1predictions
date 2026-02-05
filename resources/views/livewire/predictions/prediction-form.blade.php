@@ -8,6 +8,12 @@
         </p>
     </div>
 
+    @error('base')
+        <div class="mb-4 rounded-md bg-red-50 p-4 border border-red-200 dark:bg-red-900/20 dark:border-red-700">
+            <p class="text-sm text-red-800 dark:text-red-200">{{ $message }}</p>
+        </div>
+    @enderror
+
     <form wire:submit="save" class="space-y-8">
         <!-- Basic Information -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -241,9 +247,19 @@
             </div>
             <button 
                 type="submit"
-                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                @if(!$canEdit) disabled @endif
+                class="px-6 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                    @if($canEdit)
+                        bg-blue-600 text-white hover:bg-blue-700
+                    @else
+                        bg-gray-400 text-gray-100 cursor-not-allowed dark:bg-gray-600 dark:text-gray-300
+                    @endif"
             >
-                {{ $editingPrediction ? 'Update Prediction' : 'Save Prediction' }}
+                @if(!$canEdit && $editingPrediction)
+                    Prediction Locked
+                @else
+                    {{ $editingPrediction ? 'Update Prediction' : 'Save Prediction' }}
+                @endif
             </button>
         </div>
     </form>

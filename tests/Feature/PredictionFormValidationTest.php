@@ -1,9 +1,8 @@
 <?php
 
-use App\Models\User;
 use App\Models\Drivers;
 use App\Models\Teams;
-use App\Models\Races;
+use App\Models\User;
 
 test('prediction form validation requires authentication', function () {
     $response = $this->post('/predictions', []);
@@ -269,6 +268,30 @@ test('race round validation for race predictions', function () {
         'type' => 'race',
         'season' => 2024,
         'race_round' => 26,
+    ]);
+
+    $response->assertSessionHasErrors(['race_round']);
+
+    // Missing race round for race prediction
+    $response = $this->post('/predictions', [
+        'type' => 'race',
+        'season' => 2024,
+        'prediction_data' => [
+            'driver_order' => Drivers::factory()->count(20)->create()->pluck('id')->toArray(),
+        ],
+    ]);
+
+    $response->assertSessionHasErrors(['race_round']);
+
+    // Race round should be prohibited for preseason predictions
+    $response = $this->post('/predictions', [
+        'type' => 'preseason',
+        'season' => 2024,
+        'race_round' => 1,
+        'prediction_data' => [
+            'team_order' => Teams::factory()->count(10)->create()->pluck('id')->toArray(),
+            'driver_championship' => Drivers::factory()->count(20)->create()->pluck('id')->toArray(),
+        ],
     ]);
 
     $response->assertSessionHasErrors(['race_round']);

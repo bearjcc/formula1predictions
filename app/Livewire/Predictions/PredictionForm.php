@@ -21,7 +21,7 @@ class PredictionForm extends Component
     #[Rule('required|integer|min:2020|max:2030')]
     public int $season = 2024;
 
-    #[Rule('nullable|integer|min:1|max:25')]
+    #[Rule('required_if:type,race|prohibited_if:type,preseason,midseason|integer|min:1|max:25')]
     public ?int $raceRound = null;
 
     #[Rule('nullable|string|max:1000')]
@@ -48,13 +48,28 @@ class PredictionForm extends Component
 
     public ?Prediction $editingPrediction = null;
 
+    public bool $canEdit = true;
+
     public function mount(?Races $race = null, ?Prediction $existingPrediction = null): void
     {
         // Ensure editingPrediction is null by default
         $this->editingPrediction = null;
         $this->race = $race;
+        $this->canEdit = true;
 
         if ($existingPrediction !== null && $existingPrediction->exists) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            if ($user === null || $existingPrediction->user_id !== $user->id || ! $existingPrediction->isEditable()) {
+                $this->canEdit = false;
+                $this->editingPrediction = $existingPrediction;
+
+                $this->loadData();
+
+                return;
+            }
+
             // Editing existing prediction
             $this->editingPrediction = $existingPrediction;
             $this->type = $existingPrediction->type ?? 'race';
@@ -198,10 +213,21 @@ class PredictionForm extends Component
 
     public function save(): void
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($this->editingPrediction !== null) {
+            if ($user === null || $this->editingPrediction->user_id !== $user->id || ! $this->editingPrediction->isEditable()) {
+                $this->addError('base', 'This prediction can no longer be edited.');
+
+                return;
+            }
+        }
+
         $this->validate([
             'type' => 'required|string|in:race,preseason,midseason',
             'season' => 'required|integer|min:2020|max:2030',
-            'raceRound' => 'nullable|integer|min:1|max:25',
+            'raceRound' => 'required_if:type,race|prohibited_if:type,preseason,midseason|integer|min:1|max:25',
             'notes' => 'nullable|string|max:1000',
             'driverOrder' => 'required_if:type,race|array',
             'teamOrder' => 'required_if:type,preseason,midseason|array',

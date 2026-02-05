@@ -104,7 +104,135 @@ class LivewirePredictionFormTest extends TestCase
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('type', 'race')
             ->assertSet('season', 2024)
-            ->assertSet('driverOrder', $drivers->pluck('id')->toArray())
+            ->assertSet('driverOrder', function ($value) use ($drivers) {
+                return $value === $drivers->pluck('id')->toArray();
+            })
             ->assertSet('fastestLapDriverId', $drivers->first()->id);
+    }
+
+    public function test_race_prediction_requires_race_round_in_livewire(): void
+    {
+        $user = User::factory()->create();
+
+        $team = Teams::factory()->create();
+        $drivers = Drivers::factory()->count(20)->create(['team_id' => $team->id]);
+
+        $driverOrder = $drivers->pluck('id')->toArray();
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class)
+            ->set('type', 'race')
+            ->set('season', 2024)
+            ->set('raceRound', null)
+            ->set('driverOrder', $driverOrder)
+            ->call('save')
+            ->assertHasErrors(['raceRound' => 'required_if']);
+    }
+
+    public function test_preseason_prediction_rejects_race_round_in_livewire(): void
+    {
+        $user = User::factory()->create();
+
+        Teams::factory()->count(10)->create();
+        Drivers::factory()->count(20)->create();
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class)
+            ->set('type', 'preseason')
+            ->set('season', 2024)
+            ->set('raceRound', 1)
+            ->call('save')
+            ->assertHasErrors(['raceRound' => 'prohibited_if']);
+    }
+
+    public function test_cannot_edit_locked_prediction_via_livewire(): void
+    {
+        $user = User::factory()->create();
+        $team = Teams::factory()->create();
+        $drivers = Drivers::factory()->count(3)->create(['team_id' => $team->id]);
+
+        $prediction = Prediction::factory()->create([
+            'user_id' => $user->id,
+            'type' => 'race',
+            'season' => 2024,
+            'status' => 'locked',
+            'prediction_data' => [
+                'driver_order' => $drivers->pluck('id')->toArray(),
+                'fastest_lap' => $drivers->first()->id,
+            ],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class, ['existingPrediction' => $prediction])
+            ->assertSet('canEdit', false)
+            ->set('notes', 'Updated notes that should not persist')
+            ->call('save')
+            ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
+
+        $this->assertDatabaseMissing('predictions', [
+            'id' => $prediction->id,
+            'notes' => 'Updated notes that should not persist',
+        ]);
+    }
+
+    public function test_cannot_edit_scored_prediction_via_livewire(): void
+    {
+        $user = User::factory()->create();
+        $team = Teams::factory()->create();
+        $drivers = Drivers::factory()->count(3)->create(['team_id' => $team->id]);
+
+        $prediction = Prediction::factory()->create([
+            'user_id' => $user->id,
+            'type' => 'race',
+            'season' => 2024,
+            'status' => 'scored',
+            'prediction_data' => [
+                'driver_order' => $drivers->pluck('id')->toArray(),
+                'fastest_lap' => $drivers->first()->id,
+            ],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class, ['existingPrediction' => $prediction])
+            ->assertSet('canEdit', false)
+            ->set('notes', 'Updated notes that should not persist')
+            ->call('save')
+            ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
+
+        $this->assertDatabaseMissing('predictions', [
+            'id' => $prediction->id,
+            'notes' => 'Updated notes that should not persist',
+        ]);
+    }
+
+    public function test_cannot_edit_other_users_prediction_via_livewire(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $team = Teams::factory()->create();
+        $drivers = Drivers::factory()->count(3)->create(['team_id' => $team->id]);
+
+        $prediction = Prediction::factory()->create([
+            'user_id' => $owner->id,
+            'type' => 'race',
+            'season' => 2024,
+            'status' => 'draft',
+            'prediction_data' => [
+                'driver_order' => $drivers->pluck('id')->toArray(),
+                'fastest_lap' => $drivers->first()->id,
+            ],
+        ]);
+
+        Livewire::actingAs($otherUser)
+            ->test(PredictionForm::class, ['existingPrediction' => $prediction])
+            ->assertSet('canEdit', false)
+            ->set('notes', 'Updated notes that should not persist')
+            ->call('save')
+            ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
+
+        $this->assertDatabaseMissing('predictions', [
+            'id' => $prediction->id,
+            'notes' => 'Updated notes that should not persist',
+        ]);
     }
 }

@@ -26,7 +26,7 @@ class UpdatePredictionRequest extends FormRequest
         return [
             'type' => ['sometimes', 'required', 'string', Rule::in(['race', 'preseason', 'midseason'])],
             'season' => ['sometimes', 'required', 'integer', 'min:1950', 'max:2030'],
-            'race_round' => ['nullable', 'integer', 'min:1', 'max:25'],
+            'race_round' => ['required_if:type,race', 'prohibited_if:type,preseason,midseason', 'integer', 'min:1', 'max:25'],
             'race_id' => ['nullable', 'integer', 'exists:races,id'],
             'prediction_data' => ['sometimes', 'required', 'array'],
             'prediction_data.driver_order' => ['required_if:type,race', 'array', 'min:20', 'max:20'],

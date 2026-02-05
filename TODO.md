@@ -126,7 +126,7 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
 - **id**: F1-003
   - **title**: Strengthen Livewire prediction form validation and editing flows
   - **type**: bug
-  - **status**: todo
+  - **status**: done
   - **priority**: P1
   - **risk_level**: medium
   - **owner**: agent
@@ -147,6 +147,10 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
     - Run `php artisan test tests/Feature/LivewirePredictionFormTest.php` and `php artisan test tests/Feature/PredictionFormValidationTest.php`.
   - **notes**:
     - Primary: Maintenance & Refactorer; Consulted: Feature Implementer, Test & QA.
+  - **completed_summary**:
+    - Tightened Livewire and HTTP validation so race predictions require `race_round`, preseason/midseason predictions prohibit it, and core arrays are validated consistently with existing request rules.
+    - Enforced `Prediction::isEditable` and user ownership in `PredictionForm` so locked, scored, or other users' predictions cannot be edited, with clear messaging and disabled UI state in the prediction form view.
+    - Extended `LivewirePredictionFormTest` and `PredictionFormValidationTest` to cover invalid `type`/`season`/`raceRound` combinations and blocked edit flows, and ran both test files successfully.
 
 - **id**: F1-004
   - **title**: Add basic analytics smoke tests for dashboard and analytics page
