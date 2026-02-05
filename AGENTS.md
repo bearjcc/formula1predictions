@@ -247,5 +247,6 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Verified and documented the current test coverage in `tests/Feature/HistoricalDataImportTest.php` and `tests/Feature/SimpleHistoricalDataTest.php`, which cover user creation, graceful handling of missing legacy files, and importing representative historical-style predictions for recent seasons.
 - Made the historical seeder repeatable by using `User::firstOrCreate` with a default hashed password for legacy users and added an idempotency test so running the seeder multiple times does not duplicate predictions or races.
 - Extended `HistoricalDataImportTest` with a historical analytics regression that seeds legacy-style predictions, assigns synthetic scores/accuracy, and exercises `ChartDataService` and standings comparison methods for a historical season so imported data can safely power basic analytics without runtime errors.
+- Added a dedicated `legacy:import-historical-predictions` artisan command that wraps `HistoricalPredictionsSeeder` for Phase 1 imports, plus a feature test that invokes the command twice to ensure it runs cleanly and remains compatible with existing historical import tests.
 
 **Tests:** `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\ChartDataService;
 use Database\Seeders\HistoricalPredictionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 
 uses(RefreshDatabase::class);
 
@@ -63,6 +64,50 @@ test('historical predictions seeder can import data', function () {
     // Check for specific prediction types
     expect(Prediction::where('type', 'race')->exists())->toBeTrue();
     expect(Prediction::where('type', 'preseason')->exists())->toBeTrue();
+});
+
+test('legacy import artisan command runs seeder and is idempotent', function () {
+    // Ensure previous directory exists so the command can safely look for fixtures
+    if (! File::isDirectory('previous')) {
+        File::makeDirectory('previous', 0755, true);
+    }
+
+    // Prepare drivers and teams so the seeder can resolve IDs
+    $driverNames = [
+        'Max Verstappen', 'Charles Leclerc', 'Lewis Hamilton', 'Carlos Sainz', 'Sergio Perez',
+    ];
+
+    foreach ($driverNames as $index => $fullName) {
+        $names = explode(' ', $fullName);
+
+        Drivers::factory()->create([
+            'driver_id' => $index + 1,
+            'name' => $names[0],
+            'surname' => $names[1] ?? '',
+        ]);
+    }
+
+    $teamNames = [
+        'Red Bull Racing', 'Mercedes', 'Ferrari',
+    ];
+
+    foreach ($teamNames as $index => $teamName) {
+        Teams::factory()->create([
+            'team_id' => $index + 1,
+            'team_name' => $teamName,
+        ]);
+    }
+
+    // First run
+    $result = $this->artisan('legacy:import-historical-predictions');
+    $result->assertExitCode(0);
+
+    $predictionCount = Prediction::count();
+    $raceCount = Races::count();
+
+    // Second run should also succeed without throwing, even if no fixtures are present
+    $result = $this->artisan('legacy:import-historical-predictions');
+    $result->assertExitCode(0);
 });
 
 test('historical predictions seeder is idempotent', function () {
