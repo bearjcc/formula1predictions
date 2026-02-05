@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Prediction;
 use App\Models\Races;
 use App\Services\ScoringService;
 use Illuminate\Console\Command;
@@ -58,6 +57,7 @@ class ScoreHistoricalPredictions extends Command
 
         if ($races->isEmpty()) {
             $this->warn('No completed races found to score.');
+
             return 0;
         }
 
@@ -86,7 +86,8 @@ class ScoreHistoricalPredictions extends Command
             ->get();
 
         if ($predictions->isEmpty()) {
-            $this->line("  No predictions to score for this race");
+            $this->line('  No predictions to score for this race');
+
             return;
         }
 
@@ -95,24 +96,20 @@ class ScoreHistoricalPredictions extends Command
         foreach ($predictions as $prediction) {
             $totalProcessed++;
 
-            if ($dryRun) {
+            try {
                 $score = $this->scoringService->calculatePredictionScore($prediction, $race);
-                $this->line("    {$prediction->user->name}: {$score} points (not saved)");
-            } else {
-                try {
-                    $score = $this->scoringService->calculatePredictionScore($prediction, $race);
-                    $accuracy = $prediction->calculateAccuracy();
-                    $prediction->update([
-                        'score' => $score,
-                        'accuracy' => $accuracy,
-                        'status' => 'scored',
-                        'scored_at' => now(),
-                    ]);
-                    $totalScored++;
-                    $this->line("    {$prediction->user->name}: {$score} points ✓");
-                } catch (\Exception $e) {
-                    $this->error("    {$prediction->user->name}: Error - {$e->getMessage()}");
+
+                if ($dryRun) {
+                    $this->line("    {$prediction->user->name}: {$score} points (not saved)");
+
+                    continue;
                 }
+
+                $this->scoringService->savePredictionScore($prediction, $score);
+                $totalScored++;
+                $this->line("    {$prediction->user->name}: {$score} points ✓");
+            } catch (\Exception $e) {
+                $this->error("    {$prediction->user->name}: Error - {$e->getMessage()}");
             }
         }
     }

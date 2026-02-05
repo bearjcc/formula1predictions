@@ -516,3 +516,39 @@ test('prediction model score method delegates to scoring service', function () {
     expect($prediction->status)->toBe('scored');
     expect($prediction->scored_at)->not->toBeNull();
 });
+
+test('savePredictionScore updates core fields consistently', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            [
+                'driver' => ['driverId' => 'max_verstappen'],
+                'status' => 'finished',
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    $service->savePredictionScore($prediction, $score);
+    $prediction->refresh();
+
+    expect($prediction->score)->toBe($score);
+    expect((float) $prediction->accuracy)->toBeGreaterThan(0.0);
+    expect($prediction->status)->toBe('scored');
+    expect($prediction->scored_at)->not->toBeNull();
+});

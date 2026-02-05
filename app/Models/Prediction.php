@@ -67,40 +67,6 @@ class Prediction extends Model
     }
 
     /**
-     * Calculate the prediction score based on the scoring system.
-     *
-     * @deprecated Use ScoringService::calculatePredictionScore instead.
-     */
-    public function calculateScore(): int
-    {
-        if ($this->type !== 'race' || ! $this->race) {
-            return 0;
-        }
-
-        /** @var ScoringService $service */
-        $service = app(ScoringService::class);
-
-        return $service->calculatePredictionScore($this, $this->race);
-    }
-
-    /**
-     * Calculate the prediction accuracy percentage.
-     *
-     * @deprecated Use ScoringService::calculateAccuracy instead.
-     */
-    public function calculateAccuracy(): float
-    {
-        if ($this->type !== 'race' || ! $this->race) {
-            return 0.0;
-        }
-
-        /** @var ScoringService $service */
-        $service = app(ScoringService::class);
-
-        return $service->calculateAccuracy($this);
-    }
-
-    /**
      * Check if prediction is still editable.
      */
     public function isEditable(): bool
@@ -155,8 +121,13 @@ class Prediction extends Model
         $service = app(ScoringService::class);
 
         if ($this->type === 'race' && $this->race) {
-            $this->score = $service->calculatePredictionScore($this, $this->race);
-            $this->accuracy = $service->calculateAccuracy($this);
+            $score = $service->calculatePredictionScore($this, $this->race);
+
+            $service->savePredictionScore($this, $score);
+
+            $this->refresh();
+
+            return true;
         } else {
             $this->score = 0;
             $this->accuracy = 0.0;

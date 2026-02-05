@@ -218,7 +218,7 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
 - **id**: F1-006
   - **title**: Refactor prediction scoring responsibilities out of the Prediction model
   - **type**: chore
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: medium
   - **owner**: mixed
@@ -237,6 +237,10 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Extend/refine `tests/Feature/ScoringServiceTest.php` to cover refactored call paths.
   - **notes**:
     - Primary: Maintenance & Refactorer; Consulted: Data/Scoring Scientist, Test & QA. Human review recommended.
+  - **completed_summary**:
+    - Removed deprecated `calculateScore()` and `calculateAccuracy()` helpers from `Prediction` and ensured all production scoring and accuracy flows delegate through `ScoringService`, including admin and historical scoring commands.
+    - Updated `Prediction::score()` to call `ScoringService::calculatePredictionScore()` and `ScoringService::savePredictionScore()`, so the service remains the single system of record for score, accuracy, status, and timestamps.
+    - Extended `ScoringServiceTest` with a regression test around `savePredictionScore` and re-ran `php artisan test tests/Feature/ScoringServiceTest.php` with all assertions passing after formatting fixes via `vendor/bin/pint --dirty`.
 
 - **id**: F1-006A
   - **title**: Design and implement legacy data import pipeline

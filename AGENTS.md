@@ -183,3 +183,16 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Added a Livewire component test in `RacesPageTest` that mocks `F1ApiService` and asserts that different combinations of status and search filters produce the expected subsets of races.
 
 **Tests:** `php artisan test tests/Feature/RacesPageTest.php`
+
+---
+
+## Recent Completion (F1-006)
+
+**Task:** Refactor prediction scoring responsibilities out of the Prediction model — done
+
+**What was done:**
+- Removed deprecated `calculateScore()` and `calculateAccuracy()` methods from `Prediction` and routed all production scoring and accuracy flows (admin manual scoring, historical backfill) through `ScoringService`.
+- Updated `Prediction::score()` to delegate its persistence to `ScoringService::savePredictionScore()` so score, accuracy, status, and timestamps are owned by the service, not duplicated in the model.
+- Added a `savePredictionScore` regression test in `ScoringServiceTest` and verified the full scoring feature suite via `php artisan test tests/Feature/ScoringServiceTest.php` after running `vendor/bin/pint --dirty`.
+
+**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php`

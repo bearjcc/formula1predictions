@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Jobs\ScoreRacePredictionsJob;
+use App\Models\Drivers;
 use App\Models\Prediction;
 use App\Models\Races;
-use App\Models\Drivers;
 use App\Models\Teams;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use App\Models\User;
+use App\Services\ScoringService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use App\Jobs\ScoreRacePredictionsJob;
-use App\Services\ScoringService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class AdminController extends Controller
 {
@@ -90,12 +90,13 @@ class AdminController extends Controller
     {
         $this->authorize('score', $prediction);
 
-        $score = $prediction->calculateScore();
-        $prediction->update([
-            'score' => $score,
-            'status' => 'scored',
-            'scored_at' => now(),
-        ]);
+        if ($prediction->type !== 'race' || ! $prediction->race) {
+            return redirect()->back()->with('error', 'Only race predictions with a linked race can be scored.');
+        }
+
+        $score = $this->scoringService->calculatePredictionScore($prediction, $prediction->race);
+
+        $this->scoringService->savePredictionScore($prediction, $score);
 
         return redirect()->back()->with('success', "Prediction scored with {$score} points.");
     }
@@ -158,8 +159,8 @@ class AdminController extends Controller
         $races = Races::withCount(['predictions' => function ($query) {
             $query->whereIn('status', ['submitted', 'locked']);
         }])
-        ->orderBy('date', 'desc')
-        ->paginate(20);
+            ->orderBy('date', 'desc')
+            ->paginate(20);
 
         return view('admin.scoring', compact('races'));
     }
@@ -175,7 +176,7 @@ class AdminController extends Controller
             $results = $this->scoringService->scoreRacePredictions($race);
 
             $message = "Successfully scored {$results['scored_predictions']} predictions for {$results['total_score']} total points.";
-            
+
             if ($results['failed_predictions'] > 0) {
                 $message .= " {$results['failed_predictions']} predictions failed to score.";
             }
@@ -323,6 +324,7 @@ class AdminController extends Controller
         }
 
         $message = "Bulk scoring completed: {$successCount} successful, {$failureCount} failed";
+
         return redirect()->back()->with('success', $message);
     }
 }
