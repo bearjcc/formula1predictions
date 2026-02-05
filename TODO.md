@@ -155,7 +155,7 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
 - **id**: F1-004
   - **title**: Add basic analytics smoke tests for dashboard and analytics page
   - **type**: chore
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: low
   - **owner**: agent
@@ -177,6 +177,10 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
     - Optionally extend `tests/Feature/ChartDataServiceTest.php` for service-level assertions.
   - **notes**:
     - Primary: Test & QA; Consulted: Maintenance & Refactorer.
+  - **completed_summary**:
+    - Updated `PredictionAccuracyChart` to support multiple analytics views (`user-trends`, `user-comparison`, `race-accuracy`) backed by `ChartDataService` methods and wired to Livewire state.
+    - Ensured driver and team performance comparisons respect current-standings semantics in `ChartDataServiceTest` and verified analytics and dashboard routes render with all key chart components present.
+    - Ran `php artisan test tests/Feature/DashboardTest.php tests/Feature/DataVisualizationTest.php tests/Feature/ChartDataServiceTest.php` with all tests passing after formatting fixes via `vendor/bin/pint --dirty`.
 
 - **id**: F1-005
   - **title**: Improve race list filtering UX for status and text search

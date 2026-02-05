@@ -158,3 +158,15 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Extended `LivewirePredictionFormTest` and `PredictionFormValidationTest` to cover invalid `type`/`season`/`raceRound` combinations and blocked edit scenarios.
 
 **Tests:** `php artisan test tests/Feature/LivewirePredictionFormTest.php tests/Feature/PredictionFormValidationTest.php`
+
+---
+
+## Recent Completion (F1-004)
+
+**Task:** Add basic analytics smoke tests for dashboard and analytics page — done
+
+**What was done:**
+- Enhanced `PredictionAccuracyChart` to support multiple analytics views (`user-trends`, `user-comparison`, `race-accuracy`) driven by `ChartDataService` and kept in sync via Livewire state and events.
+- Ensured analytics and dashboard flows are covered by smoke tests that verify key chart components render and that chart data methods return expected structures for seeded data.
+
+**Tests:** `php artisan test tests/Feature/DashboardTest.php tests/Feature/DataVisualizationTest.php tests/Feature/ChartDataServiceTest.php`

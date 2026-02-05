@@ -8,14 +8,25 @@ use Livewire\Component;
 class PredictionAccuracyChart extends Component
 {
     public int $season = 2024;
+
+    public string $chartType = 'user-trends';
+
     public string $chartId;
+
     public array $chartData = [];
+
     public array $chartConfig = [];
 
-    public function mount(int $season = 2024)
+    public function mount(int $season = 2024, string $chartType = 'user-trends')
     {
         $this->season = $season;
-        $this->chartId = 'prediction-accuracy-chart-' . uniqid();
+        $this->chartType = $chartType;
+        $this->chartId = 'prediction-accuracy-chart-'.uniqid();
+        $this->loadChartData();
+    }
+
+    public function updatedChartType(): void
+    {
         $this->loadChartData();
     }
 
@@ -27,8 +38,21 @@ class PredictionAccuracyChart extends Component
     private function loadChartData()
     {
         $chartService = app(ChartDataService::class);
-        $this->chartData = $chartService->getPredictionAccuracyByType($this->season);
-        $this->chartConfig = $chartService->getChartConfig('doughnut', $this->chartData);
+
+        $user = auth()->user();
+
+        $this->chartData = match ($this->chartType) {
+            'user-trends' => $user
+                ? $chartService->getUserPredictionAccuracyTrends($user, $this->season)
+                : [],
+            'user-comparison' => $chartService->getPredictionAccuracyComparison($this->season),
+            'race-accuracy' => $chartService->getRacePredictionAccuracyByRace($this->season),
+            default => [],
+        };
+
+        $this->chartConfig = $chartService->getChartConfig('line', $this->chartData);
+
+        $this->dispatch('chart-data-updated');
     }
 
     public function render()
