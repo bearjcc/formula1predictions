@@ -185,7 +185,7 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
 - **id**: F1-005
   - **title**: Improve race list filtering UX for status and text search
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: low
   - **owner**: agent
@@ -204,6 +204,10 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
     - Extend `tests/Feature/RacesPageTest.php` with additional filter scenarios.
   - **notes**:
     - Primary: Feature Implementer; Consulted: Test & QA.
+  - **completed_summary**:
+    - Wired the `statusFilter` and `searchQuery` properties on `RacesList` into the URL/query state and initial mount so that race filters can be reflected in and restored from the page URL without altering existing loading/error behavior.
+    - Confirmed that the existing Mary UI-based filters (status select, search input, refresh button) remain clearly labeled and responsive, updating the rendered races list via Livewire without a full page reload.
+    - Added a Livewire component feature test to `RacesPageTest` that mocks `F1ApiService` and verifies combinations of status and search filters yield the expected subsets of races, and ran `php artisan test tests/Feature/RacesPageTest.php` successfully.
 
 ---
 

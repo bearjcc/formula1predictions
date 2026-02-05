@@ -1,6 +1,8 @@
 <?php
 
+use App\Livewire\Races\RacesList;
 use App\Services\F1ApiService;
+use Livewire\Livewire;
 
 use function Pest\Laravel\mock;
 
@@ -68,4 +70,48 @@ test('races page does not expose technical error details to user', function () {
     $response->assertSuccessful();
     $response->assertDontSee('cURL error');
     $response->assertDontSee('Operation timed out');
+});
+
+test('races list filters by status and search query', function () {
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2024)
+            ->andReturn([
+                [
+                    'raceName' => 'Australian Grand Prix',
+                    'circuit' => [
+                        'circuitName' => 'Albert Park',
+                        'country' => 'Australia',
+                    ],
+                    'date' => '2024-03-15',
+                    'time' => '04:00:00Z',
+                    'status' => 'upcoming',
+                    'results' => [],
+                ],
+                [
+                    'raceName' => 'Canadian Grand Prix',
+                    'circuit' => [
+                        'circuitName' => 'Circuit Gilles Villeneuve',
+                        'country' => 'Canada',
+                    ],
+                    'date' => '2024-06-09',
+                    'time' => '18:00:00Z',
+                    'status' => 'completed',
+                    'results' => [
+                        ['driver' => 'Sample Driver'],
+                    ],
+                ],
+            ]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2024])
+        ->set('statusFilter', 'upcoming')
+        ->assertSee('Australian Grand Prix')
+        ->assertDontSee('Canadian Grand Prix');
+
+    Livewire::test(RacesList::class, ['year' => 2024])
+        ->set('statusFilter', 'completed')
+        ->set('searchQuery', 'Canada')
+        ->assertSee('Canadian Grand Prix')
+        ->assertDontSee('Australian Grand Prix');
 });

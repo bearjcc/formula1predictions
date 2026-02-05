@@ -5,6 +5,7 @@ namespace App\Livewire\Races;
 use App\Exceptions\F1ApiException;
 use App\Services\F1ApiService;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class RacesList extends Component
@@ -17,13 +18,17 @@ class RacesList extends Component
 
     public ?string $error = null;
 
+    #[Url(as: 'status', except: '')]
     public string $statusFilter = '';
 
+    #[Url(as: 'search', except: '')]
     public string $searchQuery = '';
 
     public function mount(int $year)
     {
         $this->year = $year;
+        $this->statusFilter = request()->query('status', $this->statusFilter);
+        $this->searchQuery = request()->query('search', $this->searchQuery);
         $this->loadRaces();
     }
 

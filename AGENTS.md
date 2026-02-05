@@ -170,3 +170,16 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Ensured analytics and dashboard flows are covered by smoke tests that verify key chart components render and that chart data methods return expected structures for seeded data.
 
 **Tests:** `php artisan test tests/Feature/DashboardTest.php tests/Feature/DataVisualizationTest.php tests/Feature/ChartDataServiceTest.php`
+
+---
+
+## Recent Completion (F1-005)
+
+**Task:** Improve race list filtering UX for status and text search — done
+
+**What was done:**
+- Ensured the `RacesList` Livewire component reads and syncs `statusFilter` and `searchQuery` from the URL/query so race filters can be restored from shared or revisited URLs without changing existing loading/error behavior.
+- Kept the Mary UI-based filters (status dropdown, search input, refresh button) clearly labeled and responsive, with Livewire updates avoiding full page reloads while maintaining the existing card layout and actions.
+- Added a Livewire component test in `RacesPageTest` that mocks `F1ApiService` and asserts that different combinations of status and search filters produce the expected subsets of races.
+
+**Tests:** `php artisan test tests/Feature/RacesPageTest.php`
