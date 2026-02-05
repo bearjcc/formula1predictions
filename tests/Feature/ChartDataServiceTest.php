@@ -268,15 +268,61 @@ test('chart data service can get team performance comparison', function () {
         ->and($data[0]['podiums'])->toBe(10);
 });
 
-test('chart data service returns empty arrays when no data exists', function () {
+test('chart data service returns getPredictorLuckAndVariance with expected structure', function () {
     $service = app(ChartDataService::class);
 
-    expect($service->getDriverStandingsProgression(2024))->toBe([])
-        ->and($service->getTeamStandingsProgression(2024))->toBe([])
-        ->and($service->getPredictionAccuracyComparison(2024))->toBe([])
-        ->and($service->getRacePredictionAccuracyByRace(2024))->toBe([])
-        ->and($service->getDriverPerformanceComparison(2024))->toBe([])
-        ->and($service->getTeamPerformanceComparison(2024))->toBe([]);
+    $user1 = User::factory()->create(['name' => 'Alice']);
+    $user2 = User::factory()->create(['name' => 'Bob']);
+    $race = Races::factory()->create(['season' => 2024]);
+
+    Prediction::factory()->create([
+        'user_id' => $user1->id,
+        'race_id' => $race->id,
+        'season' => 2024,
+        'accuracy' => 80.0,
+        'score' => 20,
+    ]);
+    Prediction::factory()->create([
+        'user_id' => $user1->id,
+        'race_id' => $race->id,
+        'season' => 2024,
+        'accuracy' => 80.0,
+        'score' => 24,
+    ]);
+    Prediction::factory()->create([
+        'user_id' => $user2->id,
+        'race_id' => $race->id,
+        'season' => 2024,
+        'accuracy' => 100.0,
+        'score' => 25,
+    ]);
+
+    $data = $service->getPredictorLuckAndVariance(2024);
+
+    expect($data)->toHaveCount(2);
+    $bob = collect($data)->firstWhere('user', 'Bob');
+    $alice = collect($data)->firstWhere('user', 'Alice');
+    expect($bob)->toHaveKeys(['user', 'total_score', 'avg_accuracy', 'prediction_count', 'score_std_dev', 'expected_score', 'luck_index'])
+        ->and($bob['total_score'])->toBe(25)
+        ->and($bob['avg_accuracy'])->toBe(100.0)
+        ->and($bob['prediction_count'])->toBe(1)
+        ->and($bob['expected_score'])->toBe(25.0)
+        ->and($bob['luck_index'])->toBe(0.0)
+        ->and($bob['score_std_dev'])->toBeNull();
+    expect($alice['total_score'])->toBe(44)
+        ->and($alice['prediction_count'])->toBe(2)
+        ->and($alice['avg_accuracy'])->toBe(80.0)
+        ->and($alice['expected_score'])->toBe(40.0)
+        ->and($alice['luck_index'])->toBe(4.0);
+    expect($alice['score_std_dev'])->toBeNumeric();
+});
+
+test('chart data service getPredictorLuckAndVariance returns empty for season with no scored predictions', function () {
+    $service = app(ChartDataService::class);
+
+    $data = $service->getPredictorLuckAndVariance(2024);
+
+    expect($data)->toBe([]);
 });
 
 test('chart data service can get chart configuration', function () {

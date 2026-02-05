@@ -22,6 +22,7 @@
                     <option value="user-trends">My Trends</option>
                     <option value="user-comparison">User Comparison</option>
                     <option value="race-accuracy">Race Accuracy</option>
+                    <option value="predictor-luck-variance">Luck &amp; Variance</option>
                 </select>
             </div>
             
@@ -56,6 +57,8 @@
                         No prediction accuracy data found for your account in {{ $season }} season.
                     @elseif ($chartType === 'user-comparison')
                         No user comparison data found for {{ $season }} season.
+                    @elseif ($chartType === 'predictor-luck-variance')
+                        No luck &amp; variance data found for {{ $season }} season.
                     @else
                         No race accuracy data found for {{ $season }} season.
                     @endif
@@ -81,7 +84,7 @@
                 
                 if (chartData.length === 0) return;
                 
-                let labels, datasets, chartType, yAxisLabel;
+                let labels, datasets, chartType, yAxisLabel, isPercentScale = true;
                 
                 // Prepare data based on chart type
                 switch ('{{ $chartType }}') {
@@ -134,6 +137,29 @@
                         chartType = 'line';
                         yAxisLabel = 'Accuracy (%)';
                         break;
+                    
+                    case 'predictor-luck-variance':
+                        labels = chartData.map(item => item.user);
+                        datasets = [
+                            {
+                                label: 'Total Score',
+                                data: chartData.map(item => item.total_score),
+                                backgroundColor: '#3B82F6',
+                                borderWidth: 1,
+                                borderColor: '#ffffff',
+                            },
+                            {
+                                label: 'Luck Index',
+                                data: chartData.map(item => item.luck_index),
+                                backgroundColor: '#F59E0B',
+                                borderWidth: 1,
+                                borderColor: '#ffffff',
+                            }
+                        ];
+                        chartType = 'bar';
+                        yAxisLabel = 'Points';
+                        isPercentScale = false;
+                        break;
                         
                     default:
                         return;
@@ -155,16 +181,16 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                max: 100,
+                                ...(isPercentScale ? { max: 100 } : {}),
                                 title: {
                                     display: true,
                                     text: yAxisLabel
                                 },
-                                ticks: {
+                                ticks: isPercentScale ? {
                                     callback: function(value) {
                                         return value + '%';
                                     }
-                                }
+                                } : {}
                             },
                             x: {
                                 title: {
@@ -187,7 +213,8 @@
                                         return context[0].label;
                                     },
                                     label: function(context) {
-                                        return context.dataset.label + ': ' + context.parsed.y + '%';
+                                        const suffix = isPercentScale ? '%' : '';
+                                        return context.dataset.label + ': ' + context.parsed.y + suffix;
                                     }
                                 }
                             }

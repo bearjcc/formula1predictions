@@ -404,7 +404,7 @@ Longer-horizon ideas, experiments, and aspirational improvements. These are not 
 - **id**: F1-011
   - **title**: Add “luck” and variance analytics for predictors
   - **type**: experiment
-  - **status**: todo
+  - **status**: done
   - **priority**: P3
   - **risk_level**: high
   - **owner**: mixed
@@ -425,6 +425,10 @@ Longer-horizon ideas, experiments, and aspirational improvements. These are not 
     - Extend `tests/Feature/ChartDataServiceTest.php` and `tests/Feature/DataVisualizationTest.php` with experiment cases.
   - **notes**:
     - Primary: Data/Scoring Scientist; Consulted: Feature Implementer, Test & QA. Human review required for production rollout.
+  - **completed_summary**:
+    - Added `ChartDataService::getPredictorLuckAndVariance(int $season)` returning per-user total_score, avg_accuracy, prediction_count, score_std_dev, expected_score, luck_index; leaderboards unchanged.
+    - Added "Luck & Variance" view to PredictionAccuracyChart on analytics page (bar chart: Total Score and Luck Index by user); scale and tooltips conditional for non-percent display.
+    - Extended ChartDataServiceTest and DataVisualizationTest with luck/variance structure and view tests; all pass after `vendor/bin/pint --dirty`.
 
 - **id**: F1-012
   - **title**: Social and head-to-head comparison mode

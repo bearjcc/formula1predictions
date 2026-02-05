@@ -466,6 +466,61 @@ class ChartDataService
     }
 
     /**
+     * Get predictor luck and variance metrics for a season (experiment: F1-011).
+     * Returns per-user: total_score, avg_accuracy, score_std_dev, expected_score, luck_index.
+     * Does not alter leaderboards; for analytics/experiment only.
+     *
+     * @return array<int, array{user: string, total_score: int|float, avg_accuracy: float, prediction_count: int, score_std_dev: float|null, expected_score: float, luck_index: float}>
+     */
+    public function getPredictorLuckAndVariance(int $season): array
+    {
+        $predictions = Prediction::where('season', $season)
+            ->whereNotNull('accuracy')
+            ->whereNotNull('score')
+            ->with('user:id,name')
+            ->orderBy('user_id')
+            ->get();
+
+        $byUser = $predictions->groupBy('user_id');
+        $chartData = [];
+
+        foreach ($byUser as $userId => $userPredictions) {
+            $user = $userPredictions->first()->user;
+            if (! $user) {
+                continue;
+            }
+
+            $scores = $userPredictions->pluck('score')->map(fn ($s) => (float) $s)->all();
+            $totalScore = array_sum($scores);
+            $count = count($scores);
+            $avgAccuracy = $userPredictions->avg('accuracy');
+            $expectedScore = $count > 0 ? ($avgAccuracy / 100) * 25 * $count : 0.0;
+            $luckIndex = $totalScore - $expectedScore;
+
+            $scoreStdDev = null;
+            if ($count >= 2) {
+                $mean = $totalScore / $count;
+                $variance = array_sum(array_map(fn ($s) => ($s - $mean) ** 2, $scores)) / $count;
+                $scoreStdDev = sqrt($variance);
+            }
+
+            $chartData[] = [
+                'user' => $user->name,
+                'total_score' => (int) round($totalScore),
+                'avg_accuracy' => round((float) $avgAccuracy, 1),
+                'prediction_count' => $count,
+                'score_std_dev' => $scoreStdDev !== null ? round($scoreStdDev, 2) : null,
+                'expected_score' => round($expectedScore, 1),
+                'luck_index' => round($luckIndex, 1),
+            ];
+        }
+
+        usort($chartData, fn ($a, $b) => $b['total_score'] <=> $a['total_score']);
+
+        return $chartData;
+    }
+
+    /**
      * Get driver consistency analysis (standard deviation of positions).
      */
     public function getDriverConsistencyAnalysis(int $season): array

@@ -47,6 +47,7 @@ class PredictionAccuracyChart extends Component
                 : [],
             'user-comparison' => $chartService->getPredictionAccuracyComparison($this->season),
             'race-accuracy' => $chartService->getRacePredictionAccuracyByRace($this->season),
+            'predictor-luck-variance' => $chartService->getPredictorLuckAndVariance($this->season),
             default => [],
         };
 

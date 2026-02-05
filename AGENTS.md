@@ -123,6 +123,19 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 
 ---
 
+## Recent Completion (F1-011)
+
+**Task:** Add luck and variance analytics for predictors — done
+
+**What was done:**
+- Added `ChartDataService::getPredictorLuckAndVariance($season)` returning per-user metrics: total_score, avg_accuracy, prediction_count, score_std_dev, expected_score, luck_index. Leaderboards unchanged.
+- Added "Luck & Variance" option to Prediction Accuracy chart on analytics page (bar chart: Total Score and Luck Index by user).
+- Extended `ChartDataServiceTest` and `DataVisualizationTest` with luck/variance structure and view tests.
+
+**Tests:** `php artisan test tests/Feature/ChartDataServiceTest.php tests/Feature/DataVisualizationTest.php`
+
+---
+
 ## Recent Completion (F1-000)
 
 **Task:** Define 2026 season MVP scope, legacy data strategy, and release plan — done
