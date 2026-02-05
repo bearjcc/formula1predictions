@@ -73,7 +73,7 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
 - **id**: F1-001
   - **title**: Harden race prediction scoring around DNS/DSQ edge cases
   - **type**: bug
-  - **status**: todo
+  - **status**: done
   - **priority**: P1
   - **risk_level**: high
   - **owner**: mixed
@@ -93,6 +93,10 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
     - Run `php artisan test tests/Feature/ScoringServiceTest.php`.
   - **notes**:
     - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. Human review required before merging due to scoring impact.
+  - **completed_summary**:
+    - Updated `Prediction` so `score()`, `calculateScore()`, and `calculateAccuracy()` delegate to `ScoringService`, making the service the single source of truth for race scoring and accuracy while keeping non-race types safe.
+    - Hardened edge-case handling by ensuring DNS/DSQ/EXCLUDED drivers are removed from processed results, missing drivers get 0 points, and `findDriverPosition` safely handles results without an explicit `position` field.
+    - Extended `tests/Feature/ScoringServiceTest.php` with EXCLUDED coverage and a `Prediction::score` integration test, then ran `php artisan test tests/Feature/ScoringServiceTest.php` with all tests passing.
 
 - **id**: F1-002
   - **title**: Improve F1 API error reporting in races list

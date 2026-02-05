@@ -4,9 +4,7 @@ namespace App\Services;
 
 use App\Models\Prediction;
 use App\Models\Races;
-use App\Models\User;
 use App\Notifications\PredictionScored;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
@@ -21,7 +19,7 @@ class ScoringService
      */
     public function scoreRacePredictions(Races $race): array
     {
-        if (!$race->isCompleted()) {
+        if (! $race->isCompleted()) {
             throw new \InvalidArgumentException("Race {$race->id} is not completed");
         }
 
@@ -41,17 +39,17 @@ class ScoringService
             try {
                 $score = $this->calculatePredictionScore($prediction, $race);
                 $this->savePredictionScore($prediction, $score);
-                
+
                 $results['scored_predictions']++;
                 $results['total_score'] += $score;
-                
+
                 // Send notification
                 $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
-                
+
             } catch (\Exception $e) {
                 $results['failed_predictions']++;
-                $results['errors'][] = "Prediction {$prediction->id}: " . $e->getMessage();
-                Log::error("Failed to score prediction {$prediction->id}: " . $e->getMessage());
+                $results['errors'][] = "Prediction {$prediction->id}: ".$e->getMessage();
+                Log::error("Failed to score prediction {$prediction->id}: ".$e->getMessage());
             }
         }
 
@@ -69,7 +67,7 @@ class ScoringService
 
         $predictedOrder = $prediction->getPredictedDriverOrder();
         $actualResults = $this->processRaceResults($race->getResultsArray());
-        
+
         if (empty($actualResults)) {
             return 0;
         }
@@ -80,12 +78,12 @@ class ScoringService
 
         foreach ($predictedOrder as $position => $driverId) {
             $actualPosition = $this->findDriverPosition($driverId, $actualResults);
-            
+
             if ($actualPosition !== null) {
                 $positionDiff = abs($position - $actualPosition);
                 $positionScore = $this->getPositionScore($positionDiff, $race->season);
                 $score += $positionScore;
-                
+
                 if ($positionDiff === 0) {
                     $correctPredictions++;
                 }
@@ -117,7 +115,7 @@ class ScoringService
 
         foreach ($results as $result) {
             $status = $result['status'] ?? 'finished';
-            
+
             // Handle different status types
             switch (strtoupper($status)) {
                 case 'FINISHED':
@@ -131,13 +129,13 @@ class ScoringService
                     ];
                     $position++;
                     break;
-                    
+
                 case 'DNS': // Did Not Start - remove from results
                 case 'DSQ': // Disqualified - remove from results
                 case 'EXCLUDED':
                     // Skip these drivers entirely
                     break;
-                    
+
                 default:
                     // Unknown status, treat as finished
                     $processedResults[] = [
@@ -160,11 +158,12 @@ class ScoringService
      */
     public function findDriverPosition(string $driverId, array $results): ?int
     {
-        foreach ($results as $result) {
+        foreach ($results as $index => $result) {
             if (($result['driver']['driverId'] ?? '') === $driverId) {
-                return $result['position'];
+                return $result['position'] ?? $index;
             }
         }
+
         return null;
     }
 
@@ -197,7 +196,7 @@ class ScoringService
         // Check if driver was DNS/DSQ in original results
         // For now, return 0 points for missing drivers
         // This could be enhanced to check original race data
-        
+
         return 0; // DNS/DSQ drivers get 0 points
     }
 
@@ -207,8 +206,8 @@ class ScoringService
     private function calculateFastestLapScore(Prediction $prediction, array $results): int
     {
         $predictedFastestLap = $prediction->getPredictedFastestLap();
-        
-        if (!$predictedFastestLap) {
+
+        if (! $predictedFastestLap) {
             return 0;
         }
 
@@ -252,7 +251,7 @@ class ScoringService
 
         $predictedOrder = $prediction->getPredictedDriverOrder();
         $actualResults = $prediction->race->getResultsArray();
-        
+
         if (empty($actualResults) || empty($predictedOrder)) {
             return 0.0;
         }
@@ -262,7 +261,7 @@ class ScoringService
 
         foreach ($predictedOrder as $position => $driverId) {
             $actualPosition = $this->findDriverPosition($driverId, $actualResults);
-            
+
             if ($actualPosition !== null && $position === $actualPosition) {
                 $correctPredictions++;
             }
@@ -274,7 +273,7 @@ class ScoringService
     /**
      * Admin override: manually set prediction score
      */
-    public function overridePredictionScore(Prediction $prediction, int $score, string $reason = null): void
+    public function overridePredictionScore(Prediction $prediction, int $score, ?string $reason = null): void
     {
         $prediction->update([
             'score' => $score,
@@ -325,7 +324,7 @@ class ScoringService
     /**
      * Handle race cancellation
      */
-    public function handleRaceCancellation(Races $race, string $reason = null): void
+    public function handleRaceCancellation(Races $race, ?string $reason = null): void
     {
         $predictions = $race->predictions()
             ->whereIn('status', ['submitted', 'locked'])
@@ -347,7 +346,7 @@ class ScoringService
     public function getRaceScoringStats(Races $race): array
     {
         $predictions = $race->predictions()->where('status', 'scored')->get();
-        
+
         if ($predictions->isEmpty()) {
             return [
                 'total_predictions' => 0,

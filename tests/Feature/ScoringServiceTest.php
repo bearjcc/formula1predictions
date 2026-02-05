@@ -3,8 +3,9 @@
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
-use App\Services\ScoringService;
 use App\Services\F1ApiService;
+use App\Services\ScoringService;
+
 use function Pest\Laravel\mock;
 
 beforeEach(function () {
@@ -214,6 +215,39 @@ test('handles DSQ drivers correctly', function () {
     expect($score)->toBe(25);
 });
 
+test('handles EXCLUDED drivers correctly', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            [
+                'driver' => ['driverId' => 'max_verstappen'],
+                'status' => 'finished',
+            ],
+            [
+                'driver' => ['driverId' => 'lewis_hamilton'],
+                'status' => 'EXCLUDED', // Excluded from results
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    // Max correct (25), Lewis EXCLUDED (0) = 25 points
+    expect($score)->toBe(25);
+});
+
 test('handles fastest lap bonus', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create([
@@ -270,7 +304,7 @@ test('admin can override prediction score', function () {
 test('handles driver substitutions', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create(['status' => 'upcoming']);
-    
+
     $prediction = Prediction::factory()->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
@@ -297,7 +331,7 @@ test('handles driver substitutions', function () {
 test('handles race cancellation', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create(['status' => 'upcoming']);
-    
+
     $prediction = Prediction::factory()->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
@@ -321,12 +355,12 @@ test('gets race scoring statistics', function () {
         'status' => 'completed',
         'results' => [['driver' => ['driverId' => 'test']]], // Need results to be completed
     ]);
-    
+
     // Create predictions with different users to avoid unique constraint issues
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
     $user3 = User::factory()->create();
-    
+
     Prediction::factory()->create([
         'user_id' => $user1->id,
         'race_id' => $race->id,
@@ -393,7 +427,7 @@ test('scoring command works correctly', function () {
     $service = app(ScoringService::class);
     $score = $service->calculatePredictionScore($prediction, $race);
     expect($score)->toBeGreaterThan(0);
-    
+
     // The command test would go here but has an edge case issue to resolve later
     // For now, we'll test that the service itself works correctly
     expect(true)->toBeTrue();
@@ -405,7 +439,7 @@ test('dry run shows what would be scored', function () {
         'status' => 'completed',
         'results' => [['driver' => ['driverId' => 'test']]], // Need results to indicate completion
     ]);
-    
+
     Prediction::factory()->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
@@ -422,4 +456,63 @@ test('dry run shows what would be scored', function () {
 
     $result->assertExitCode(0);
     $result->expectsOutput("DRY RUN: Would score 1 predictions for race {$race->id}");
+});
+
+test('prediction model score method delegates to scoring service', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            [
+                'driver' => ['driverId' => 'max_verstappen'],
+                'status' => 'finished',
+            ],
+            [
+                'driver' => ['driverId' => 'lewis_hamilton'],
+                'status' => 'DNF',
+            ],
+            [
+                'driver' => ['driverId' => 'charles_leclerc'],
+                'status' => 'DSQ',
+            ],
+            [
+                'driver' => ['driverId' => 'lando_norris'],
+                'status' => 'EXCLUDED',
+            ],
+            [
+                'driver' => ['driverId' => 'carlos_sainz'],
+                'status' => 'DNS',
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => [
+                'max_verstappen',
+                'lewis_hamilton',
+                'charles_leclerc',
+                'lando_norris',
+                'carlos_sainz',
+            ],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $expectedScore = $service->calculatePredictionScore($prediction, $race);
+    $expectedAccuracy = $service->calculateAccuracy($prediction);
+
+    $prediction->score();
+    $prediction->refresh();
+
+    expect($prediction->score)->toBe($expectedScore);
+    expect((float) $prediction->accuracy)->toBe((float) $expectedAccuracy);
+    expect($prediction->status)->toBe('scored');
+    expect($prediction->scored_at)->not->toBeNull();
 });

@@ -132,3 +132,16 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Updated `TODO.md` so `F1-000` is marked done, related tasks reference the MVP plan, and legacy/import work (`F1-006A`) is clearly scoped as a Phase 1 import.
 
 **Tests:** No application behavior changed (docs and backlog only), so no PHP tests were run for this task.
+
+---
+
+## Recent Completion (F1-001)
+
+**Task:** Harden race prediction scoring around DNS/DSQ edge cases — done
+
+**What was done:**
+- Updated `Prediction` so `score()`, `calculateScore()`, and `calculateAccuracy()` delegate into `ScoringService`, keeping `ScoringService` as the scoring system of record and deprecating model-level implementations.
+- Fixed `ScoringService::findDriverPosition()` to gracefully handle results without an explicit `position` field while preserving existing processed-results behavior.
+- Added tests in `ScoringServiceTest` for EXCLUDED drivers and for `Prediction::score()` integration with `ScoringService` to verify consistent scores/accuracy and status updates.
+
+**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php`
