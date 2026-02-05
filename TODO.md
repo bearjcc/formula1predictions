@@ -267,6 +267,10 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
   - **notes**:
     - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. For MVP, implement a minimal “Phase 1” import for a small set of recent seasons; broader historical backfill can follow after launch.
     - A first-pass Phase 1 pipeline is implemented via `Database\Seeders\HistoricalPredictionsSeeder`, with coverage in `tests/Feature/HistoricalDataImportTest.php` and `tests/Feature/SimpleHistoricalDataTest.php` using markdown fixtures under a `previous/` directory.
+  - **completed_summary**:
+    - Made `HistoricalPredictionsSeeder` repeatable by creating or reusing legacy users via `firstOrCreate` with a default hashed password, so the seeder can be safely re-run without unique constraint violations.
+    - Extended `HistoricalDataImportTest` with an idempotency test that asserts running the seeder multiple times does not duplicate imported predictions or races, and confirmed structure/association tests still pass.
+    - Verified the Phase 1 markdown-based import path and backtest harness remain green via `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`, while CSV-based imports remain deferred pending external datasets and human-approved migrations.
   - **blockers**:
     - Representative legacy CSV/JSON or database dumps (beyond the in-repo markdown fixtures used in tests) are not yet available in this repo for full-fidelity mapping.
     - High-risk migrations and data-shaping decisions for importing external legacy stores still require explicit human approval before implementation.

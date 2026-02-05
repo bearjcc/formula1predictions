@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\User;
-use App\Models\Prediction;
 use App\Models\Drivers;
-use App\Models\Teams;
+use App\Models\Prediction;
 use App\Models\Races;
+use App\Models\Teams;
+use App\Models\User;
 use Database\Seeders\HistoricalPredictionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -17,9 +17,9 @@ test('historical predictions seeder can import data', function () {
         'Max Verstappen', 'Charles Leclerc', 'Lewis Hamilton', 'Carlos Sainz', 'Sergio Perez',
         'George Russell', 'Fernando Alonso', 'Lance Stroll', 'Lando Norris', 'Oscar Piastri',
         'Valtteri Bottas', 'Zhou Guanyu', 'Pierre Gasly', 'Esteban Ocon', 'Kevin Magnussen',
-        'Nico Hulkenberg', 'Alex Albon', 'Yuki Tsunoda', 'Logan Sargeant', 'Daniel Ricciardo'
+        'Nico Hulkenberg', 'Alex Albon', 'Yuki Tsunoda', 'Logan Sargeant', 'Daniel Ricciardo',
     ];
-    
+
     foreach ($driverNames as $index => $fullName) {
         $names = explode(' ', $fullName);
         $drivers[$fullName] = Drivers::factory()->create([
@@ -32,9 +32,9 @@ test('historical predictions seeder can import data', function () {
     $teams = [];
     $teamNames = [
         'Red Bull Racing', 'Mercedes', 'Ferrari', 'Aston Martin', 'Alfa Romeo',
-        'McLaren', 'Alpine', 'Haas F1 Team', 'Williams', 'AlphaTauri'
+        'McLaren', 'Alpine', 'Haas F1 Team', 'Williams', 'AlphaTauri',
     ];
-    
+
     foreach ($teamNames as $index => $teamName) {
         $teams[$teamName] = Teams::factory()->create([
             'team_id' => $index + 1,
@@ -43,7 +43,7 @@ test('historical predictions seeder can import data', function () {
     }
 
     // Run the seeder
-    $seeder = new HistoricalPredictionsSeeder();
+    $seeder = new HistoricalPredictionsSeeder;
     $seeder->run();
 
     // Verify that users were created
@@ -63,6 +63,50 @@ test('historical predictions seeder can import data', function () {
     expect(Prediction::where('type', 'preseason')->exists())->toBeTrue();
 });
 
+test('historical predictions seeder is idempotent', function () {
+    // Create some test drivers and teams first with unique IDs
+    $drivers = [];
+    $driverNames = [
+        'Max Verstappen', 'Charles Leclerc', 'Lewis Hamilton', 'Carlos Sainz', 'Sergio Perez',
+        'George Russell', 'Fernando Alonso', 'Lance Stroll', 'Lando Norris', 'Oscar Piastri',
+        'Valtteri Bottas', 'Zhou Guanyu', 'Pierre Gasly', 'Esteban Ocon', 'Kevin Magnussen',
+        'Nico Hulkenberg', 'Alex Albon', 'Yuki Tsunoda', 'Logan Sargeant', 'Daniel Ricciardo',
+    ];
+
+    foreach ($driverNames as $index => $fullName) {
+        $names = explode(' ', $fullName);
+        $drivers[$fullName] = Drivers::factory()->create([
+            'driver_id' => $index + 1,
+            'name' => $names[0],
+            'surname' => $names[1] ?? '',
+        ]);
+    }
+
+    $teams = [];
+    $teamNames = [
+        'Red Bull Racing', 'Mercedes', 'Ferrari', 'Aston Martin', 'Alfa Romeo',
+        'McLaren', 'Alpine', 'Haas F1 Team', 'Williams', 'AlphaTauri',
+    ];
+
+    foreach ($teamNames as $index => $teamName) {
+        $teams[$teamName] = Teams::factory()->create([
+            'team_id' => $index + 1,
+            'team_name' => $teamName,
+        ]);
+    }
+
+    $seeder = new HistoricalPredictionsSeeder;
+    $seeder->run();
+
+    $predictionCount = Prediction::count();
+    $raceCount = Races::count();
+
+    $seeder->run();
+
+    expect(Prediction::count())->toBe($predictionCount);
+    expect(Races::count())->toBe($raceCount);
+});
+
 test('historical data import handles missing files gracefully', function () {
     // Create test drivers and teams with unique IDs
     for ($i = 1; $i <= 5; $i++) {
@@ -71,7 +115,7 @@ test('historical data import handles missing files gracefully', function () {
     }
 
     // Run the seeder (should not fail even if files don't exist)
-    $seeder = new HistoricalPredictionsSeeder();
+    $seeder = new HistoricalPredictionsSeeder;
     $seeder->run();
 
     // Should still create users
@@ -84,19 +128,19 @@ test('imported predictions have correct structure', function () {
     for ($i = 1; $i <= 20; $i++) {
         $drivers[] = Drivers::factory()->create(['driver_id' => $i]);
     }
-    
+
     $teams = [];
     for ($i = 1; $i <= 10; $i++) {
         $teams[] = Teams::factory()->create(['team_id' => $i]);
     }
 
     // Run the seeder
-    $seeder = new HistoricalPredictionsSeeder();
+    $seeder = new HistoricalPredictionsSeeder;
     $seeder->run();
 
     // Get a race prediction
     $racePrediction = Prediction::where('type', 'race')->first();
-    
+
     if ($racePrediction) {
         expect($racePrediction->prediction_data)->toHaveKey('driver_order');
         expect($racePrediction->prediction_data)->toHaveKey('fastest_lap');
@@ -106,7 +150,7 @@ test('imported predictions have correct structure', function () {
 
     // Get a preseason prediction
     $preseasonPrediction = Prediction::where('type', 'preseason')->first();
-    
+
     if ($preseasonPrediction) {
         expect($preseasonPrediction->prediction_data)->toHaveKey('team_order');
         expect($preseasonPrediction->prediction_data)->toHaveKey('driver_championship');
@@ -122,19 +166,19 @@ test('imported predictions are associated with users', function () {
     for ($i = 1; $i <= 20; $i++) {
         $drivers[] = Drivers::factory()->create(['driver_id' => $i]);
     }
-    
+
     $teams = [];
     for ($i = 1; $i <= 10; $i++) {
         $teams[] = Teams::factory()->create(['team_id' => $i]);
     }
 
     // Run the seeder
-    $seeder = new HistoricalPredictionsSeeder();
+    $seeder = new HistoricalPredictionsSeeder;
     $seeder->run();
 
     // Verify predictions are associated with users
     $predictions = Prediction::with('user')->get();
-    
+
     foreach ($predictions as $prediction) {
         expect($prediction->user)->not->toBeNull();
         expect($prediction->user->email)->toContain('@example.com');

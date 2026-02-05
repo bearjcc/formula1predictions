@@ -245,5 +245,6 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 **What was done:**
 - Confirmed and exercised the Phase 1 legacy import path implemented by `Database\Seeders\HistoricalPredictionsSeeder`, which ingests markdown-style prediction files from a `previous/` directory into `Prediction` and `Races` records.
 - Verified and documented the current test coverage in `tests/Feature/HistoricalDataImportTest.php` and `tests/Feature/SimpleHistoricalDataTest.php`, which cover user creation, graceful handling of missing legacy files, and importing representative historical-style predictions for recent seasons.
+- Made the historical seeder repeatable by using `User::firstOrCreate` with a default hashed password for legacy users and added an idempotency test so running the seeder multiple times does not duplicate predictions or races.
 
 **Tests:** `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`

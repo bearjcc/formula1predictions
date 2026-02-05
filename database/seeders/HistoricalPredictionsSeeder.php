@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Prediction;
 use App\Models\Drivers;
-use App\Models\Teams;
+use App\Models\Prediction;
 use App\Models\Races;
+use App\Models\Teams;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class HistoricalPredictionsSeeder extends Seeder
 {
@@ -22,24 +22,36 @@ class HistoricalPredictionsSeeder extends Seeder
             $this->command->info('Importing historical F1 predictions...');
         }
 
-        // Create test users for historical data
+        // Create or reuse test users for historical data so the seeder is repeatable
         $users = [
-            'bearjcc' => User::factory()->create([
-                'name' => 'Bear JCC',
-                'email' => 'bearjcc@example.com',
-            ]),
-            'sunny' => User::factory()->create([
-                'name' => 'Sunny',
-                'email' => 'sunny@example.com',
-            ]),
-            'ccaswell' => User::factory()->create([
-                'name' => 'CCaswell',
-                'email' => 'ccaswell@example.com',
-            ]),
-            'chatgpt' => User::factory()->create([
-                'name' => 'ChatGPT',
-                'email' => 'chatgpt@example.com',
-            ]),
+            'bearjcc' => User::firstOrCreate(
+                ['email' => 'bearjcc@example.com'],
+                [
+                    'name' => 'Bear JCC',
+                    'password' => Hash::make('password'),
+                ],
+            ),
+            'sunny' => User::firstOrCreate(
+                ['email' => 'sunny@example.com'],
+                [
+                    'name' => 'Sunny',
+                    'password' => Hash::make('password'),
+                ],
+            ),
+            'ccaswell' => User::firstOrCreate(
+                ['email' => 'ccaswell@example.com'],
+                [
+                    'name' => 'CCaswell',
+                    'password' => Hash::make('password'),
+                ],
+            ),
+            'chatgpt' => User::firstOrCreate(
+                ['email' => 'chatgpt@example.com'],
+                [
+                    'name' => 'ChatGPT',
+                    'password' => Hash::make('password'),
+                ],
+            ),
         ];
 
         // Import predictions for each year and user
@@ -59,11 +71,12 @@ class HistoricalPredictionsSeeder extends Seeder
 
         foreach ($users as $username => $user) {
             $filename = "previous/predictions.{$year}.{$username}.md";
-            
-            if (!File::exists($filename)) {
+
+            if (! File::exists($filename)) {
                 if ($this->command) {
                     $this->command->warn("File not found: {$filename}");
                 }
+
                 continue;
             }
 
@@ -89,7 +102,7 @@ class HistoricalPredictionsSeeder extends Seeder
 
         foreach ($lines as $line) {
             $line = trim($line);
-            
+
             if (empty($line)) {
                 continue;
             }
@@ -97,9 +110,9 @@ class HistoricalPredictionsSeeder extends Seeder
             // Check for race headers
             if (preg_match('/^## ([A-Za-z\s]+)$/', $line, $matches)) {
                 $raceName = trim($matches[1]);
-                
+
                 // Save previous race prediction if exists
-                if ($currentRace && !empty($driverOrder)) {
+                if ($currentRace && ! empty($driverOrder)) {
                     $this->createRacePrediction($user, $year, $raceName, $driverOrder, $fastestLap);
                 }
 
@@ -107,6 +120,7 @@ class HistoricalPredictionsSeeder extends Seeder
                 $currentRace = $raceName;
                 $driverOrder = [];
                 $fastestLap = null;
+
                 continue;
             }
 
@@ -116,17 +130,19 @@ class HistoricalPredictionsSeeder extends Seeder
                 if ($fastestLap === 'null') {
                     $fastestLap = null;
                 }
+
                 continue;
             }
 
             // Check for section headers
             if (preg_match('/^### (.+)$/', $line, $matches)) {
                 $currentSection = strtolower(trim($matches[1]));
+
                 continue;
             }
 
             // Process driver names (for race predictions)
-            if ($currentRace && !in_array($currentSection, ['team championship order', 'superlatives', 'drivers', 'teammates', 'driver championship', 'teams', 'predictions'])) {
+            if ($currentRace && ! in_array($currentSection, ['team championship order', 'superlatives', 'drivers', 'teammates', 'driver championship', 'teams', 'predictions'])) {
                 $driverName = $this->normalizeDriverName($line);
                 if ($driverName) {
                     $driverOrder[] = $driverName;
@@ -161,12 +177,12 @@ class HistoricalPredictionsSeeder extends Seeder
         }
 
         // Save final race prediction
-        if ($currentRace && !empty($driverOrder)) {
+        if ($currentRace && ! empty($driverOrder)) {
             $this->createRacePrediction($user, $year, $currentRace, $driverOrder, $fastestLap);
         }
 
         // Save preseason prediction if we have data
-        if (!empty($teamOrder) || !empty($driverChampionship)) {
+        if (! empty($teamOrder) || ! empty($driverChampionship)) {
             $this->createPreseasonPrediction($user, $year, $teamOrder, $driverChampionship, $superlatives);
         }
     }
@@ -189,7 +205,7 @@ class HistoricalPredictionsSeeder extends Seeder
             $driver = Drivers::where('name', 'like', "%{$driverName}%")
                 ->orWhere('surname', 'like', "%{$driverName}%")
                 ->first();
-            
+
             if ($driver) {
                 $driverIds[] = $driver->id;
             }
@@ -201,7 +217,7 @@ class HistoricalPredictionsSeeder extends Seeder
             $fastestLapDriver = Drivers::where('name', 'like', "%{$fastestLap}%")
                 ->orWhere('surname', 'like', "%{$fastestLap}%")
                 ->first();
-            
+
             if ($fastestLapDriver) {
                 $fastestLapId = $fastestLapDriver->id;
             }
@@ -235,7 +251,7 @@ class HistoricalPredictionsSeeder extends Seeder
         foreach ($teamOrder as $teamName) {
             $team = Teams::where('team_name', 'like', "%{$teamName}%")
                 ->first();
-            
+
             if ($team) {
                 $teamIds[] = $team->id;
             }
@@ -247,7 +263,7 @@ class HistoricalPredictionsSeeder extends Seeder
             $driver = Drivers::where('name', 'like', "%{$driverName}%")
                 ->orWhere('surname', 'like', "%{$driverName}%")
                 ->first();
-            
+
             if ($driver) {
                 $driverIds[] = $driver->id;
             }
@@ -268,7 +284,7 @@ class HistoricalPredictionsSeeder extends Seeder
                 ],
                 'status' => 'submitted',
                 'submitted_at' => now(),
-                'notes' => "Imported from historical data - Preseason predictions",
+                'notes' => 'Imported from historical data - Preseason predictions',
             ]
         );
     }
@@ -276,7 +292,7 @@ class HistoricalPredictionsSeeder extends Seeder
     private function normalizeDriverName(string $name): ?string
     {
         $name = trim($name);
-        
+
         // Skip empty lines and headers
         if (empty($name) || strpos($name, '#') === 0 || strpos($name, 'FL ->') === 0) {
             return null;
@@ -314,7 +330,7 @@ class HistoricalPredictionsSeeder extends Seeder
     private function normalizeTeamName(string $name): ?string
     {
         $name = trim($name);
-        
+
         // Skip empty lines and headers
         if (empty($name) || strpos($name, '#') === 0) {
             return null;
