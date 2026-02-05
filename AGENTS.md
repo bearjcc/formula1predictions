@@ -276,3 +276,18 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Added a dedicated `legacy:import-historical-predictions` artisan command that wraps `HistoricalPredictionsSeeder` for Phase 1 imports, plus a feature test that invokes the command twice to ensure it runs cleanly and remains compatible with existing historical import tests.
 
 **Tests:** `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`
+
+---
+
+## Recent Completion (F1-012)
+
+**Task:** Social and head-to-head comparison mode — done
+
+**What was done:**
+- Added `ChartDataService::getHeadToHeadComparison()` and `getHeadToHeadScoreProgression()` for selected users in a season.
+- Added `/leaderboard/compare` route with shareable URL `?season=YEAR&users=1,2,3`; multi-select form and comparison table with cumulative score chart.
+- Added "Head-to-Head Compare" and "Compare" links on leaderboard index and user-stats pages.
+- Fixed layout `$slot` vs `@yield('content')` so both @extends and component usage work.
+- Extended `ChartDataServiceTest` and new `LeaderboardTest` with head-to-head and compare tests.
+
+**Tests:** `php artisan test tests/Feature/LeaderboardTest.php tests/Feature/ChartDataServiceTest.php`

@@ -76,6 +76,7 @@ Route::middleware(['auth'])->group(function () {
     // Leaderboard routes
     Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
         Route::get('/', [LeaderboardController::class, 'index'])->name('index');
+        Route::get('/compare', [LeaderboardController::class, 'compare'])->name('compare');
         Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
         Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
         Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');

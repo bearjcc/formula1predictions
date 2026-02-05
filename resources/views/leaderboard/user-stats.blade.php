@@ -8,9 +8,14 @@
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $user->name }}'s Statistics</h1>
                 <p class="text-zinc-600 dark:text-zinc-400">Prediction performance overview</p>
             </div>
-            <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
-                ← Back to Leaderboard
-            </a>
+            <div class="flex gap-2">
+                <a href="{{ route('leaderboard.compare', ['season' => $stats['season_stats']->first()?->season ?? date('Y'), 'users' => $user->id]) }}" class="btn btn-outline">
+                    Head-to-Head Compare
+                </a>
+                <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
+                    ← Back to Leaderboard
+                </a>
+            </div>
         </div>
     </div>
 

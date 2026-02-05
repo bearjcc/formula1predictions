@@ -521,6 +521,113 @@ class ChartDataService
     }
 
     /**
+     * Get head-to-head comparison data for selected users in a season (F1-012).
+     * Returns per-user total_score, avg_accuracy, prediction_count for comparison charts.
+     *
+     * @param  array<int>  $userIds
+     * @return array<int, array{user: string, user_id: int, total_score: int|float, avg_accuracy: float, prediction_count: int}>
+     */
+    public function getHeadToHeadComparison(array $userIds, int $season): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+
+        $predictions = Prediction::where('season', $season)
+            ->whereIn('user_id', $userIds)
+            ->whereNotNull('accuracy')
+            ->whereNotNull('score')
+            ->with('user:id,name')
+            ->get();
+
+        $byUser = $predictions->groupBy('user_id');
+        $chartData = [];
+
+        foreach ($userIds as $userId) {
+            $userPredictions = $byUser->get($userId);
+            if (! $userPredictions || $userPredictions->isEmpty()) {
+                continue;
+            }
+
+            $user = $userPredictions->first()->user;
+            if (! $user) {
+                continue;
+            }
+
+            $totalScore = $userPredictions->sum('score');
+            $avgAccuracy = $userPredictions->avg('accuracy');
+            $count = $userPredictions->count();
+
+            $chartData[] = [
+                'user' => $user->name,
+                'user_id' => (int) $userId,
+                'total_score' => (int) round($totalScore),
+                'avg_accuracy' => round((float) $avgAccuracy, 1),
+                'prediction_count' => $count,
+            ];
+        }
+
+        usort($chartData, fn ($a, $b) => $b['total_score'] <=> $a['total_score']);
+
+        return $chartData;
+    }
+
+    /**
+     * Get head-to-head cumulative score progression by race for selected users (F1-012).
+     * Used for line chart showing score progression over the season.
+     *
+     * @param  array<int>  $userIds
+     * @return array<int, array<string, mixed>>
+     */
+    public function getHeadToHeadScoreProgression(array $userIds, int $season): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+
+        $races = Races::where('season', $season)
+            ->whereNotNull('results')
+            ->orderBy('round')
+            ->get();
+
+        $raceIds = $races->pluck('id')->all();
+        $predictionsByRace = Prediction::whereIn('race_id', $raceIds)
+            ->whereIn('user_id', $userIds)
+            ->where('status', 'scored')
+            ->whereNotNull('score')
+            ->get()
+            ->groupBy('race_id');
+
+        $users = User::whereIn('id', $userIds)->get()->keyBy('id');
+        $cumulativeScores = array_fill_keys($userIds, 0);
+        $chartData = [];
+
+        foreach ($races as $race) {
+            $raceData = [
+                'race' => $race->race_name,
+                'round' => $race->round,
+                'date' => $race->date->format('M j'),
+            ];
+
+            $predictions = $predictionsByRace->get($race->id, collect());
+            foreach ($predictions as $prediction) {
+                $cumulativeScores[$prediction->user_id] = ($cumulativeScores[$prediction->user_id] ?? 0) + $prediction->score;
+            }
+
+            foreach ($userIds as $userId) {
+                $user = $users->get($userId);
+                if ($user) {
+                    $raceData[$user->name] = $cumulativeScores[$userId] ?? 0;
+                }
+            }
+
+            $chartData[] = $raceData;
+        }
+
+        return $chartData;
+    }
+
+    /**
      * Get driver consistency analysis (standard deviation of positions).
      */
     public function getDriverConsistencyAnalysis(int $season): array

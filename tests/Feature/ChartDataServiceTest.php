@@ -351,6 +351,101 @@ test('chart data service calculates F1 points correctly', function () {
         ->and($method->invoke($service, 10))->toBe(0); // 11th place
 });
 
+test('chart data service can get head-to-head comparison', function () {
+    $service = app(ChartDataService::class);
+
+    $user1 = User::factory()->create(['name' => 'User One']);
+    $user2 = User::factory()->create(['name' => 'User Two']);
+    $race = Races::factory()->create(['season' => 2024]);
+
+    Prediction::factory()->create([
+        'user_id' => $user1->id,
+        'race_id' => $race->id,
+        'season' => 2024,
+        'status' => 'scored',
+        'score' => 20,
+        'accuracy' => 80,
+    ]);
+    Prediction::factory()->create([
+        'user_id' => $user2->id,
+        'race_id' => $race->id,
+        'season' => 2024,
+        'status' => 'scored',
+        'score' => 18,
+        'accuracy' => 72,
+    ]);
+
+    $data = $service->getHeadToHeadComparison([$user1->id, $user2->id], 2024);
+
+    expect($data)->toHaveCount(2)
+        ->and($data[0]['user'])->toBe('User One')
+        ->and($data[0]['total_score'])->toBe(20)
+        ->and($data[0]['avg_accuracy'])->toBe(80.0)
+        ->and($data[0]['prediction_count'])->toBe(1)
+        ->and($data[1]['user'])->toBe('User Two')
+        ->and($data[1]['total_score'])->toBe(18);
+});
+
+test('chart data service get head-to-head comparison returns empty for empty user ids', function () {
+    $service = app(ChartDataService::class);
+
+    $data = $service->getHeadToHeadComparison([], 2024);
+
+    expect($data)->toBeEmpty();
+});
+
+test('chart data service can get head-to-head score progression', function () {
+    $service = app(ChartDataService::class);
+
+    $user1 = User::factory()->create(['name' => 'Alice']);
+    $user2 = User::factory()->create(['name' => 'Bob']);
+
+    $race1 = Races::factory()->create([
+        'season' => 2024,
+        'round' => 1,
+        'race_name' => 'Bahrain GP',
+        'results' => [['driver_id' => 1, 'position' => 1]],
+    ]);
+    $race2 = Races::factory()->create([
+        'season' => 2024,
+        'round' => 2,
+        'race_name' => 'Saudi GP',
+        'results' => [['driver_id' => 1, 'position' => 1]],
+    ]);
+
+    Prediction::factory()->create([
+        'user_id' => $user1->id,
+        'race_id' => $race1->id,
+        'season' => 2024,
+        'status' => 'scored',
+        'score' => 10,
+    ]);
+    Prediction::factory()->create([
+        'user_id' => $user1->id,
+        'race_id' => $race2->id,
+        'season' => 2024,
+        'status' => 'scored',
+        'score' => 15,
+    ]);
+    Prediction::factory()->create([
+        'user_id' => $user2->id,
+        'race_id' => $race1->id,
+        'season' => 2024,
+        'status' => 'scored',
+        'score' => 8,
+    ]);
+
+    $data = $service->getHeadToHeadScoreProgression([$user1->id, $user2->id], 2024);
+
+    expect($data)->toHaveCount(2)
+        ->and($data[0]['race'])->toBe('Bahrain GP')
+        ->and($data[0]['Alice'])->toBe(10)
+        ->and($data[0]['Bob'])->toBe(8)
+        ->and($data[1]['race'])->toBe('Saudi GP')
+        ->and($data[1]['Alice'])->toBe(25)
+        ->and($data[1]['Bob'])->toBe(8);
+});
+
 test('team points progression avoids excessive driver queries', function () {
     $service = app(ChartDataService::class);
 

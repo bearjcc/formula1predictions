@@ -433,7 +433,7 @@ Longer-horizon ideas, experiments, and aspirational improvements. These are not 
 - **id**: F1-012
   - **title**: Social and head-to-head comparison mode
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P3
   - **risk_level**: high
   - **owner**: mixed
@@ -455,5 +455,11 @@ Longer-horizon ideas, experiments, and aspirational improvements. These are not 
     - New or extended tests under `tests/Feature` for leaderboard and analytics behavior.
   - **notes**:
     - Primary: Feature Implementer; Consulted: Data/Scoring Scientist, Test & QA. Human approval recommended.
+  - **completed_summary**:
+    - Added `ChartDataService::getHeadToHeadComparison()` and `getHeadToHeadScoreProgression()` for per-user scores/accuracy and cumulative score by race.
+    - Added `LeaderboardController::compare()` with shareable URL `/leaderboard/compare?season=YEAR&users=1,2,3`; supports both comma-separated and array form params.
+    - Created `leaderboard/compare.blade.php` with season/user multi-select, comparison table, cumulative score progression chart, and shareable link copy.
+    - Added "Head-to-Head Compare" and "Compare" links on leaderboard index and user-stats. Fixed layout to support both @extends and component usage for $slot.
+    - Extended `ChartDataServiceTest` and new `LeaderboardTest` with head-to-head and compare page tests; all pass.
 
 
