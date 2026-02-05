@@ -57,6 +57,46 @@ class ScoringService
     }
 
     /**
+     * Automatically score all sprint predictions for a completed sprint race.
+     */
+    public function scoreSprintPredictions(Races $race): array
+    {
+        if (! $race->isCompleted() || ! $race->hasSprint()) {
+            throw new \InvalidArgumentException("Race {$race->id} is not a completed sprint race");
+        }
+
+        $predictions = $race->sprintPredictions()
+            ->whereIn('status', ['submitted', 'locked'])
+            ->get();
+
+        $results = [
+            'total_predictions' => $predictions->count(),
+            'scored_predictions' => 0,
+            'failed_predictions' => 0,
+            'total_score' => 0,
+            'errors' => [],
+        ];
+
+        foreach ($predictions as $prediction) {
+            try {
+                $score = $this->calculateSprintPredictionScore($prediction, $race);
+                $this->savePredictionScore($prediction, $score);
+
+                $results['scored_predictions']++;
+                $results['total_score'] += $score;
+
+                $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+            } catch (\Exception $e) {
+                $results['failed_predictions']++;
+                $results['errors'][] = "Sprint prediction {$prediction->id}: ".$e->getMessage();
+                Log::error("Failed to score sprint prediction {$prediction->id}: ".$e->getMessage());
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      * Calculate score for a single prediction with full edge case handling
      */
     public function calculatePredictionScore(Prediction $prediction, Races $race): int
@@ -100,6 +140,53 @@ class ScoringService
         // Add perfect prediction bonus
         if ($correctPredictions === $totalDrivers && $totalDrivers > 0) {
             $score += 50; // Perfect prediction bonus
+        }
+
+        return $score;
+    }
+
+    /**
+     * Calculate score for a sprint prediction.
+     */
+    public function calculateSprintPredictionScore(Prediction $prediction, Races $race): int
+    {
+        if ($prediction->type !== 'sprint') {
+            return 0;
+        }
+
+        $predictedOrder = $prediction->getPredictedDriverOrder();
+        $actualResults = $this->processRaceResults($race->getResultsArray());
+
+        if (empty($actualResults)) {
+            return 0;
+        }
+
+        $score = 0;
+        $totalDrivers = count($predictedOrder);
+        $correctPredictions = 0;
+
+        foreach ($predictedOrder as $position => $driverId) {
+            $actualPosition = $this->findDriverPosition($driverId, $actualResults);
+
+            if ($actualPosition !== null) {
+                $positionDiff = abs($position - $actualPosition);
+                $positionScore = $this->getSprintPositionScore($positionDiff, $race->season);
+                $score += $positionScore;
+
+                if ($positionDiff === 0) {
+                    $correctPredictions++;
+                }
+            } else {
+                $score += $this->getMissingDriverScore($driverId, $actualResults, $race->season);
+            }
+        }
+
+        $fastestLapScore = $this->calculateFastestLapScore($prediction, $actualResults);
+        $score += $fastestLapScore;
+
+        if ($correctPredictions === $totalDrivers && $totalDrivers > 0) {
+            // Smaller perfect bonus for sprint predictions.
+            $score += 25;
         }
 
         return $score;
@@ -189,6 +276,25 @@ class ScoringService
     }
 
     /**
+     * Get score for position difference in sprint sessions.
+     */
+    private function getSprintPositionScore(int $positionDiff, int $season): int
+    {
+        return match ($positionDiff) {
+            0 => 15,
+            1 => 12,
+            2 => 10,
+            3 => 8,
+            4 => 6,
+            5 => 4,
+            6 => 3,
+            7 => 2,
+            8 => 1,
+            default => max(-15, -$positionDiff),
+        };
+    }
+
+    /**
      * Handle missing drivers (DNS, DSQ, etc.)
      */
     private function getMissingDriverScore(string $driverId, array $results, int $season): int
@@ -245,7 +351,7 @@ class ScoringService
      */
     public function calculateAccuracy(Prediction $prediction): float
     {
-        if ($prediction->type !== 'race') {
+        if (! in_array($prediction->type, ['race', 'sprint'], true)) {
             return 0.0;
         }
 

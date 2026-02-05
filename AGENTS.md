@@ -238,6 +238,19 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 
 ---
 
+## Recent Completion (F1-010)
+
+**Task:** Introduce sprint-only prediction mode — done
+
+**What was done:**
+- Added a `sprint` prediction type wired through `Prediction`, `Races` (including `sprintPredictions()` and `allowsSprintPredictions()`), and `ScoringService`, with sprint predictions scored via dedicated sprint position weights and a smaller perfect-bonus so they remain separate from full-race scoring.
+- Updated the Livewire `PredictionForm`, Blade prediction form component, and HTTP Form Requests so sprint predictions reuse the race-style driver order/fastest-lap data shape, require a `race_round`, and are only allowed on races flagged with `has_sprint = true`, leaving preseason/midseason flows unchanged.
+- Extended `ScoringServiceTest`, `PredictionFormValidationTest`, and `LivewirePredictionFormTest` with sprint-focused cases, then ran `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/PredictionFormValidationTest.php tests/Feature/LivewirePredictionFormTest.php` successfully after `vendor/bin/pint --dirty`.
+
+**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/PredictionFormValidationTest.php tests/Feature/LivewirePredictionFormTest.php`
+
+---
+
 ## Recent Progress (F1-006A)
 
 **Task:** Design and implement legacy data import pipeline — in progress

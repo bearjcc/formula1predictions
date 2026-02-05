@@ -22,6 +22,20 @@ test('prediction form validation requires valid type', function () {
     $response->assertSessionHasErrors(['type']);
 });
 
+test('sprint prediction requires valid configuration', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    // Missing race_round and driver_order for sprint prediction.
+    $response = $this->post('/predictions', [
+        'type' => 'sprint',
+        'season' => 2024,
+        'prediction_data' => [],
+    ]);
+
+    $response->assertSessionHasErrors(['race_round', 'prediction_data.driver_order']);
+});
+
 test('prediction form validation requires valid season', function () {
     $user = User::factory()->create();
     $this->actingAs($user);

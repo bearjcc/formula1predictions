@@ -129,6 +129,44 @@ class LivewirePredictionFormTest extends TestCase
             ->assertHasErrors(['raceRound' => 'required_if']);
     }
 
+    public function test_sprint_prediction_requires_race_round_and_driver_order_in_livewire(): void
+    {
+        $user = User::factory()->create();
+
+        $team = Teams::factory()->create();
+        $drivers = Drivers::factory()->count(20)->create(['team_id' => $team->id]);
+
+        $driverOrder = $drivers->pluck('id')->toArray();
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class)
+            ->set('type', 'sprint')
+            ->set('season', 2024)
+            ->set('raceRound', null)
+            ->set('driverOrder', $driverOrder)
+            ->call('save')
+            ->assertHasErrors(['raceRound' => 'required_if']);
+    }
+
+    public function test_sprint_prediction_only_allowed_for_races_with_sprint(): void
+    {
+        $user = User::factory()->create();
+        $raceWithoutSprint = \App\Models\Races::factory()->create([
+            'has_sprint' => false,
+        ]);
+
+        Teams::factory()->count(10)->create();
+        Drivers::factory()->count(20)->create();
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class, ['race' => $raceWithoutSprint])
+            ->set('type', 'sprint')
+            ->set('season', (int) $raceWithoutSprint->season)
+            ->set('raceRound', (int) $raceWithoutSprint->round)
+            ->call('save')
+            ->assertHasErrors(['type']);
+    }
+
     public function test_preseason_prediction_rejects_race_round_in_livewire(): void
     {
         $user = User::factory()->create();

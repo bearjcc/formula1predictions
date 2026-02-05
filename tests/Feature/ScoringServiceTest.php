@@ -517,6 +517,78 @@ test('prediction model score method delegates to scoring service', function () {
     expect($prediction->scored_at)->not->toBeNull();
 });
 
+test('sprint prediction uses sprint scoring rules', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'has_sprint' => true,
+        'results' => [
+            [
+                'driver' => ['driverId' => 'max_verstappen'],
+                'status' => 'finished',
+            ],
+            [
+                'driver' => ['driverId' => 'lewis_hamilton'],
+                'status' => 'finished',
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculateSprintPredictionScore($prediction, $race);
+
+    // Perfect sprint prediction: 2 drivers × 15 points + 25 bonus = 55 points.
+    expect($score)->toBe(55);
+});
+
+test('can score sprint predictions for a race', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'has_sprint' => true,
+        'results' => [
+            [
+                'driver' => ['driverId' => 'max_verstappen'],
+                'status' => 'finished',
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $results = $service->scoreSprintPredictions($race);
+
+    $prediction->refresh();
+
+    expect($results['total_predictions'])->toBe(1);
+    expect($results['scored_predictions'])->toBe(1);
+    expect($prediction->status)->toBe('scored');
+    expect($prediction->score)->toBeGreaterThan(0);
+});
+
 test('backtest harness computes production scores matching ScoringService', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create([

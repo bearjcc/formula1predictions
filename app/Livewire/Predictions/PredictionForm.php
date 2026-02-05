@@ -15,13 +15,13 @@ use Livewire\Component;
 
 class PredictionForm extends Component
 {
-    #[Rule('required|string|in:race,preseason,midseason')]
+    #[Rule('required|string|in:race,sprint,preseason,midseason')]
     public string $type = 'race';
 
     #[Rule('required|integer|min:2020|max:2030')]
     public int $season = 2024;
 
-    #[Rule('required_if:type,race|prohibited_if:type,preseason,midseason|integer|min:1|max:25')]
+    #[Rule('required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25')]
     public ?int $raceRound = null;
 
     #[Rule('nullable|string|max:1000')]
@@ -79,7 +79,7 @@ class PredictionForm extends Component
 
             // Load existing prediction data
             $predictionData = $existingPrediction->prediction_data ?? [];
-            if ($this->type === 'race') {
+            if (in_array($this->type, ['race', 'sprint'], true)) {
                 $this->driverOrder = $predictionData['driver_order'] ?? [];
                 $this->fastestLapDriverId = $predictionData['fastest_lap'] ?? null;
             } else {
@@ -132,7 +132,7 @@ class PredictionForm extends Component
             ->toArray();
 
         // Initialize driver order if not set and drivers exist
-        if (empty($this->driverOrder) && $this->type === 'race' && ! empty($this->drivers)) {
+        if (empty($this->driverOrder) && in_array($this->type, ['race', 'sprint'], true) && ! empty($this->drivers)) {
             $this->driverOrder = collect($this->drivers)->pluck('id')->toArray();
         }
 
@@ -225,14 +225,20 @@ class PredictionForm extends Component
         }
 
         $this->validate([
-            'type' => 'required|string|in:race,preseason,midseason',
+            'type' => 'required|string|in:race,sprint,preseason,midseason',
             'season' => 'required|integer|min:2020|max:2030',
-            'raceRound' => 'required_if:type,race|prohibited_if:type,preseason,midseason|integer|min:1|max:25',
+            'raceRound' => 'required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25',
             'notes' => 'nullable|string|max:1000',
-            'driverOrder' => 'required_if:type,race|array',
+            'driverOrder' => 'required_if:type,race,sprint|array',
             'teamOrder' => 'required_if:type,preseason,midseason|array',
             'driverChampionship' => 'required_if:type,preseason,midseason|array',
         ]);
+
+        if ($this->type === 'sprint' && ($this->race === null || ! $this->race->hasSprint())) {
+            $this->addError('type', 'Sprint predictions are only available for races that have a sprint session.');
+
+            return;
+        }
 
         $predictionData = $this->buildPredictionData();
 
@@ -271,7 +277,7 @@ class PredictionForm extends Component
     {
         $data = [];
 
-        if ($this->type === 'race') {
+        if (in_array($this->type, ['race', 'sprint'], true)) {
             $data['driver_order'] = $this->driverOrder;
             if ($this->fastestLapDriverId) {
                 $data['fastest_lap'] = $this->fastestLapDriverId;

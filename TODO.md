@@ -369,28 +369,37 @@ Longer-horizon ideas, experiments, and aspirational improvements. These are not 
 - **id**: F1-010
   - **title**: Introduce sprint-only prediction mode
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P3
   - **risk_level**: high
   - **owner**: mixed
   - **affected_areas**:
     - app/Models/Prediction.php
+    - app/Models/Races.php
     - app/Services/ScoringService.php
     - app/Livewire/Predictions/PredictionForm.php
-    - resources/views/predictions/*
+    - resources/views/livewire/predictions/prediction-form.blade.php
+    - resources/views/components/prediction-form.blade.php
+    - app/Http/Requests/StorePredictionRequest.php
+    - app/Http/Requests/UpdatePredictionRequest.php
     - tests/Feature/PredictionFormValidationTest.php
+    - tests/Feature/LivewirePredictionFormTest.php
     - tests/Feature/ScoringServiceTest.php
   - **description**: Add a new prediction type for sprint races, including data model, form updates, and scoring rules, while keeping it separate from full-race predictions.
   - **acceptance_criteria**:
     - Users can create, view, and manage sprint-only predictions for races that have sprints.
-    - Sprint predictions are scored and surfaced on leaderboards without affecting existing race predictions.
-    - Tests cover creation, validation, scoring, and display of sprint predictions.
+    - Sprint predictions are scored using sprint-specific weights and handled separately from full-race scoring.
+    - Tests cover creation, validation, scoring, and display flows for sprint predictions.
   - **dependencies**:
     - F1-001, F1-006, F1-009.
   - **test_expectations**:
-    - New tests in prediction/scoring-related feature files; updates to `ScoringServiceTest.php`.
+    - New tests in prediction/scoring-related feature files; updates to `ScoringServiceTest.php`, `PredictionFormValidationTest.php`, and `LivewirePredictionFormTest.php`.
   - **notes**:
     - Primary: Feature Implementer; Consulted: Data/Scoring Scientist, Test & QA. Human approval required.
+  - **completed_summary**:
+    - Introduced a `sprint` prediction type wired through `Prediction`, `Races` (including `sprintPredictions()` and `allowsSprintPredictions()`), and `ScoringService`, where sprint predictions are scored via dedicated sprint position weights and a smaller perfect-bonus without affecting the existing race scoring path.
+    - Updated the Livewire `PredictionForm`, Blade-based prediction form component, and HTTP Form Requests so sprint predictions use the race-style driver order/fastest-lap data shape, require a `race_round`, and are only allowed for races flagged with `has_sprint = true`, while keeping preseason and midseason behaviors unchanged.
+    - Extended `ScoringServiceTest`, `PredictionFormValidationTest`, and `LivewirePredictionFormTest` with sprint-focused cases and ran `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/PredictionFormValidationTest.php tests/Feature/LivewirePredictionFormTest.php` successfully after formatting changes via `vendor/bin/pint --dirty`.
 
 - **id**: F1-011
   - **title**: Add “luck” and variance analytics for predictors

@@ -31,6 +31,7 @@
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white @error('type') border-red-500 @enderror"
                     >
                         <option value="race">Race Prediction</option>
+                        <option value="sprint">Sprint Prediction</option>
                         <option value="preseason">Preseason Prediction</option>
                         <option value="midseason">Midseason Prediction</option>
                     </select>
@@ -57,8 +58,8 @@
                     @enderror
                 </div>
 
-                <!-- Race Round (for race predictions) -->
-                @if($type === 'race')
+                <!-- Race Round (for race and sprint predictions) -->
+                @if(in_array($type, ['race', 'sprint']))
                 <div>
                     <label for="raceRound" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Race Round

@@ -75,6 +75,15 @@ class Races extends Model
     }
 
     /**
+     * Get the sprint predictions for this race.
+     */
+    public function sprintPredictions(): HasMany
+    {
+        return $this->hasMany(Prediction::class, 'race_id', 'id')
+            ->where('type', 'sprint');
+    }
+
+    /**
      * Get the standings for this race.
      */
     public function standings(): HasMany
@@ -140,12 +149,13 @@ class Races extends Model
     public function getFormattedDateTimeAttribute(): string
     {
         $date = $this->date->format('F j, Y');
-        
+
         if ($this->time) {
             $time = $this->time->format('g:i A T');
+
             return "{$date} at {$time}";
         }
-        
+
         return $date;
     }
 
@@ -162,7 +172,7 @@ class Races extends Model
      */
     public function isCompleted(): bool
     {
-        return $this->status === 'completed' || !empty($this->results);
+        return $this->status === 'completed' || ! empty($this->results);
     }
 
     /**
@@ -175,6 +185,26 @@ class Races extends Model
     }
 
     /**
+     * Check if this race has a sprint session.
+     */
+    public function hasSprint(): bool
+    {
+        return (bool) $this->has_sprint;
+    }
+
+    /**
+     * Check if sprint predictions are still allowed for this race.
+     */
+    public function allowsSprintPredictions(): bool
+    {
+        if (! $this->hasSprint()) {
+            return false;
+        }
+
+        return $this->isUpcoming();
+    }
+
+    /**
      * Get the race results as an array.
      */
     public function getResultsArray(): array
@@ -182,7 +212,7 @@ class Races extends Model
         if (is_string($this->results)) {
             return json_decode($this->results, true) ?? [];
         }
-        
+
         return $this->results ?? [];
     }
 
@@ -192,6 +222,7 @@ class Races extends Model
     public function getWinner(): ?array
     {
         $results = $this->getResultsArray();
+
         return $results[0] ?? null;
     }
 
@@ -201,6 +232,7 @@ class Races extends Model
     public function getPodium(): array
     {
         $results = $this->getResultsArray();
+
         return array_slice($results, 0, 3);
     }
 }

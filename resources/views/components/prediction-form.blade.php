@@ -19,6 +19,7 @@
         >
             <option value="">Select prediction type</option>
             <option value="race" {{ old('type', $prediction?->type) === 'race' ? 'selected' : '' }}>Race Prediction</option>
+            <option value="sprint" {{ old('type', $prediction?->type) === 'sprint' ? 'selected' : '' }}>Sprint Prediction</option>
             <option value="preseason" {{ old('type', $prediction?->type) === 'preseason' ? 'selected' : '' }}>Preseason Prediction</option>
             <option value="midseason" {{ old('type', $prediction?->type) === 'midseason' ? 'selected' : '' }}>Midseason Prediction</option>
         </select>

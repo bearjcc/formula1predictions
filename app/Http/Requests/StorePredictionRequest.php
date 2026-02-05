@@ -24,13 +24,13 @@ class StorePredictionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['required', 'string', Rule::in(['race', 'preseason', 'midseason'])],
+            'type' => ['required', 'string', Rule::in(['race', 'sprint', 'preseason', 'midseason'])],
             'season' => ['required', 'integer', 'min:1950', 'max:2030'],
-            'race_round' => ['required_if:type,race', 'prohibited_if:type,preseason,midseason', 'integer', 'min:1', 'max:25'],
+            'race_round' => ['required_if:type,race,sprint', 'prohibited_if:type,preseason,midseason', 'integer', 'min:1', 'max:25'],
             'race_id' => ['nullable', 'integer', 'exists:races,id'],
             'prediction_data' => ['required', 'array'],
-            'prediction_data.driver_order' => ['required_if:type,race', 'array', 'min:20', 'max:20'],
-            'prediction_data.driver_order.*' => ['required_if:type,race', 'integer', 'exists:drivers,id'],
+            'prediction_data.driver_order' => ['required_if:type,race,sprint', 'array', 'min:20', 'max:20'],
+            'prediction_data.driver_order.*' => ['required_if:type,race,sprint', 'integer', 'exists:drivers,id'],
             'prediction_data.fastest_lap' => ['nullable', 'integer', 'exists:drivers,id'],
             'prediction_data.team_order' => ['required_if:type,preseason,midseason', 'array', 'min:10', 'max:10'],
             'prediction_data.team_order.*' => ['required_if:type,preseason,midseason', 'integer', 'exists:teams,id'],

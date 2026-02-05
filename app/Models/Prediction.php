@@ -75,7 +75,11 @@ class Prediction extends Model
             return false;
         }
 
-        if ($this->type === 'race' && $this->race) {
+        if (in_array($this->type, ['race', 'sprint'], true) && $this->race) {
+            if ($this->type === 'sprint') {
+                return $this->race->allowsSprintPredictions();
+            }
+
             return $this->race->allowsPredictions();
         }
 
@@ -120,7 +124,7 @@ class Prediction extends Model
         /** @var ScoringService $service */
         $service = app(ScoringService::class);
 
-        if ($this->type === 'race' && $this->race) {
+        if ($this->race && $this->type === 'race') {
             $score = $service->calculatePredictionScore($this, $this->race);
 
             $service->savePredictionScore($this, $score);
@@ -128,11 +132,20 @@ class Prediction extends Model
             $this->refresh();
 
             return true;
-        } else {
-            $this->score = 0;
-            $this->accuracy = 0.0;
         }
 
+        if ($this->race && $this->type === 'sprint') {
+            $score = $service->calculateSprintPredictionScore($this, $this->race);
+
+            $service->savePredictionScore($this, $score);
+
+            $this->refresh();
+
+            return true;
+        }
+
+        $this->score = 0;
+        $this->accuracy = 0.0;
         $this->status = 'scored';
         $this->scored_at = now();
 
