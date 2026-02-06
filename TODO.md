@@ -38,11 +38,18 @@ Human-playable state with a "Gabe Newell" quality bar: polished, valuable, and c
   - [x] Accuracy trends calculation with moving averages
   - [x] Route: `/leaderboard/user/{user}/livewire` (new Livewire version)
 - [x] Implement "Supporter" badge systems (One-time support model).
-  - [x] Created migration for badge fields (is_season_supporter, badges JSON)
+  - [x] Migration for badge fields (is_season_supporter, badges JSON)
   - [x] Added badge management methods to User model
-  - [x] Created `SeasonSupporter` Livewire component with modal
+  - [x] Stripe Integration: Installed Laravel Cashier
+  - [x] Created `StripeCheckoutController` for one-time payments
+  - [x] Added `StripeWebhookController` for payment event handling
+  - [x] Created `SeasonSupporter` Livewire component with Stripe checkout integration
   - [x] Integrated supporter component into profile settings
   - [x] Badge display on leaderboard and user profiles
+- [x] Production Preparation
+  - [x] Drafted comprehensive production deployment plan (`DEPLOYMENT.md`)
+  - [x] Updated `.env.example` with Stripe configuration
+  - [x] Updated `PRD.json` to reflect Stripe as a core requirement (v1.1.0)
 - [ ] Implement real-time notifications for results and score updates.
 
 ## Current Audit Notes (2026-02-06)

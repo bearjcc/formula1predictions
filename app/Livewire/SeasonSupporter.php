@@ -11,42 +11,25 @@ class SeasonSupporter extends Component
     public User $user;
     public bool $isSupporter = false;
     public string $supporterSince = '';
-    public bool $showModal = false;
-    public bool $confirming = false;
+    public string $price = '$10';
+    public bool $stripeEnabled = false;
 
     public function mount(): void
     {
         $this->user = Auth::user();
         $this->isSupporter = $this->user->is_season_supporter;
         $this->supporterSince = $this->user->supporter_since ? $this->user->supporter_since->format('F j, Y') : '';
-    }
-
-    public function openModal(): void
-    {
-        $this->showModal = true;
-    }
-
-    public function closeModal(): void
-    {
-        $this->showModal = false;
-        $this->confirming = false;
-    }
-
-    public function confirmSupport(): void
-    {
-        $this->confirming = true;
-    }
-
-    public function becomeSupporter(): void
-    {
-        $success = $this->user->makeSeasonSupporter();
         
-        if ($success) {
-            $this->isSupporter = true;
-            $this->supporterSince = now()->format('F j, Y');
-            $this->closeModal();
-            $this->dispatch('supporter-updated');
-        }
+        // Check if Stripe is configured
+        $this->stripeEnabled = !empty(config('services.stripe.secret')) && 
+                           !empty(config('services.stripe.key')) &&
+                           config('services.stripe.key') !== 'pk_test_placeholder';
+    }
+
+    public function initiateCheckout(): void
+    {
+        // Redirect to Stripe checkout controller
+        return redirect()->route('checkout.season-supporter');
     }
 
     public function render()

@@ -1,13 +1,15 @@
 {
     "name": "formula1predictions",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "philosophy": "Sustainable but not sleezy. Think Gabe Newell (Value-add, Quality, Community) not EA (Microtransactions, Predatory). Build for fans.",
     "description": "A Laravel-based Formula 1 Prediction game where fans can predict race results and compete on leaderboards.",
     "stack": {
         "framework": "Laravel 12.0",
         "frontend": "Livewire 3.6, Flux 2.5, Mary UI 2.4, Tailwind CSS, Vite",
         "persistence": "SQLite (local development), PostgreSQL/MySQL (production)",
-        "testing": "Pest 4.0, Laravel Dusk"
+        "testing": "Pest 4.0, Laravel Dusk",
+        "payments": "Laravel Cashier (Stripe)",
+        "web_server": "Nginx (production)"
     },
     "core_features": [
         "Race Predictions: Predict driver finishing order and fastest lap",
@@ -15,25 +17,59 @@
         "Leaderboards: Track user performance across seasons",
         "F1 API Integration: Real-time race data and results",
         "Driver Substitution Handling: Manage mid-session driver changes",
-        "User Notifications: Deadline reminders and score updates"
+        "User Notifications: Deadline reminders and score updates",
+        "Season Supporter: One-time payment model for supporting the game",
+        "Pro Stats Visualization: Accuracy trends, position heatmaps, points progression"
     ],
+    "payment_model": {
+        "type": "one-time_purchase",
+        "processor": "Stripe via Laravel Cashier",
+        "philosophy": "Supporter model, not subscription",
+        "products": [
+            {
+                "name": "Season Supporter",
+                "price": "$10.00",
+                "benefits": [
+                    "Exclusive Season Supporter badge",
+                    "Highlighted on leaderboard",
+                    "Full Pro Stats access",
+                    "Priority feature access",
+                    "Support ongoing development"
+                ]
+            }
+        ],
+        "why_no_subscription": "Fans already pay for Formula 1 TV/streaming. Adding another subscription is predatory and hurts adoption. One-time supporter model aligns with 'value-add' philosophy."
+    },
     "audit_summary": {
-        "state": "Incomplete but structural foundation is strong",
-        "broken": [
-            ".env file missing (needs generation)",
-            "Database not migrated or seeded",
-            "frontend assets not built",
-            "F1 API integration needs key/config"
+        "state": "Phase 2 Complete, Phase 3 In Progress",
+        "completed": [
+            "Phase 1: Local Setup & Database ✅",
+            "Phase 2: Core Prediction Logic ✅",
+            "Global leaderboard with Pro Stats ✅",
+            "User profile statistics ✅",
+            "Season Supporter badge system ✅",
+            "Laravel Cashier (Stripe) integration ✅"
+        ],
+        "in_progress": [
+            "Mini-Leagues / Private Groups",
+            "Real-time notifications"
+        ],
+        "production_ready": [
+            "Stripe payment flow implemented",
+            "Database migrations ready",
+            "Deployment plan documented (DEPLOYMENT.md)"
         ],
         "missing": [
-            "Production deployment script",
-            "Public-facing game dashboard polishing",
-            "Complete set of admin tools for result entry"
+            "Stripe webhook handler implementation",
+            "Production environment variables configured",
+            "SSL certificate configuration",
+            "Monitoring and alerting setup"
         ]
     },
     "phased_plan": {
         "Phase 1": {
             "name": "Local Setup & Database",
+            "status": "complete",
             "tasks": [
                 "Environment configuration (.env)",
                 "Database migrations and seeding",
@@ -43,6 +79,7 @@
         },
         "Phase 2": {
             "name": "Core Prediction Logic",
+            "status": "complete",
             "tasks": [
                 "Implement/Fix prediction saving flow",
                 "Driver selection UI (drag and drop)",
@@ -52,17 +89,73 @@
         },
         "Phase 3": {
             "name": "Leaderboard & Competition",
+            "status": "in_progress",
             "tasks": [
-                "Global and private leaderboards",
+                "Global and private leaderboards ✅",
                 "Competition groups / mini-leagues",
-                "Historical data visualization",
-                "User profile stats and achievements"
+                "Historical data visualization ✅",
+                "User profile stats and achievements ✅",
+                "Season Supporter payment flow ✅"
             ]
+        },
+        "Phase 4": {
+            "name": "Production Deployment",
+            "status": "planned",
+            "tasks": [
+                "Configure production environment (Hetzner/DigitalOcean)",
+                "Set up PostgreSQL database",
+                "Configure Stripe live mode and webhooks",
+                "Implement SSL with Let's Encrypt",
+                "Set up monitoring and error tracking",
+                "Performance optimization (Redis, queue workers)",
+                "Launch and 48-hour monitoring period"
+            ]
+        }
+    },
+    "infrastructure": {
+        "development": {
+            "location": "Localhost via Tailscale",
+            "database": "SQLite",
+            "url": "http://localhost:8000"
+        },
+        "production_recommended": {
+            "provider": "Hetzner Cloud",
+            "server_spec": "CX22 (2 vCPU, 4GB RAM, 40GB NVMe)",
+            "monthly_cost": "~€7.50",
+            "database": "PostgreSQL",
+            "web_server": "Nginx + PHP-FPM",
+            "cache_queue": "Redis"
         }
     },
     "standard_project_files": [
         "PRD.json",
         "AGENTS.md",
-        "TODO.md"
-    ]
+        "TODO.md",
+        "DEPLOYMENT.md"
+    ],
+    "stripe_integration": {
+        "status": "implemented",
+        "components": [
+            "Laravel Cashier installed (v16.2)",
+            "User model with Billable trait",
+            "StripeCheckoutController for one-time payments",
+            "Checkout session creation for Season Supporter",
+            "Success/cancel flow handling",
+            "Customer portal for payment management"
+        ],
+        "required_env_vars": [
+            "STRIPE_KEY",
+            "STRIPE_SECRET",
+            "STRIPE_PRICE_ID",
+            "STRIPE_WEBHOOK_SECRET",
+            "CASHIER_CURRENCY"
+        ],
+        "next_steps": [
+            "Create product in Stripe Dashboard",
+            "Configure webhooks",
+            "Test in Stripe test mode",
+            "Switch to live keys for production",
+            "Set up webhook endpoint"
+        ]
+    }
 }
