@@ -76,9 +76,11 @@ Route::middleware(['auth'])->group(function () {
     // Leaderboard routes
     Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
         Route::get('/', [LeaderboardController::class, 'index'])->name('index');
+        Route::get('/livewire', function () { return view('leaderboard.index-livewire'); })->name('livewire');
         Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
         Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
         Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');
+        Route::get('/user/{user}/livewire', function ($user) { return view('leaderboard.user-stats-livewire', ['user' => $user]); })->name('user-stats-livewire');
     });
 });
 
