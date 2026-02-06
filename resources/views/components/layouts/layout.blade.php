@@ -30,15 +30,15 @@
                             <x-mary-icon name="o-home" class="w-4 h-4" />
                             <span>{{ __('Home') }}</span>
                         </a>
-                        <a href="{{ route('races', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('races', ['year' => date('Y')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-calendar" class="w-4 h-4" />
                             <span>{{ __('Races') }}</span>
                         </a>
-                        <a href="{{ route('standings', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings', ['year' => date('Y')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />
                             <span>{{ __('Standings') }}</span>
                         </a>
-                        <a href="{{ route('standings.predictions', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.predictions', ['year' => date('Y')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
                             <span>{{ __('Predictions') }}</span>
                         </a>
@@ -56,11 +56,11 @@
                 <div>
                     <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('Teams & Drivers') }}</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('standings.teams', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.teams', ['year' => date('Y')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-users" class="w-4 h-4" />
                             <span>{{ __('Teams') }}</span>
                         </a>
-                        <a href="{{ route('standings.drivers', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.drivers', ['year' => date('Y')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-user" class="w-4 h-4" />
                             <span>{{ __('Drivers') }}</span>
                         </a>
@@ -84,17 +84,40 @@
 
             <!-- User Menu -->
             <div class="p-4 border-t border-zinc-200 dark:border-zinc-700">
-                <div class="dropdown dropdown-top">
-                    <div tabindex="0" role="button" class="flex items-center space-x-2 cursor-pointer">
-                        <x-mary-avatar class="w-8 h-8" placeholder="GU" />
-                        <span class="text-sm">Guest User</span>
-                        <x-mary-icon name="o-chevron-down" class="w-4 h-4" />
+                @auth
+                    <div class="dropdown dropdown-top w-full">
+                        <div tabindex="0" role="button" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
+                            <div class="flex items-center space-x-2">
+                                <x-mary-avatar class="w-8 h-8" placeholder="{{ strtoupper(substr(Auth::user()->name, 0, 2)) }}" />
+                                <span class="text-sm font-medium truncate max-w-[120px]">{{ Auth::user()->name }}</span>
+                            </div>
+                            <x-mary-icon name="o-chevron-up" class="w-4 h-4 text-zinc-500" />
+                        </div>
+                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52 mb-2">
+                            <li><a href="{{ route('settings.profile') }}" wire:navigate><x-mary-icon name="o-user" class="w-4 h-4" /> {{ __('Profile') }}</a></li>
+                            <li><a href="{{ route('settings.appearance') }}" wire:navigate><x-mary-icon name="o-swatch" class="w-4 h-4" /> {{ __('Appearance') }}</a></li>
+                            <li><hr class="my-1 border-zinc-200 dark:border-zinc-700"></li>
+                            <li>
+                                <form action="{{ route('logout') }}" method="POST" class="w-full">
+                                    @csrf
+                                    <button type="submit" class="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
+                                        <x-mary-icon name="o-arrow-right-start-on-rectangle" class="w-4 h-4" />
+                                        <span>{{ __('Log Out') }}</span>
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
                     </div>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                        <li><a href="{{ route('login') }}" wire:navigate>{{ __('Log In') }}</a></li>
-                        <li><a href="{{ route('register') }}" wire:navigate>{{ __('Register') }}</a></li>
-                    </ul>
-                </div>
+                @else
+                    <div class="space-y-2">
+                        <a href="{{ route('login') }}" class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors" wire:navigate>
+                            {{ __('Log In') }}
+                        </a>
+                        <a href="{{ route('register') }}" class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors" wire:navigate>
+                            {{ __('Register') }}
+                        </a>
+                    </div>
+                @endauth
             </div>
         </div>
 
@@ -123,11 +146,25 @@
                         <div class="lg:hidden">
                             <div class="dropdown dropdown-bottom dropdown-end">
                                 <div tabindex="0" role="button">
-                                    <x-mary-avatar class="w-8 h-8" placeholder="GU" />
+                                    @auth
+                                        <x-mary-avatar class="w-8 h-8" placeholder="{{ strtoupper(substr(Auth::user()->name, 0, 2)) }}" />
+                                    @else
+                                        <x-mary-avatar class="w-8 h-8" placeholder="GU" />
+                                    @endauth
                                 </div>
-                                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                    <li><a href="{{ route('login') }}" wire:navigate>{{ __('Log In') }}</a></li>
-                                    <li><a href="{{ route('register') }}" wire:navigate>{{ __('Register') }}</a></li>
+                                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52">
+                                    @auth
+                                        <li><a href="{{ route('settings.profile') }}" wire:navigate>{{ __('Profile') }}</a></li>
+                                        <li>
+                                            <form action="{{ route('logout') }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="text-red-600 w-full text-left">{{ __('Log Out') }}</button>
+                                            </form>
+                                        </li>
+                                    @else
+                                        <li><a href="{{ route('login') }}" wire:navigate>{{ __('Log In') }}</a></li>
+                                        <li><a href="{{ route('register') }}" wire:navigate>{{ __('Register') }}</a></li>
+                                    @endauth
                                 </ul>
                             </div>
                         </div>

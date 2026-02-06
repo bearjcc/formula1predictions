@@ -10,24 +10,14 @@ use Illuminate\Support\Facades\Log;
 
 class ScoreRacePredictions extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'predictions:score 
                             {--race= : Specific race ID to score}
                             {--season= : Season to score (default: current year)}
                             {--round= : Specific race round to score}
-                            {--force : Force scoring even if already scored}
-                            {--dry-run : Show what would be scored without actually scoring}';
+                            {--all : Attempt to score all completed races that are unscored}
+                            {--dry-run : Show actions without saving}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Automatically score race predictions using F1 API results';
+    protected $description = 'Fetch race results and score active predictions';
 
     public function __construct(
         private F1ApiService $f1ApiService,
@@ -36,133 +26,92 @@ class ScoreRacePredictions extends Command
         parent::__construct();
     }
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         $raceId = $this->option('race');
-        $season = $this->option('season') ?? date('Y');
+        $season = (int)($this->option('season') ?? date('Y'));
         $round = $this->option('round');
-        $force = $this->option('force');
         $dryRun = $this->option('dry-run');
 
-        try {
-            if ($raceId) {
-                // Score specific race
-                $race = Races::findOrFail($raceId);
-                return $this->scoreSpecificRace($race, $force, $dryRun);
-            } elseif ($round) {
-                // Score specific round
-                $race = Races::where('season', $season)
-                    ->where('round', $round)
-                    ->first();
-                
-                if (!$race) {
-                    $this->error("No race found for season {$season}, round {$round}");
-                    return 1;
-                }
-                
-                return $this->scoreSpecificRace($race, $force, $dryRun);
-            } else {
-                // Score all completed races for the season
-                return $this->scoreSeasonRaces($season, $force, $dryRun);
-            }
-        } catch (\Exception $e) {
-            $this->error("Error: " . $e->getMessage());
-            Log::error("Scoring command failed: " . $e->getMessage());
-            return 1;
+        if ($this->option('all')) {
+            return $this->scoreUnscoredRaces($season, $dryRun);
         }
+
+        if ($raceId) {
+            $race = Races::findOrFail($raceId);
+            return $this->processRace($race, $dryRun);
+        }
+
+        if ($round) {
+            $race = Races::where('season', $season)->where('round', $round)->first();
+            if (!$race) {
+                $this->error("Race not found for season $season round $round");
+                return 1;
+            }
+            return $this->processRace($race, $dryRun);
+        }
+
+        $this->warn("Please specify --race, --round, or --all.");
+        return 1;
     }
 
-    private function scoreSpecificRace(Races $race, bool $force, bool $dryRun): int
+    private function processRace(Races $race, bool $dryRun): int
     {
-        if (!$race->isCompleted()) {
-            $this->error("Race {$race->id} is not completed yet");
-            return 1;
+        $this->info("Processing {$race->race_name} ($race->season Round $race->round)...");
+
+        // Try to fetch newest results from API first
+        try {
+            $apiData = $this->f1ApiService->getRaceResults($race->season, $race->round);
+            if (!empty($apiData['races']['results'] ?? [])) {
+                $this->info("Updating race results from official API...");
+                if (!$dryRun) {
+                    $race->update([
+                        'results' => $apiData['races']['results'],
+                        'status' => 'completed'
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            $this->warn("Could not sync latest result from API: " . $e->getMessage());
         }
 
-        $predictions = $race->predictions()
-            ->whereIn('status', ['submitted', 'locked'])
-            ->get();
-
-        if ($predictions->isEmpty()) {
-            $this->info("No predictions to score for race {$race->id}");
-            return 0;
+        if (!$race->isCompleted()) {
+            $this->error("Race {$race->id} marked as incomplete. Cannot score.");
+            return 1;
         }
 
         if ($dryRun) {
-            $this->info("DRY RUN: Would score {$predictions->count()} predictions for race {$race->id}");
+            $count = $race->predictions()->whereIn('status', ['submitted', 'locked'])->count();
+            $this->info("[DRY RUN] Would score $count predictions.");
             return 0;
         }
 
-        $this->info("Scoring {$predictions->count()} predictions for race {$race->id}...");
-        
         $results = $this->scoringService->scoreRacePredictions($race);
         
-        $this->info("Scored {$results['scored_predictions']} predictions successfully");
-        $this->info("Total score: {$results['total_score']}");
-        
-        if ($results['failed_predictions'] > 0) {
-            $this->warn("Failed to score {$results['failed_predictions']} predictions");
-            foreach ($results['errors'] as $error) {
-                $this->error($error);
-            }
-        }
+        $this->info("Scoring complete:");
+        $this->line(" - Total: {$results['total_predictions']}");
+        $this->line(" - Success: {$results['scored_predictions']}");
+        $this->line(" - Failed: {$results['failed_predictions']}");
 
         return 0;
     }
 
-    private function scoreSeasonRaces(int $season, bool $force, bool $dryRun): int
+    private function scoreUnscoredRaces(int $season, bool $dryRun): int
     {
         $races = Races::where('season', $season)
-            ->whereNotNull('results')
+            ->where('status', 'completed')
             ->get();
 
-        if ($races->isEmpty()) {
-            $this->info("No completed races found for season {$season}");
-            return 0;
-        }
-
-        $totalPredictions = 0;
-        $scoredRaces = 0;
-
         foreach ($races as $race) {
-            $predictions = $race->predictions()
+            $unscoredCount = $race->predictions()
                 ->whereIn('status', ['submitted', 'locked'])
-                ->get();
+                ->count();
 
-            if ($predictions->isNotEmpty()) {
-                $totalPredictions += $predictions->count();
-                $scoredRaces++;
+            if ($unscoredCount > 0) {
+                $this->processRace($race, $dryRun);
             }
         }
 
-        if ($totalPredictions === 0) {
-            $this->info("No predictions to score for season {$season}");
-            return 0;
-        }
-
-        if ($dryRun) {
-            $this->info("DRY RUN: Would score {$totalPredictions} predictions across {$scoredRaces} races");
-            return 0;
-        }
-
-        $this->info("Scoring {$totalPredictions} predictions across {$scoredRaces} races for season {$season}...");
-
-        foreach ($races as $race) {
-            $predictions = $race->predictions()
-                ->whereIn('status', ['submitted', 'locked'])
-                ->get();
-
-            if ($predictions->isNotEmpty()) {
-                $this->info("Scoring race {$race->id} ({$predictions->count()} predictions)...");
-                $results = $this->scoringService->scoreRacePredictions($race);
-                $this->info("  - Scored: {$results['scored_predictions']}, Failed: {$results['failed_predictions']}");
-            }
-        }
-
-        $this->info("Season scoring completed!");
         return 0;
     }
 }

@@ -1,67 +1,68 @@
 {
-  "name": "formula1predictions",
-  "version": "1.0.0",
-  "description": "A Laravel-based Formula 1 Prediction game where fans can predict race results and compete on leaderboards.",
-  "stack": {
-    "framework": "Laravel 12.0",
-    "frontend": "Livewire 3.6, Flux 2.5, Mary UI 2.4, Tailwind CSS, Vite",
-    "persistence": "SQLite (local development), PostgreSQL/MySQL (production)",
-    "testing": "Pest 4.0, Laravel Dusk"
-  },
-  "core_features": [
-    "Race Predictions: Predict driver finishing order and fastest lap",
-    "Scoring System: Dynamic scoring based on prediction accuracy",
-    "Leaderboards: Track user performance across seasons",
-    "F1 API Integration: Real-time race data and results",
-    "Driver Substitution Handling: Manage mid-session driver changes",
-    "User Notifications: Deadline reminders and score updates"
-  ],
-  "standard_project_files": [
-    "PRD.json",
-    "AGENTS.md",
-    "TODO.md"
-  ],
-  "audit_summary": {
-    "state": "Incomplete but structural foundation is strong",
-    "broken": [
-      ".env file missing (needs generation)",
-      "Database not migrated or seeded",
-      "frontend assets not built",
-      "F1 API integration needs key/config"
+    "name": "formula1predictions",
+    "version": "1.0.0",
+    "philosophy": "Sustainable but not sleezy. Think Gabe Newell (Value-add, Quality, Community) not EA (Microtransactions, Predatory). Build for fans.",
+    "description": "A Laravel-based Formula 1 Prediction game where fans can predict race results and compete on leaderboards.",
+    "stack": {
+        "framework": "Laravel 12.0",
+        "frontend": "Livewire 3.6, Flux 2.5, Mary UI 2.4, Tailwind CSS, Vite",
+        "persistence": "SQLite (local development), PostgreSQL/MySQL (production)",
+        "testing": "Pest 4.0, Laravel Dusk"
+    },
+    "core_features": [
+        "Race Predictions: Predict driver finishing order and fastest lap",
+        "Scoring System: Dynamic scoring based on prediction accuracy",
+        "Leaderboards: Track user performance across seasons",
+        "F1 API Integration: Real-time race data and results",
+        "Driver Substitution Handling: Manage mid-session driver changes",
+        "User Notifications: Deadline reminders and score updates"
     ],
-    "missing": [
-      "Production deployment script",
-      "Public-facing game dashboard polishing",
-      "Complete set of admin tools for result entry"
+    "audit_summary": {
+        "state": "Incomplete but structural foundation is strong",
+        "broken": [
+            ".env file missing (needs generation)",
+            "Database not migrated or seeded",
+            "frontend assets not built",
+            "F1 API integration needs key/config"
+        ],
+        "missing": [
+            "Production deployment script",
+            "Public-facing game dashboard polishing",
+            "Complete set of admin tools for result entry"
+        ]
+    },
+    "phased_plan": {
+        "Phase 1": {
+            "name": "Local Setup & Database",
+            "tasks": [
+                "Environment configuration (.env)",
+                "Database migrations and seeding",
+                "Frontend asset compilation (NPM)",
+                "Initial smoke tests"
+            ]
+        },
+        "Phase 2": {
+            "name": "Core Prediction Logic",
+            "tasks": [
+                "Implement/Fix prediction saving flow",
+                "Driver selection UI (drag and drop)",
+                "Locking mechanism before race start",
+                "Automated scoring logic via API"
+            ]
+        },
+        "Phase 3": {
+            "name": "Leaderboard & Competition",
+            "tasks": [
+                "Global and private leaderboards",
+                "Competition groups / mini-leagues",
+                "Historical data visualization",
+                "User profile stats and achievements"
+            ]
+        }
+    },
+    "standard_project_files": [
+        "PRD.json",
+        "AGENTS.md",
+        "TODO.md"
     ]
-  },
-  "phased_plan": {
-    "Phase 1": {
-      "name": "Local Setup & Database",
-      "tasks": [
-        "Environment configuration (.env)",
-        "Database migrations and seeding",
-        "Frontend asset compilation (NPM)",
-        "Initial smoke tests"
-      ]
-    },
-    "Phase 2": {
-      "name": "Core Prediction Logic",
-      "tasks": [
-        "Implement/Fix prediction saving flow",
-        "Driver selection UI (drag and drop)",
-        "Locking mechanism before race start",
-        "Automated scoring logic via API"
-      ]
-    },
-    "Phase 3": {
-      "name": "Leaderboard & Competition",
-      "tasks": [
-        "Global and private leaderboards",
-        "Competition groups / mini-leagues",
-        "Historical data visualization",
-        "User profile stats and achievements"
-      ]
-    }
-  }
 }

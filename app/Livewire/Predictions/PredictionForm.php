@@ -30,7 +30,7 @@ class PredictionForm extends Component
     // Race prediction data
     public array $driverOrder = [];
 
-    public ?int $fastestLapDriverId = null;
+    public ?string $fastestLapDriverId = null;
 
     // Preseason/Midseason prediction data
     public array $teamOrder = [];
@@ -48,50 +48,49 @@ class PredictionForm extends Component
 
     public ?Prediction $editingPrediction = null;
 
+    public bool $isLocked = false;
+
     public function mount(?Races $race = null, ?Prediction $existingPrediction = null): void
     {
-        // Ensure editingPrediction is null by default
         $this->editingPrediction = null;
         $this->race = $race;
 
+        $this->loadData();
+
         if ($existingPrediction !== null && $existingPrediction->exists) {
-            // Editing existing prediction
             $this->editingPrediction = $existingPrediction;
             $this->type = $existingPrediction->type ?? 'race';
             $this->season = $existingPrediction->season ?? 2024;
             $this->raceRound = $existingPrediction->race_round;
             $this->notes = $existingPrediction->notes;
 
-            // Load existing prediction data
             $predictionData = $existingPrediction->prediction_data ?? [];
             if ($this->type === 'race') {
-                $this->driverOrder = $predictionData['driver_order'] ?? [];
-                $this->fastestLapDriverId = $predictionData['fastest_lap'] ?? null;
+                $this->driverOrder = $predictionData['driver_order'] ?? $this->driverOrder;
+                $this->fastestLapDriverId = (string)($predictionData['fastest_lap'] ?? '');
             } else {
-                $this->teamOrder = $predictionData['team_order'] ?? [];
-                $this->driverChampionship = $predictionData['driver_championship'] ?? [];
+                $this->teamOrder = $predictionData['team_order'] ?? $this->teamOrder;
+                $this->driverChampionship = $predictionData['driver_championship'] ?? $this->driverChampionship;
                 $this->superlatives = $predictionData['superlatives'] ?? [];
             }
+            
+            $this->isLocked = !$existingPrediction->isEditable();
         } elseif ($race !== null) {
-            // Creating new prediction for specific race
             $this->season = $race->season ?? 2024;
             $this->raceRound = $race->round;
             $this->type = 'race';
+            $this->isLocked = !$race->allowsPredictions();
         }
-
-        $this->loadData();
     }
 
     public function loadData(): void
     {
-        // Load drivers (not filtered by season since they don't have season column)
-        $this->drivers = Drivers::with('team')
-            ->where('is_active', true)
-            ->orderBy('surname')
+        // For driver order, we use driverId (string) to match F1 API
+        $this->drivers = Drivers::where('is_active', true)
             ->get()
             ->map(function ($driver) {
                 return [
-                    'id' => $driver->id,
+                    'id' => $driver->driverId, // Using driverId string
                     'name' => $driver->name,
                     'surname' => $driver->surname,
                     'nationality' => $driver->nationality,
@@ -103,7 +102,6 @@ class PredictionForm extends Component
             })
             ->toArray();
 
-        // Load teams (not filtered by season since they don't have season column)
         $this->teams = Teams::where('is_active', true)
             ->orderBy('team_name')
             ->get()
@@ -116,17 +114,14 @@ class PredictionForm extends Component
             })
             ->toArray();
 
-        // Initialize driver order if not set and drivers exist
         if (empty($this->driverOrder) && $this->type === 'race' && ! empty($this->drivers)) {
             $this->driverOrder = collect($this->drivers)->pluck('id')->toArray();
         }
 
-        // Initialize team order if not set and teams exist
         if (empty($this->teamOrder) && in_array($this->type, ['preseason', 'midseason']) && ! empty($this->teams)) {
             $this->teamOrder = collect($this->teams)->pluck('id')->toArray();
         }
 
-        // Initialize driver championship if not set and drivers exist
         if (empty($this->driverChampionship) && in_array($this->type, ['preseason', 'midseason']) && ! empty($this->drivers)) {
             $this->driverChampionship = collect($this->drivers)->pluck('id')->toArray();
         }
@@ -155,49 +150,62 @@ class PredictionForm extends Component
 
     public function updateDriverOrder(array $newOrder): void
     {
+        if ($this->isLocked) return;
         $this->driverOrder = $newOrder;
     }
 
-    public function setFastestLap(int $driverId): void
+    public function setFastestLap(string $driverId): void
     {
+        if ($this->isLocked) return;
         $this->fastestLapDriverId = $this->fastestLapDriverId === $driverId ? null : $driverId;
     }
 
     public function updateTeamOrder(array $newOrder): void
     {
+        if ($this->isLocked) return;
         $this->teamOrder = $newOrder;
     }
 
     #[On('driver-order-updated')]
     public function handleDriverOrderUpdated(array $order): void
     {
+        if ($this->isLocked) return;
         $this->driverOrder = $order;
     }
 
     #[On('fastest-lap-updated')]
-    public function handleFastestLapUpdated(?int $driverId): void
+    public function handleFastestLapUpdated(?string $driverId): void
     {
+        if ($this->isLocked) return;
         $this->fastestLapDriverId = $driverId;
     }
 
     #[On('team-order-updated')]
     public function handleTeamOrderUpdated(array $order): void
     {
+        if ($this->isLocked) return;
         $this->teamOrder = $order;
     }
 
     public function updateDriverChampionship(array $newOrder): void
     {
+        if ($this->isLocked) return;
         $this->driverChampionship = $newOrder;
     }
 
     public function updateSuperlative(string $key, $value): void
     {
+        if ($this->isLocked) return;
         $this->superlatives[$key] = $value;
     }
 
     public function save(): void
     {
+        if ($this->isLocked) {
+            session()->flash('error', 'This prediction is locked and cannot be saved.');
+            return;
+        }
+
         $this->validate([
             'type' => 'required|string|in:race,preseason,midseason',
             'season' => 'required|integer|min:2020|max:2030',
@@ -211,31 +219,34 @@ class PredictionForm extends Component
         $predictionData = $this->buildPredictionData();
 
         if ($this->editingPrediction !== null) {
-            // Update existing prediction
             $this->editingPrediction->update([
                 'type' => $this->type,
                 'season' => $this->season,
                 'race_round' => $this->raceRound,
-                'race_id' => $this->race?->id,
+                'race_id' => $this->race?->id ?? $this->editingPrediction->race_id,
                 'prediction_data' => $predictionData,
                 'notes' => $this->notes,
+                'status' => 'submitted',
+                'submitted_at' => now(),
             ]);
 
-            $prediction = $this->editingPrediction;
+            session()->flash('success', 'Prediction updated successfully.');
         } else {
-            // Create new prediction
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
-            $prediction = $user->predictions()->create([
+            $user->predictions()->create([
                 'type' => $this->type,
                 'season' => $this->season,
                 'race_round' => $this->raceRound,
                 'race_id' => $this->race?->id,
                 'prediction_data' => $predictionData,
                 'notes' => $this->notes,
-                'status' => 'draft',
+                'status' => 'submitted',
+                'submitted_at' => now(),
             ]);
+
+            session()->flash('success', 'Prediction created successfully.');
         }
 
         $this->redirect(route('predictions.index'));

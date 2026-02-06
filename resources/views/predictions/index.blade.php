@@ -1,54 +1,83 @@
-@extends('components.layouts.layout')
-
-@section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Predictions</h1>
-        <a href="{{ route('predictions.create') }}" class="btn btn-primary">Create New Prediction</a>
+<x-layouts.layout title="My Predictions">
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">My Predictions</h1>
+            <p class="text-zinc-600 dark:text-zinc-400">
+                Track your performance across the season.
+            </p>
+        </div>
+        <x-mary-button label="New Prediction" link="{{ route('races', ['year' => date('Y')]) }}" variant="primary" icon="o-plus" />
     </div>
 
-    @if($predictions->count() > 0)
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @foreach($predictions as $prediction)
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title">{{ ucfirst($prediction->type) }} Prediction</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Season: {{ $prediction->season }}
-                            @if($prediction->race_round)
-                                | Round: {{ $prediction->race_round }}
-                            @endif
-                        </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Status: <span class="badge badge-{{ $prediction->status === 'scored' ? 'success' : 'warning' }}">
-                                {{ ucfirst($prediction->status) }}
-                            </span>
-                        </p>
-                        @if($prediction->score > 0)
-                            <p class="text-sm font-semibold text-green-600 dark:text-green-400">
-                                Score: {{ $prediction->score }}
-                            </p>
-                        @endif
-                        <div class="card-actions justify-end">
-                            <a href="{{ route('predictions.show', $prediction) }}" class="btn btn-sm btn-outline">View</a>
-                            @if($prediction->status === 'draft')
-                                <a href="{{ route('predictions.edit', $prediction) }}" class="btn btn-sm btn-primary">Edit</a>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-
-        <div class="mt-6">
-            {{ $predictions->links() }}
-        </div>
-    @else
-        <div class="text-center py-12">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No predictions yet</h3>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">Start making predictions to see them here.</p>
-            <a href="{{ route('predictions.create') }}" class="btn btn-primary">Create Your First Prediction</a>
+    @if(session('success'))
+        <div class="mb-6">
+            <x-mary-alert title="Success" icon="o-check-circle" class="bg-green-50 text-green-800 border-green-200">
+                {{ session('success') }}
+            </x-mary-alert>
         </div>
     @endif
-</div>
-@endsection
+
+    <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm overflow-hidden">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-700">
+                    <th class="p-4 font-bold text-sm text-zinc-500 uppercase tracking-wider">Race / Event</th>
+                    <th class="p-4 font-bold text-sm text-zinc-500 uppercase tracking-wider">Status</th>
+                    <th class="p-4 font-bold text-sm text-zinc-500 uppercase tracking-wider text-right">Score</th>
+                    <th class="p-4 font-bold text-sm text-zinc-500 uppercase tracking-wider text-right">Accuracy</th>
+                    <th class="p-4 font-bold text-sm text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                @forelse($predictions as $prediction)
+                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors">
+                        <td class="p-4">
+                            <div class="font-bold text-zinc-900 dark:text-zinc-100">
+                                @if($prediction->type === 'race')
+                                    {{ $prediction->race->race_name ?? "Round {$prediction->race_round}" }}
+                                @else
+                                    {{ ucfirst($prediction->type) }} Prediction
+                                @endif
+                            </div>
+                            <div class="text-xs text-zinc-500">{{ $prediction->season }} Season</div>
+                        </td>
+                        <td class="p-4">
+                            <x-mary-badge 
+                                value="{{ ucfirst($prediction->status) }}" 
+                                class="{{ $prediction->status === 'scored' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-zinc-100 text-zinc-800 border-zinc-200' }}"
+                            />
+                        </td>
+                        <td class="p-4 text-right font-bold {{ $prediction->score > 0 ? 'text-green-600' : '' }}">
+                            {{ $prediction->status === 'scored' ? number_format($prediction->score) : '-' }}
+                        </td>
+                        <td class="p-4 text-right">
+                            {{ $prediction->status === 'scored' ? number_format($prediction->accuracy, 1) . '%' : '-' }}
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <x-mary-button icon="o-eye" link="{{ route('predictions.show', $prediction) }}" variant="ghost" size="sm" />
+                                @if($prediction->isEditable())
+                                    <x-mary-button icon="o-pencil" link="{{ route('predictions.edit', $prediction) }}" variant="ghost" size="sm" />
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="p-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <x-mary-icon name="o-no-symbol" class="w-12 h-12 text-zinc-300 mb-4" />
+                                <p class="text-zinc-500 font-medium">You haven't made any predictions yet.</p>
+                                <x-mary-button label="Check upcoming races" link="{{ route('races', ['year' => date('Y')]) }}" variant="outline" class="mt-4" />
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6">
+        {{ $predictions->links() }}
+    </div>
+</x-layouts.layout>

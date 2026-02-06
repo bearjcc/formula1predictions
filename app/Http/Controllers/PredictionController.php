@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Prediction;
 use App\Http\Requests\StorePredictionRequest;
 use App\Http\Requests\UpdatePredictionRequest;
+use App\Models\Prediction;
+use App\Models\Races;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class PredictionController extends Controller
 {
@@ -18,17 +19,25 @@ class PredictionController extends Controller
      */
     public function index(): View
     {
-        $predictions = Auth::user()->predictions()->latest()->paginate(10);
-        
+        $predictions = Auth::user()->predictions()
+            ->with('race')
+            ->latest()
+            ->paginate(10);
+
         return view('predictions.index', compact('predictions'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('predictions.create');
+        $race = null;
+        if ($request->has('race_id')) {
+            $race = Races::find($request->get('race_id'));
+        }
+
+        return view('predictions.create', compact('race'));
     }
 
     /**
@@ -37,7 +46,7 @@ class PredictionController extends Controller
     public function store(StorePredictionRequest $request): RedirectResponse
     {
         $prediction = Auth::user()->predictions()->create($request->validated());
-        
+
         return redirect()->route('predictions.show', $prediction)
             ->with('success', 'Prediction created successfully.');
     }
@@ -48,7 +57,7 @@ class PredictionController extends Controller
     public function show(Prediction $prediction): View
     {
         Gate::authorize('view', $prediction);
-        
+
         return view('predictions.show', compact('prediction'));
     }
 
@@ -58,7 +67,7 @@ class PredictionController extends Controller
     public function edit(Prediction $prediction): View
     {
         Gate::authorize('update', $prediction);
-        
+
         return view('predictions.edit', compact('prediction'));
     }
 
@@ -68,9 +77,9 @@ class PredictionController extends Controller
     public function update(UpdatePredictionRequest $request, Prediction $prediction): RedirectResponse
     {
         Gate::authorize('update', $prediction);
-        
+
         $prediction->update($request->validated());
-        
+
         return redirect()->route('predictions.show', $prediction)
             ->with('success', 'Prediction updated successfully.');
     }
@@ -81,9 +90,9 @@ class PredictionController extends Controller
     public function destroy(Prediction $prediction): RedirectResponse
     {
         Gate::authorize('delete', $prediction);
-        
+
         $prediction->delete();
-        
+
         return redirect()->route('predictions.index')
             ->with('success', 'Prediction deleted successfully.');
     }

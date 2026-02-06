@@ -121,7 +121,12 @@
                                         </x-mary-button>
                                     @endif
                                     @if($race['status'] === 'upcoming')
-                                        <x-mary-button variant="primary" size="sm" icon="o-plus">
+                                        <x-mary-button 
+                                            variant="primary" 
+                                            size="sm" 
+                                            icon="o-plus"
+                                            wire:click="makePrediction({{ $race['round'] }})"
+                                        >
                                             Make Prediction
                                         </x-mary-button>
                                     @endif

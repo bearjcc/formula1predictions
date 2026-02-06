@@ -27,6 +27,11 @@ To create the most engaging and accurate F1 prediction platform for fans, levera
 - Livewire 3 Components
 - Strict typing where possible
 - Pest for testing
+- **Global Standards**: Follow all security and environment practices in `docs/DEVELOPMENT_STANDARDS.md`.
+    - No hardcoded secrets (use `.env`).
+    - Maintain `.env.example`.
+    - Private repositories only.
+    - HTTPS via Tailscale.
 
 ## Core Workflows
 1. **Research**: Check F1 API documentation before implementing new data feeds.
