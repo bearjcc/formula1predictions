@@ -1,6 +1,6 @@
 <div class="relative" x-data="{ open: @entangle('isOpen') }">
     <!-- Notification Bell Button -->
-    <button 
+    <button type="button"
         wire:click="toggleDropdown"
         class="relative p-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
         @click.away="open = false"
@@ -33,7 +33,7 @@
                 Notifications
             </h3>
             @if($unreadCount > 0)
-                <button 
+                <button type="button"
                     wire:click="markAllAsRead"
                     class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                 >
@@ -105,7 +105,7 @@
                             </div>
                             
                             @if(!$notification->read_at)
-                                <button 
+                                <button type="button"
                                     wire:click="markAsRead('{{ $notification->id }}')"
                                     class="ml-2 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                                     title="Mark as read"

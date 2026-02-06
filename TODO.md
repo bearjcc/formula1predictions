@@ -42,6 +42,31 @@
 
 Short-horizon, high-value tasks that are ready for agents to pick up immediately.
 
+- **id**: F1-013
+  - **title**: Fix AccessibilityTest failures (focus management, semantic html structure)
+  - **type**: bug
+  - **status**: done
+  - **priority**: P1
+  - **risk_level**: low
+  - **owner**: agent
+  - **affected_areas**:
+    - resources/views/components/layouts/layout.blade.php (or equivalent layout)
+    - app/Livewire/Notifications/NotificationDropdown.php (or layout buttons)
+  - **description**: Two AccessibilityTest cases fail because the home page layout's buttons lack `type="button"`. Add explicit `type="button"` to sidebar toggles (close-sidebar, open-sidebar), notification bell button, and any other non-submit buttons so focus management and semantic HTML structure tests pass.
+  - **acceptance_criteria**:
+    - `php artisan test tests/Feature/AccessibilityTest.php` passes.
+    - All buttons that are not form submit buttons have `type="button"`.
+  - **dependencies**:
+    - None
+  - **test_expectations**:
+    - `php artisan test tests/Feature/AccessibilityTest.php`
+  - **notes**:
+    - Failing tests: `focus management`, `semantic html structure`.
+  - **completed_summary**:
+    - Added `type="button"` to layout sidebar toggles (close-sidebar, open-sidebar) in `layout.blade.php`.
+    - Added `type="button"` to notification bell button, "Mark all as read", and per-notification "Mark as read" buttons in `notification-dropdown.blade.php`.
+    - `php artisan test tests/Feature/AccessibilityTest.php` passes (all 6 tests).
+
 - **id**: F1-000
   - **title**: Define MVP scope, legacy data strategy, and release plan for 2026 season
   - **type**: docs

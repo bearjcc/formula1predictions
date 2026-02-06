@@ -15,7 +15,7 @@
                         <h2 class="text-lg font-semibold">🏎️ F1 Predictor</h2>
                     </a>
                     <!-- Close button for mobile -->
-                    <button id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
+                    <button type="button" id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
                         <x-mary-icon name="o-x-mark" class="w-5 h-5" />
                     </button>
                 </div>
@@ -30,15 +30,15 @@
                             <x-mary-icon name="o-home" class="w-4 h-4" />
                             <span>{{ __('Home') }}</span>
                         </a>
-                        <a href="{{ route('races', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('races', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-calendar" class="w-4 h-4" />
                             <span>{{ __('Races') }}</span>
                         </a>
-                        <a href="{{ route('standings', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />
                             <span>{{ __('Standings') }}</span>
                         </a>
-                        <a href="{{ route('standings.predictions', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
                             <span>{{ __('Predictions') }}</span>
                         </a>
@@ -56,11 +56,11 @@
                 <div>
                     <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('Teams & Drivers') }}</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('standings.teams', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.teams', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-users" class="w-4 h-4" />
                             <span>{{ __('Teams') }}</span>
                         </a>
-                        <a href="{{ route('standings.drivers', ['year' => '2025']) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.drivers', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
                             <x-mary-icon name="o-user" class="w-4 h-4" />
                             <span>{{ __('Drivers') }}</span>
                         </a>
@@ -107,7 +107,7 @@
             <header class="bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <button id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
+                        <button type="button" id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
                             <x-mary-icon name="o-bars-3" class="w-5 h-5" />
                         </button>
                         <h1 class="text-xl font-semibold truncate">{{ $title }}</h1>
