@@ -15,7 +15,6 @@ uses(RefreshDatabase::class);
 
 test('historical predictions seeder can import data', function () {
     // Create some test drivers and teams first with unique IDs
-    $drivers = [];
     $driverNames = [
         'Max Verstappen', 'Charles Leclerc', 'Lewis Hamilton', 'Carlos Sainz', 'Sergio Perez',
         'George Russell', 'Fernando Alonso', 'Lance Stroll', 'Lando Norris', 'Oscar Piastri',
@@ -25,45 +24,56 @@ test('historical predictions seeder can import data', function () {
 
     foreach ($driverNames as $index => $fullName) {
         $names = explode(' ', $fullName);
-        $drivers[$fullName] = Drivers::factory()->create([
+        Drivers::factory()->create([
             'driver_id' => $index + 1,
             'name' => $names[0],
             'surname' => $names[1] ?? '',
         ]);
     }
 
-    $teams = [];
     $teamNames = [
         'Red Bull Racing', 'Mercedes', 'Ferrari', 'Aston Martin', 'Alfa Romeo',
         'McLaren', 'Alpine', 'Haas F1 Team', 'Williams', 'AlphaTauri',
     ];
 
     foreach ($teamNames as $index => $teamName) {
-        $teams[$teamName] = Teams::factory()->create([
+        Teams::factory()->create([
             'team_id' => $index + 1,
             'team_name' => $teamName,
         ]);
     }
 
-    // Run the seeder
-    $seeder = new HistoricalPredictionsSeeder;
-    $seeder->run();
+    // Create minimal markdown fixture so test is self-contained (no reliance on gitignored previous/)
+    if (! File::isDirectory('previous')) {
+        File::makeDirectory('previous', 0755, true);
+    }
+    $fixtureFile = 'previous/predictions.2022.bearjcc.md';
+    $fixtureContent = "# Formula 1 2022 Predictions\n\n## Bahrain\nFL -> Max Verstappen\nMax Verstappen\nCharles Leclerc\nLewis Hamilton\n\n## Saudi Arabia\nFL -> Charles Leclerc\nCharles Leclerc\nMax Verstappen\nLewis Hamilton\n\n## Preseason\n\n### Team Championship Order\nRed Bull Racing\nMercedes\nFerrari\n\n### Drivers\nMax Verstappen\nCharles Leclerc\nLewis Hamilton";
+    File::put($fixtureFile, $fixtureContent);
 
-    // Verify that users were created
-    expect(User::where('email', 'bearjcc@example.com')->exists())->toBeTrue();
-    expect(User::where('email', 'sunny@example.com')->exists())->toBeTrue();
-    expect(User::where('email', 'ccaswell@example.com')->exists())->toBeTrue();
-    expect(User::where('email', 'chatgpt@example.com')->exists())->toBeTrue();
+    try {
+        $seeder = new HistoricalPredictionsSeeder;
+        $seeder->run();
 
-    // Verify that predictions were created
-    expect(Prediction::count())->toBeGreaterThan(0);
+        // Verify that users were created
+        expect(User::where('email', 'bearjcc@example.com')->exists())->toBeTrue();
+        expect(User::where('email', 'sunny@example.com')->exists())->toBeTrue();
+        expect(User::where('email', 'ccaswell@example.com')->exists())->toBeTrue();
+        expect(User::where('email', 'chatgpt@example.com')->exists())->toBeTrue();
 
-    // Verify that races were created
-    expect(Races::count())->toBeGreaterThan(0);
+        // Verify that predictions were created
+        expect(Prediction::count())->toBeGreaterThan(0);
 
-    // Check for specific prediction types
-    expect(Prediction::where('type', 'race')->exists())->toBeTrue();
-    expect(Prediction::where('type', 'preseason')->exists())->toBeTrue();
+        // Verify that races were created
+        expect(Races::count())->toBeGreaterThan(0);
+
+        expect(Prediction::where('type', 'race')->exists())->toBeTrue();
+        expect(Prediction::where('type', 'preseason')->exists())->toBeTrue();
+    } finally {
+        if (File::exists($fixtureFile)) {
+            File::delete($fixtureFile);
+        }
+    }
 });
 
 test('legacy import artisan command runs seeder and is idempotent', function () {
@@ -111,47 +121,47 @@ test('legacy import artisan command runs seeder and is idempotent', function () 
 });
 
 test('historical predictions seeder is idempotent', function () {
-    // Create some test drivers and teams first with unique IDs
-    $drivers = [];
     $driverNames = [
         'Max Verstappen', 'Charles Leclerc', 'Lewis Hamilton', 'Carlos Sainz', 'Sergio Perez',
         'George Russell', 'Fernando Alonso', 'Lance Stroll', 'Lando Norris', 'Oscar Piastri',
         'Valtteri Bottas', 'Zhou Guanyu', 'Pierre Gasly', 'Esteban Ocon', 'Kevin Magnussen',
         'Nico Hulkenberg', 'Alex Albon', 'Yuki Tsunoda', 'Logan Sargeant', 'Daniel Ricciardo',
     ];
-
     foreach ($driverNames as $index => $fullName) {
         $names = explode(' ', $fullName);
-        $drivers[$fullName] = Drivers::factory()->create([
+        Drivers::factory()->create([
             'driver_id' => $index + 1,
             'name' => $names[0],
             'surname' => $names[1] ?? '',
         ]);
     }
-
-    $teams = [];
     $teamNames = [
         'Red Bull Racing', 'Mercedes', 'Ferrari', 'Aston Martin', 'Alfa Romeo',
         'McLaren', 'Alpine', 'Haas F1 Team', 'Williams', 'AlphaTauri',
     ];
-
     foreach ($teamNames as $index => $teamName) {
-        $teams[$teamName] = Teams::factory()->create([
-            'team_id' => $index + 1,
-            'team_name' => $teamName,
-        ]);
+        Teams::factory()->create(['team_id' => $index + 1, 'team_name' => $teamName]);
     }
 
-    $seeder = new HistoricalPredictionsSeeder;
-    $seeder->run();
+    if (! File::isDirectory('previous')) {
+        File::makeDirectory('previous', 0755, true);
+    }
+    $fixtureFile = 'previous/predictions.2022.bearjcc.md';
+    File::put($fixtureFile, "# 2022\n\n## Bahrain\nFL -> Max Verstappen\nMax Verstappen\nCharles Leclerc\nLewis Hamilton\n\n## Preseason\n\n### Team Championship Order\nRed Bull Racing\nMercedes\nFerrari\n\n### Drivers\nMax Verstappen\nCharles Leclerc\nLewis Hamilton");
 
-    $predictionCount = Prediction::count();
-    $raceCount = Races::count();
-
-    $seeder->run();
-
-    expect(Prediction::count())->toBe($predictionCount);
-    expect(Races::count())->toBe($raceCount);
+    try {
+        $seeder = new HistoricalPredictionsSeeder;
+        $seeder->run();
+        $predictionCount = Prediction::count();
+        $raceCount = Races::count();
+        $seeder->run();
+        expect(Prediction::count())->toBe($predictionCount);
+        expect(Races::count())->toBe($raceCount);
+    } finally {
+        if (File::exists($fixtureFile)) {
+            File::delete($fixtureFile);
+        }
+    }
 });
 
 test('historical data import handles missing files gracefully', function () {
@@ -200,9 +210,19 @@ test('imported historical predictions can feed basic analytics for a season', fu
         ]);
     }
 
-    // Run the historical predictions seeder
+    // Minimal markdown fixture so test is self-contained
+    if (! File::isDirectory('previous')) {
+        File::makeDirectory('previous', 0755, true);
+    }
+    $fixtureFile = 'previous/predictions.2022.bearjcc.md';
+    File::put($fixtureFile, "# Formula 1 2022\n\n## Bahrain\nFL -> Max Verstappen\nMax Verstappen\nCharles Leclerc\nLewis Hamilton\n\n## Preseason\n\n### Team Championship Order\nRed Bull Racing\nMercedes\nFerrari\n\n### Drivers\nMax Verstappen\nCharles Leclerc\nLewis Hamilton");
+
     $seeder = new HistoricalPredictionsSeeder;
     $seeder->run();
+
+    if (File::exists($fixtureFile)) {
+        File::delete($fixtureFile);
+    }
 
     // Choose one imported season that should exist in the markdown fixtures
     $season = 2022;
@@ -269,20 +289,27 @@ test('imported historical predictions can feed basic analytics for a season', fu
 });
 
 test('imported predictions have correct structure', function () {
-    // Create test data with unique IDs
-    $drivers = [];
-    for ($i = 1; $i <= 20; $i++) {
-        $drivers[] = Drivers::factory()->create(['driver_id' => $i]);
+    $driverNames = ['Max Verstappen', 'Charles Leclerc', 'Lewis Hamilton', 'Carlos Sainz', 'Sergio Perez'];
+    foreach ($driverNames as $i => $fullName) {
+        $n = explode(' ', $fullName);
+        Drivers::factory()->create(['driver_id' => $i + 1, 'name' => $n[0], 'surname' => $n[1] ?? '']);
+    }
+    foreach (['Red Bull Racing', 'Mercedes', 'Ferrari'] as $i => $teamName) {
+        Teams::factory()->create(['team_id' => $i + 1, 'team_name' => $teamName]);
     }
 
-    $teams = [];
-    for ($i = 1; $i <= 10; $i++) {
-        $teams[] = Teams::factory()->create(['team_id' => $i]);
+    if (! File::isDirectory('previous')) {
+        File::makeDirectory('previous', 0755, true);
     }
+    $f = 'previous/predictions.2022.bearjcc.md';
+    File::put($f, "# 2022\n\n## Bahrain\nFL -> Max Verstappen\nMax Verstappen\nCharles Leclerc\nLewis Hamilton\n\n## Preseason\n\n### Team Championship Order\nRed Bull Racing\nMercedes\nFerrari\n\n### Drivers\nMax Verstappen\nCharles Leclerc\nLewis Hamilton");
 
-    // Run the seeder
     $seeder = new HistoricalPredictionsSeeder;
     $seeder->run();
+
+    if (File::exists($f)) {
+        File::delete($f);
+    }
 
     // Get a race prediction
     $racePrediction = Prediction::where('type', 'race')->first();
@@ -307,20 +334,27 @@ test('imported predictions have correct structure', function () {
 });
 
 test('imported predictions are associated with users', function () {
-    // Create test data with unique IDs
-    $drivers = [];
-    for ($i = 1; $i <= 20; $i++) {
-        $drivers[] = Drivers::factory()->create(['driver_id' => $i]);
+    $driverNames = ['Max Verstappen', 'Charles Leclerc', 'Lewis Hamilton'];
+    foreach ($driverNames as $i => $fullName) {
+        $n = explode(' ', $fullName);
+        Drivers::factory()->create(['driver_id' => $i + 1, 'name' => $n[0], 'surname' => $n[1] ?? '']);
+    }
+    foreach (['Red Bull Racing', 'Mercedes', 'Ferrari'] as $i => $teamName) {
+        Teams::factory()->create(['team_id' => $i + 1, 'team_name' => $teamName]);
     }
 
-    $teams = [];
-    for ($i = 1; $i <= 10; $i++) {
-        $teams[] = Teams::factory()->create(['team_id' => $i]);
+    if (! File::isDirectory('previous')) {
+        File::makeDirectory('previous', 0755, true);
     }
+    $f = 'previous/predictions.2022.bearjcc.md';
+    File::put($f, "# 2022\n\n## Bahrain\nMax Verstappen\nCharles Leclerc\nLewis Hamilton");
 
-    // Run the seeder
     $seeder = new HistoricalPredictionsSeeder;
     $seeder->run();
+
+    if (File::exists($f)) {
+        File::delete($f);
+    }
 
     // Verify predictions are associated with users
     $predictions = Prediction::with('user')->get();

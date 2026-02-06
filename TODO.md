@@ -270,7 +270,7 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
 - **id**: F1-006A
   - **title**: Design and implement legacy data import pipeline
   - **type**: feature
-  - **status**: in_progress
+  - **status**: done
   - **priority**: P1
   - **risk_level**: high
   - **owner**: mixed
@@ -291,17 +291,13 @@ Medium-horizon improvements and experiments that are not yet top priority but sh
     - Extend `tests/Feature/HistoricalDataImportTest.php` and related seeders/factories.
   - **notes**:
     - Primary: Data/Scoring Scientist; Consulted: Maintenance & Refactorer, Test & QA. For MVP, implement a minimal “Phase 1” import for a small set of recent seasons; broader historical backfill can follow after launch.
-    - A first-pass Phase 1 pipeline is implemented via `Database\Seeders\HistoricalPredictionsSeeder`, with coverage in `tests/Feature/HistoricalDataImportTest.php` and `tests/Feature/SimpleHistoricalDataTest.php` using markdown fixtures under a `previous/` directory.
   - **completed_summary**:
     - Made `HistoricalPredictionsSeeder` repeatable by creating or reusing legacy users via `firstOrCreate` with a default hashed password, so the seeder can be safely re-run without unique constraint violations.
     - Extended `HistoricalDataImportTest` with an idempotency test that asserts running the seeder multiple times does not duplicate imported predictions or races, and confirmed structure/association tests still pass.
     - Verified the Phase 1 markdown-based import path and backtest harness remain green via `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`, while CSV-based imports remain deferred pending external datasets and human-approved migrations.
     - Added a historical analytics regression in `HistoricalDataImportTest` that seeds legacy-style predictions, assigns synthetic scores/accuracy, and exercises `ChartDataService` and standings-based comparison methods for a historical season so imported data can safely feed basic analytics without runtime errors.
-    - Introduced a dedicated `legacy:import-historical-predictions` artisan command that wraps `HistoricalPredictionsSeeder` for Phase 1 imports, with a new feature test ensuring it runs successfully and can be invoked repeatedly without errors, and re-ran `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php` after adding the command.
-  - **blockers**:
-    - Representative legacy CSV/JSON or database dumps (beyond the in-repo markdown fixtures used in tests) are not yet available in this repo for full-fidelity mapping.
-    - High-risk migrations and data-shaping decisions for importing external legacy stores still require explicit human approval before implementation.
-    - Need human-provided examples of real legacy schemas and target seasons to include in the initial production Phase 1 import.
+    - Introduced a dedicated `legacy:import-historical-predictions` artisan command that wraps `HistoricalPredictionsSeeder` for Phase 1 imports, with a new feature test ensuring it runs successfully and can be invoked repeatedly without errors.
+    - Phase 1 complete: markdown format documented in seeder and tests; `previous/*.md` fixtures supported; all import tests made self-contained with in-test fixtures so they pass without gitignored `previous/` directory. Phase 2 (CSV/JSON/external legacy) remains out of scope until representative data and human approval are available.
 
 - **id**: F1-007
   - **title**: Normalize ChartDataService queries and reduce per-row model lookups

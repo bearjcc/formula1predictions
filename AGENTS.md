@@ -14,6 +14,9 @@ php artisan test
 php artisan test tests/Feature/ScoringServiceTest.php
 php artisan test --filter=testName
 
+# Run tests with code coverage (requires pcov: pecl install pcov)
+composer run test:coverage
+
 # Format (run before finalizing)
 vendor/bin/pint --dirty
 
@@ -264,16 +267,14 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 
 ---
 
-## Recent Progress (F1-006A)
+## Recent Completion (F1-006A)
 
-**Task:** Design and implement legacy data import pipeline — in progress
+**Task:** Design and implement legacy data import pipeline — done
 
 **What was done:**
-- Confirmed and exercised the Phase 1 legacy import path implemented by `Database\Seeders\HistoricalPredictionsSeeder`, which ingests markdown-style prediction files from a `previous/` directory into `Prediction` and `Races` records.
-- Verified and documented the current test coverage in `tests/Feature/HistoricalDataImportTest.php` and `tests/Feature/SimpleHistoricalDataTest.php`, which cover user creation, graceful handling of missing legacy files, and importing representative historical-style predictions for recent seasons.
-- Made the historical seeder repeatable by using `User::firstOrCreate` with a default hashed password for legacy users and added an idempotency test so running the seeder multiple times does not duplicate predictions or races.
-- Extended `HistoricalDataImportTest` with a historical analytics regression that seeds legacy-style predictions, assigns synthetic scores/accuracy, and exercises `ChartDataService` and standings comparison methods for a historical season so imported data can safely power basic analytics without runtime errors.
-- Added a dedicated `legacy:import-historical-predictions` artisan command that wraps `HistoricalPredictionsSeeder` for Phase 1 imports, plus a feature test that invokes the command twice to ensure it runs cleanly and remains compatible with existing historical import tests.
+- Phase 1 legacy import via `Database\Seeders\HistoricalPredictionsSeeder` (markdown from `previous/`), `legacy:import-historical-predictions` command, idempotent seeder and tests.
+- All import tests made self-contained: in-test markdown fixtures so `HistoricalDataImportTest` and `SimpleHistoricalDataTest` pass without a gitignored `previous/` directory.
+- Phase 2 (CSV/external legacy) deferred until representative data and human-approved migrations are available.
 
 **Tests:** `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`
 
