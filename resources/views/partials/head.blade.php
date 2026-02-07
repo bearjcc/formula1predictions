@@ -1,6 +1,12 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+<script>
+  (function(){
+    var a = document.documentElement.getAttribute('data-appearance') || 'system';
+    var d = a === 'dark' || (a === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', d);
+  })();
+</script>
 <title>{{ $title ?? config('app.name') }}</title>
 
 <link rel="icon" href="/favicon.ico" sizes="any">

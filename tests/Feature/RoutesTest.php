@@ -1,6 +1,9 @@
 <?php
 
+use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
+use function Pest\Laravel\mock;
 
 uses(RefreshDatabase::class);
 
@@ -12,7 +15,7 @@ it('can access the home page', function () {
 
 // Test year-specific routes exist
 describe('Year-specific routes exist', function () {
-    $validYears = ['2022', '2023'];
+    $validYears = ['2022', '2023', '2024', '2025', '2026'];
     $yearRoutes = [
         '/{year}/races',
         '/{year}/standings',
@@ -47,7 +50,7 @@ describe('Year-specific routes exist', function () {
 
 // Test invalid years return 404
 describe('Invalid years return 404', function () {
-    $invalidYears = ['1920', '1900', '2030', 'abc', '2025'];
+    $invalidYears = ['1920', '1900', '2030', 'abc'];
 
     foreach ($invalidYears as $year) {
         it("returns 404 for /{$year}/races", function () use ($year) {
@@ -144,19 +147,40 @@ describe('Route naming works correctly', function () {
 });
 
 test('races page loads successfully', function () {
-    $response = $this->get('/2024/races');
+    $year = (int) config('f1.current_season');
+    mock(F1ApiService::class, function ($mock) use ($year) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with($year)
+            ->andReturn([
+                [
+                    'raceName' => 'Test Race',
+                    'circuit' => ['circuitName' => 'Test Circuit', 'country' => 'Test Country'],
+                    'date' => '2026-03-15',
+                    'time' => '14:00:00Z',
+                    'status' => 'upcoming',
+                    'results' => [],
+                ],
+            ]);
+    });
+
+    $response = $this->get("/{$year}/races");
 
     $response->assertSuccessful();
-    $response->assertSee('2024 Races');
+    $response->assertSee("{$year} Races");
     $response->assertSeeLivewire('races.races-list');
 });
 
 test('races page shows loading state', function () {
-    $response = $this->get('/2024/races');
+    $year = (int) config('f1.current_season');
+    mock(F1ApiService::class, function ($mock) use ($year) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with($year)
+            ->andReturn([]);
+    });
+
+    $response = $this->get("/{$year}/races");
 
     $response->assertSuccessful();
-    // The loading state happens too quickly to be visible in tests
-    // Instead, we can verify the page loads and contains the races list component
-    $response->assertSee('2024 Races');
+    $response->assertSee("{$year} Races");
     $response->assertSeeLivewire('races.races-list');
 });

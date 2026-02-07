@@ -102,25 +102,16 @@
         </div>
 
         <!-- Summary -->
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Prediction Summary</h5>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                        <p>Total Teams: <span class="font-medium" x-text="teamOrder.length"></span></p>
-                    </div>
-                </div>
-                
-                <div>
-                    <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Top 3 Prediction</h5>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                        <template x-for="(teamId, index) in teamOrder.slice(0, 3)" :key="teamId">
-                            <p><span class="font-medium" x-text="index + 1"></span>. <span x-text="getTeamById(teamId)?.team_name"></span></p>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-prediction-summary>
+            <x-slot:summary>
+                <p>Total Teams: <span class="font-medium" x-text="teamOrder.length"></span></p>
+            </x-slot:summary>
+            <x-slot:top3>
+                <template x-for="(teamId, index) in teamOrder.slice(0, 3)" :key="teamId">
+                    <p><span class="font-medium" x-text="index + 1"></span>. <span x-text="getTeamById(teamId)?.team_name"></span></p>
+                </template>
+            </x-slot:top3>
+        </x-prediction-summary>
 
         <!-- Instructions -->
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3">

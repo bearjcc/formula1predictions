@@ -1,20 +1,24 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 
 it('can visit all main pages without smoke', function () {
     $user = User::factory()->create();
+    $year = Config::get('f1.current_season', 2026);
 
     $routes = [
         '/',
         '/dashboard',
-        '/races',
         '/predictions',
-        '/standings',
-        '/drivers',
-        '/teams',
-        '/circuits',
-        '/profile',
+        "/{$year}/races",
+        "/{$year}/standings",
+        "/{$year}/standings/drivers",
+        "/{$year}/standings/teams",
+        '/countries',
+        '/leaderboard',
+        '/analytics',
+        '/settings/profile',
     ];
 
     $pages = visit($routes)
@@ -27,17 +31,20 @@ it('can visit all main pages without smoke', function () {
 
 it('can visit all main pages in dark mode without smoke', function () {
     $user = User::factory()->create();
+    $year = Config::get('f1.current_season', 2026);
 
     $routes = [
         '/',
         '/dashboard',
-        '/races',
         '/predictions',
-        '/standings',
-        '/drivers',
-        '/teams',
-        '/circuits',
-        '/profile',
+        "/{$year}/races",
+        "/{$year}/standings",
+        "/{$year}/standings/drivers",
+        "/{$year}/standings/teams",
+        '/countries',
+        '/leaderboard',
+        '/analytics',
+        '/settings/profile',
     ];
 
     $pages = visit($routes)
@@ -50,17 +57,20 @@ it('can visit all main pages in dark mode without smoke', function () {
 
 it('can visit all main pages on mobile without smoke', function () {
     $user = User::factory()->create();
+    $year = Config::get('f1.current_season', 2026);
 
     $routes = [
         '/',
         '/dashboard',
-        '/races',
         '/predictions',
-        '/standings',
-        '/drivers',
-        '/teams',
-        '/circuits',
-        '/profile',
+        "/{$year}/races",
+        "/{$year}/standings",
+        "/{$year}/standings/drivers",
+        "/{$year}/standings/teams",
+        '/countries',
+        '/leaderboard',
+        '/analytics',
+        '/settings/profile',
     ];
 
     $pages = visit($routes)
@@ -73,17 +83,20 @@ it('can visit all main pages on mobile without smoke', function () {
 
 it('can visit all main pages on tablet without smoke', function () {
     $user = User::factory()->create();
+    $year = Config::get('f1.current_season', 2026);
 
     $routes = [
         '/',
         '/dashboard',
-        '/races',
         '/predictions',
-        '/standings',
-        '/drivers',
-        '/teams',
-        '/circuits',
-        '/profile',
+        "/{$year}/races",
+        "/{$year}/standings",
+        "/{$year}/standings/drivers",
+        "/{$year}/standings/teams",
+        '/countries',
+        '/leaderboard',
+        '/analytics',
+        '/settings/profile',
     ];
 
     $pages = visit($routes)

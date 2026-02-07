@@ -162,8 +162,7 @@ class ScoringService
         }
 
         $score = 0;
-        $totalDrivers = count($predictedOrder);
-        $correctPredictions = 0;
+        $top8Correct = 0;
 
         foreach ($predictedOrder as $position => $driverId) {
             $actualPosition = $this->findDriverPosition($driverId, $actualResults);
@@ -173,8 +172,8 @@ class ScoringService
                 $positionScore = $this->getSprintPositionScore($positionDiff, $race->season);
                 $score += $positionScore;
 
-                if ($positionDiff === 0) {
-                    $correctPredictions++;
+                if ($positionDiff === 0 && $position < 8) {
+                    $top8Correct++;
                 }
             } else {
                 $score += $this->getMissingDriverScore($driverId, $actualResults, $race->season);
@@ -184,9 +183,9 @@ class ScoringService
         $fastestLapScore = $this->calculateFastestLapScore($prediction, $actualResults);
         $score += $fastestLapScore;
 
-        if ($correctPredictions === $totalDrivers && $totalDrivers > 0) {
-            // Smaller perfect bonus for sprint predictions.
-            $score += 25;
+        // Sprint perfect bonus: +15 when all top 8 positions predicted correctly
+        if ($top8Correct >= 8) {
+            $score += 15;
         }
 
         return $score;
@@ -259,19 +258,28 @@ class ScoringService
      */
     private function getPositionScore(int $positionDiff, int $season): int
     {
-        // Base scoring system (can be modified per season)
         return match ($positionDiff) {
-            0 => 25,  // Correct prediction
-            1 => 18,  // 1 position away
-            2 => 15,  // 2 positions away
-            3 => 12,  // 3 positions away
-            4 => 10,  // 4 positions away
-            5 => 8,   // 5 positions away
-            6 => 6,   // 6 positions away
-            7 => 4,   // 7 positions away
-            8 => 2,   // 8 positions away
-            9 => 1,   // 9 positions away
-            default => max(-25, -$positionDiff), // 10+ positions away
+            0 => 25,
+            1 => 18,
+            2 => 15,
+            3 => 12,
+            4 => 10,
+            5 => 8,
+            6 => 6,
+            7 => 4,
+            8 => 2,
+            9 => 1,
+            10 => 0,
+            11 => -1,
+            12 => -2,
+            13 => -4,
+            14 => -6,
+            15 => -8,
+            16 => -10,
+            17 => -12,
+            18 => -15,
+            19 => -18,
+            default => -25, // 20+ positions away
         };
     }
 
@@ -281,16 +289,15 @@ class ScoringService
     private function getSprintPositionScore(int $positionDiff, int $season): int
     {
         return match ($positionDiff) {
-            0 => 15,
-            1 => 12,
-            2 => 10,
-            3 => 8,
-            4 => 6,
-            5 => 4,
-            6 => 3,
-            7 => 2,
-            8 => 1,
-            default => max(-15, -$positionDiff),
+            0 => 8,
+            1 => 7,
+            2 => 6,
+            3 => 5,
+            4 => 4,
+            5 => 3,
+            6 => 2,
+            7 => 1,
+            default => 0, // 8+ positions away, no negative scores
         };
     }
 
@@ -327,7 +334,7 @@ class ScoringService
         }
 
         if ($actualFastestLap && $actualFastestLap === $predictedFastestLap) {
-            return 10; // Fastest lap bonus
+            return $prediction->type === 'sprint' ? 5 : 10;
         }
 
         return 0;

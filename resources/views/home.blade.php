@@ -2,7 +2,7 @@
     <!-- Hero Section -->
     <div class="relative overflow-hidden bg-gradient-to-br from-red-500 via-red-400 to-red-600 dark:from-red-700 dark:via-red-600 dark:to-red-800">
         <div class="absolute inset-0 bg-black/10"></div>
-        <div class="relative px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
+        <div class="relative px-6 py-12 sm:px-6 sm:py-16 lg:px-8">
             <div class="mx-auto max-w-2xl text-center">
                 <h1 class="text-5xl font-bold text-white mb-6 text-shadow">
                     🏎️ F1 Predictions
@@ -12,28 +12,30 @@
                     Track your accuracy, climb the leaderboard, and prove your F1 expertise.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <x-mary-button size="lg" variant="primary" class="bg-white text-red-600 hover:bg-red-50 font-medium shadow-md">
+                    <a href="{{ auth()->check() ? route('predict.create') : route('login') }}" wire:navigate
+                        class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg bg-white text-red-600 hover:bg-red-50 shadow-md transition-colors">
                         Start Predicting
-                    </x-mary-button>
-                    <x-mary-button size="lg" variant="outline" class="text-white border-white hover:bg-white/10">
+                    </a>
+                    <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" wire:navigate
+                        class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg border-2 border-white text-white hover:bg-white/10 transition-colors">
                         View Standings
-                    </x-mary-button>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Navigation Cards -->
-    <div class="px-6 py-16 bg-white dark:bg-zinc-900">
+    <div class="px-6 py-10 bg-white dark:bg-zinc-900">
         <div class="mx-auto max-w-7xl">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold mb-4">Explore F1 Predictions</h2>
-                <p class="text-lg text-auto-secondary">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">Explore F1 Predictions</h2>
+                <p class="text-lg text-zinc-700 dark:text-zinc-300">
                     Navigate through different sections to make predictions, view standings, and track your performance
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Races Card -->
                 <x-mary-card class="group relative hover:shadow-xl transition-all duration-300 overflow-hidden bg-card">
                     <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
@@ -50,9 +52,10 @@
                                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
                     Browse upcoming and past races, view circuit information, and get ready to make your predictions.
                 </p>
-                        <x-mary-button variant="outline" size="sm" class="w-full">
+                        <a href="{{ route('races', ['year' => config('f1.current_season')]) }}" wire:navigate
+                            class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
                             View Races
-                        </x-mary-button>
+                        </a>
                     </div>
                 </x-mary-card>
 
@@ -72,9 +75,10 @@
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
                             Check current driver and team standings, track championship points, and see who's leading the pack.
                         </p>
-                        <x-mary-button variant="outline" size="sm" class="w-full">
+                        <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" wire:navigate
+                            class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
                             View Standings
-                        </x-mary-button>
+                        </a>
                     </div>
                 </x-mary-card>
 
@@ -94,9 +98,10 @@
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
                             See how your predictions stack up against others. Track your accuracy and climb the prediction leaderboard.
                         </p>
-                        <x-mary-button variant="outline" size="sm" class="w-full">
+                        <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" wire:navigate
+                            class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
                             View Predictions
-                        </x-mary-button>
+                        </a>
                     </div>
                 </x-mary-card>
 
@@ -116,9 +121,10 @@
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
                             Explore F1 teams, their drivers, performance statistics, and constructor championship standings.
                         </p>
-                        <x-mary-button variant="outline" size="sm" class="w-full">
+                        <a href="{{ route('standings.teams', ['year' => config('f1.current_season')]) }}" wire:navigate
+                            class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
                             View Teams
-                        </x-mary-button>
+                        </a>
                     </div>
                 </x-mary-card>
 
@@ -138,9 +144,10 @@
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
                             Check driver standings, view individual statistics, and see who's leading the championship.
                         </p>
-                        <x-mary-button variant="outline" size="sm" class="w-full">
+                        <a href="{{ route('standings.drivers', ['year' => config('f1.current_season')]) }}" wire:navigate
+                            class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
                             View Drivers
-                        </x-mary-button>
+                        </a>
                     </div>
                 </x-mary-card>
 
@@ -160,9 +167,10 @@
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
                             Explore F1 from a geographical perspective. See circuits, drivers, and teams by country.
                         </p>
-                        <x-mary-button variant="outline" size="sm" class="w-full">
+                        <a href="{{ route('countries') }}" wire:navigate
+                            class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
                             View Countries
-                        </x-mary-button>
+                        </a>
                     </div>
                 </x-mary-card>
             </div>
@@ -170,16 +178,16 @@
     </div>
 
     <!-- Features Section -->
-    <div class="px-6 py-16 bg-zinc-50 dark:bg-zinc-800">
+    <div class="px-6 py-10 bg-zinc-50 dark:bg-zinc-800">
         <div class="mx-auto max-w-7xl">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold mb-4">Why F1 Predictions?</h2>
-                <p class="text-lg text-auto-secondary">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">Why F1 Predictions?</h2>
+                <p class="text-lg text-zinc-700 dark:text-zinc-300">
                     Join the ultimate F1 prediction community
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
                         <x-mary-icon name="o-star" class="w-8 h-8 text-red-600 dark:text-red-400" />
@@ -214,7 +222,7 @@
     </div>
 
     <!-- CTA Section -->
-    <div class="px-6 py-16 bg-gradient-to-br from-red-500 to-red-600 dark:from-red-700 dark:to-red-800">
+    <div class="px-6 py-10 bg-gradient-to-br from-red-500 to-red-600 dark:from-red-700 dark:to-red-800">
         <div class="mx-auto max-w-4xl text-center">
             <h2 class="text-4xl font-bold text-white mb-4 text-shadow">
                 Ready to Start Predicting?
@@ -223,12 +231,14 @@
                 Join thousands of F1 fans making predictions and competing for the top spot.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <x-mary-button size="lg" variant="primary" class="bg-white text-red-600 hover:bg-red-50 font-medium shadow-md">
+                <a href="{{ auth()->check() ? route('predict.create') : route('register') }}" wire:navigate
+                    class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg bg-white text-red-600 hover:bg-red-50 shadow-md transition-colors">
                     Get Started
-                </x-mary-button>
-                <x-mary-button size="lg" variant="outline" class="text-white border-white hover:bg-white/10">
+                </a>
+                <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" wire:navigate
+                    class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg border-2 border-white text-white hover:bg-white/10 transition-colors">
                     Learn More
-                </x-mary-button>
+                </a>
             </div>
         </div>
     </div>

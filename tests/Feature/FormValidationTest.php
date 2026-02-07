@@ -1,10 +1,16 @@
 <?php
 
+/**
+ * Unit-level Form Request validation tests.
+ * Tests StorePredictionRequest and UpdatePredictionRequest rules via Validator (no HTTP).
+ * For HTTP integration tests, see PredictionFormValidationTest.
+ */
+
 use App\Http\Requests\StorePredictionRequest;
 use App\Http\Requests\UpdatePredictionRequest;
-use App\Models\User;
 use App\Models\Drivers;
 use App\Models\Teams;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -16,7 +22,7 @@ test('store prediction request validates correctly', function () {
     $drivers = Drivers::factory()->count(20)->create();
     $teams = Teams::factory()->count(10)->create();
 
-    $request = new StorePredictionRequest();
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'race',
         'season' => 2024,
@@ -29,38 +35,38 @@ test('store prediction request validates correctly', function () {
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->passes())->toBeTrue();
 });
 
 test('store prediction request validates invalid type', function () {
-    $request = new StorePredictionRequest();
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'invalid_type',
         'season' => 2024,
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('type'))->toBeTrue();
 });
 
 test('store prediction request validates invalid season', function () {
-    $request = new StorePredictionRequest();
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'race',
         'season' => 1800, // Too early
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('season'))->toBeTrue();
 });
 
 test('store prediction request validates race prediction requires driver order', function () {
-    $request = new StorePredictionRequest();
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'race',
         'season' => 2024,
@@ -70,13 +76,13 @@ test('store prediction request validates race prediction requires driver order',
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('prediction_data.driver_order'))->toBeTrue();
 });
 
 test('store prediction request validates preseason prediction requires team order', function () {
-    $request = new StorePredictionRequest();
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'preseason',
         'season' => 2024,
@@ -86,15 +92,15 @@ test('store prediction request validates preseason prediction requires team orde
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('prediction_data.team_order'))->toBeTrue();
 });
 
 test('store prediction request validates driver order must have exactly 20 drivers', function () {
     $drivers = Drivers::factory()->count(25)->create();
-    
-    $request = new StorePredictionRequest();
+
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'race',
         'season' => 2024,
@@ -104,15 +110,15 @@ test('store prediction request validates driver order must have exactly 20 drive
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('prediction_data.driver_order'))->toBeTrue();
 });
 
 test('store prediction request validates team order must have exactly 10 teams', function () {
     $teams = Teams::factory()->count(15)->create();
-    
-    $request = new StorePredictionRequest();
+
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'preseason',
         'season' => 2024,
@@ -122,13 +128,13 @@ test('store prediction request validates team order must have exactly 10 teams',
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('prediction_data.team_order'))->toBeTrue();
 });
 
 test('store prediction request validates notes field maximum length', function () {
-    $request = new StorePredictionRequest();
+    $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'race',
         'season' => 2024,
@@ -136,7 +142,7 @@ test('store prediction request validates notes field maximum length', function (
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('notes'))->toBeTrue();
 });
@@ -146,7 +152,7 @@ test('update prediction request validates correctly', function () {
     $drivers = Drivers::factory()->count(20)->create();
     $teams = Teams::factory()->count(10)->create();
 
-    $request = new UpdatePredictionRequest();
+    $request = new UpdatePredictionRequest;
     $request->merge([
         'type' => 'race',
         'season' => 2024,
@@ -159,19 +165,19 @@ test('update prediction request validates correctly', function () {
     ]);
 
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-    
+
     expect($validator->passes())->toBeTrue();
 });
 
 test('form request authorization works correctly', function () {
-    $request = new StorePredictionRequest();
-    
+    $request = new StorePredictionRequest;
+
     // Should require authentication
     expect($request->authorize())->toBeFalse();
-    
+
     // Mock authenticated user
     $user = User::factory()->create();
     Auth::login($user);
-    
+
     expect($request->authorize())->toBeTrue();
 });

@@ -1,319 +1,103 @@
 # Formula1Predictions — Agent Instructions
 
-AI agents maintain and extend this Laravel 12 F1 predictions platform: bug fixes, features, and scoring/analytics experiments. High autonomy within guardrails below.
-
-**References**: [AGENTS_PRD.md](AGENTS_PRD.md) (full spec) | [.cursor/rules/](.cursor/rules/) (conventions) | [LESSONS_LEARNED.md](LESSONS_LEARNED.md) (cross-session learnings)
+Single reference for AI agents: commands, conventions, guardrails, handoff. Scoring rules live in [README.md](README.md#scoring). Backlog in [TODO.md](TODO.md).
 
 ---
 
 ## Commands
 
 ```bash
-# Run tests (targeted)
 php artisan test
 php artisan test tests/Feature/ScoringServiceTest.php
 php artisan test --filter=testName
-
-# Run tests with code coverage (requires pcov: pecl install pcov)
-composer run test:coverage
-
-# Format (run before finalizing)
-vendor/bin/pint --dirty
-
-# Build frontend (if UI changes)
-npm run build
-# or for dev: npm run dev / composer run dev
+composer run test:coverage   # optional, needs pcov
+vendor/bin/pint --dirty     # run before finalizing
+npm run build               # after UI changes (or npm run dev / composer run dev)
 ```
 
-Always lint, format, and run relevant tests. Use full builds sparingly.
+Use minimal test filters when validating changes. No verification scripts or tinker when tests cover the behavior.
 
 ---
 
-## Tech Stack
+## Stack & structure
 
-- PHP 8.4.5, Laravel 12
-- Livewire 3, Volt, Flux UI (free)
-- Tailwind CSS v4
-- Pest v4 (unit, feature, browser)
-- Laravel Pint
+- **Stack:** PHP 8.4.5, Laravel 12, Livewire 3, Volt, Mary UI (primary) / Flux UI, Tailwind v4, Pest v4, Laravel Pint.
+- **Key paths:** `app/Models/` (Prediction, Races, Drivers, Teams, Standings) | `app/Services/` (ScoringService, F1ApiService, ChartDataService, NotificationService) | `app/Livewire/` (PredictionForm, DraggableDriverList, RacesList, Charts/*) | `resources/views/` (Blade + Volt).
+- **Integrations:** Use `F1ApiService` for external API; never raw HTTP. Use `ScoringService` as system of record for scoring. Use Laravel Boost MCP when available (search-docs, tinker, get-absolute-url, browser-logs). Herd serves the app at `https://[kebab-dir].test`.
 
 ---
 
-## Project Structure
+## Conventions
 
-| Path | Purpose |
-|------|---------|
-| `app/Models/` | Eloquent models (Prediction, Races, Drivers, Teams, Standings) |
-| `app/Services/` | ScoringService, F1ApiService, ChartDataService, NotificationService |
-| `app/Livewire/` | PredictionForm, DraggableDriverList, RacesList, Charts/* |
-| `resources/views/` | Blade + Volt views |
-| `tests/Feature/`, `tests/Browser/` | Pest tests |
+- **Laravel:** `php artisan make:*` for new files. `bootstrap/app.php` for middleware; no `app/Console/Kernel.php`. Eloquent and relationships over `DB::`; eager load to avoid N+1. Form Request classes for controller validation; Livewire/Volt validation in components. Named routes and `route()`. `config()` only — never `env()` outside config files. Queued jobs for long work (`ShouldQueue`).
+- **PHP:** Curly braces for control structures. Constructor property promotion; explicit return types and parameter types. PHPDoc for array shapes and complex returns. Enums: TitleCase keys.
+- **UI:** Mary UI (`x-mary-*`) first; Flux if needed; Blade fallback. Single root per Livewire/Volt component. `wire:key` in loops; `wire:model.live` for real-time; `wire:loading` / `wire:dirty` for loading. Tailwind v4 (`@import "tailwindcss"`); use `gap` for list spacing; support `dark:` where the app does. No deprecated Tailwind utilities (see README/tailwind v4 replacements).
+- **Livewire/Volt:** State on server; validate and authorize in actions. Use `mount()`, `updatedFoo()` for init and side effects. Volt for new interactive pages: `php artisan make:volt [name] [--pest]`. Namespace `App\Livewire`; dispatch with `$this->dispatch()`.
+- **Testing:** Pest only. `php artisan make:test --pest <name>`. Feature tests preferred. Use `assertForbidden`, `assertNotFound` etc. instead of raw `assertStatus`. Mock external APIs (e.g. `Http::fake()`); do not hit real F1 API in tests. Factories for models; datasets for validation tests. Browser tests in `tests/Browser/`.
+- **Format:** Run `vendor/bin/pint --dirty` before finalizing. Do not remove or disable tests to get green.
+- **Docs:** Create docs only when the user asks. Follow sibling-file patterns and existing structure.
 
-Use `F1ApiService` for external API calls; never raw HTTP. Use `ScoringService` as system of record for scoring logic.
+---
+
+## Domains & key files
+
+- **Races/calendar:** `Races`, `Circuits`, `Countries`; results JSON on race; list/detail views.
+- **Predictions/scoring:** `Prediction` (types: race, preseason, midseason; statuses: draft, submitted, locked, scored, cancelled); `prediction_data` JSON; `ScoringService` for all scoring and edge cases (DNS/DSQ/DNF/cancellation, overrides).
+- **Standings/leaderboards:** `Standings` (drivers/constructors); leaderboard routes/controllers.
+- **Analytics:** `ChartDataService`; Livewire chart components under `app/Livewire/Charts/*`.
+- **Notifications:** `NotificationService`; `app/Events/*`, `app/Notifications/*`; notification dropdown components.
+- **Admin/jobs:** Admin controllers/views; `ScoreRacePredictionsJob` and other jobs in `app/Jobs/*`.
+- **F1 API:** `F1ApiService` — cache, retries, timeouts; log errors; never crash user flows on API failure.
+
+Preserve model relationships and existing patterns when changing schema or behavior.
 
 ---
 
 ## Boundaries
 
-**Always do:**
-- Follow `.cursor/rules/*.mdc` and sibling-file conventions
-- When editing TODO.md: remove completed (done) items and add new items you identify as needing work but did not complete (enables agent-to-agent handoff)
-- Use Eloquent relationships; prefer Form Requests for validation
-- Run `vendor/bin/pint --dirty` after code changes
-- Add/update Pest tests for behavioral changes
-- Use `config()` only; never `env()` outside config
+**Always:** Follow conventions above; update TODO.md (remove done, add new items you didn’t complete); use Eloquent and Form Requests; run Pint and add/update tests for behavior changes.
 
-**Ask first:**
-- Scoring formula or rule changes in `ScoringService`
-- Migrations that alter/remove columns or risk data loss
-- Auth/authorization changes (policies, guards)
-- New Composer/NPM dependencies or external services
+**Ask first:** Scoring formula or rule changes in `ScoringService`; migrations that alter/remove columns or risk data loss; auth/authorization changes; new Composer/NPM deps or external services.
 
-**Never do:**
-- Read/write `.env` or secrets
-- Drop tables or irreversibly modify data outside migrations
-- Disable/delete tests to get green builds
-- Implement gambling, payments, or betting features
+**Never:** Read/write `.env` or secrets; drop tables or irreversibly change data outside migrations; disable/delete tests to get green; implement gambling, payments, or betting.
 
 ---
 
-## Lessons Learned
+## Autonomy by area
 
-When you discover a recurring pitfall or better pattern, add a brief entry to [LESSONS_LEARNED.md](LESSONS_LEARNED.md). Keep entries concise (1–3 lines). This improves consistency across sessions.
-
----
-
-## Session Handoff
-
-When ending a session with incomplete work, generate a handoff block for the next agent.
-
-**Work types:** code implementation | testing/debugging | docs | refactor | planning
-
-**Template:**
-
-```markdown
-**Task:** [Context-aware title] — [Measurable goal]
-
-**Current Status:**
-- [Quantifiable progress: test pass rate, endpoints done, coverage, etc.]
-
-**Key Areas to Focus On:**
-1. [Highest priority]
-2. [Next priority]
-
-**Recent Accomplishments (don't redo):**
-- [List what was completed]
-
-**Environment:**
-- Tests: `php artisan test [path]`
-- Key files: [paths]
-```
-
-Put commands and key paths in handoffs so the next agent can resume immediately.
+- **Safe (no review):** UI-only tweaks, localized bug fixes and refactors with tests, new analytics that don’t change scores or standings.
+- **Review required:** Any scoring change that can alter user scores; migrations that remove/alter columns or cause data loss; auth/policy changes; external API endpoint/key changes.
+- **Forbidden:** Touching secrets; dropping production tables; gambling/payments.
 
 ---
 
-## Recent Completion (F1-018)
+## TODO & handoff
 
-**Task:** Optimize or isolate F1ApiTest to avoid full-suite timeout — done
+- **TODO.md:** Single backlog; schema in file. Status: `todo` | `in_progress` | `blocked` | `done` | `cancelled`. When finishing work: set `done`, add brief completion note. When leaving work incomplete: remove done items, add new items you identified. Respect `risk_level`, `owner`, and `affected_areas`.
+- **Handoff template:** Task title and goal; current status (test pass rate, what’s done); key areas to focus on; recent accomplishments; env (test command, key files).
 
-**What was done:**
-- Changed the "throws F1ApiException when API returns 500" test to call `getRaceResults(2024, 1)` instead of `getRacesForYear(2024)` so it no longer triggers `fetchAllRacesForYear`'s 24-round loop. Still asserts that a 500 response throws `F1ApiException`.
-- F1ApiTest now completes in ~5s instead of ~48s. Removed F1-018 from TODO Next; updated AUDIT_REPORT Known Issues.
-
-**Tests:** `php artisan test tests/Feature/F1ApiTest.php`
+Note recurring pitfalls or better patterns in handoff notes (1–3 lines) for the next agent.
 
 ---
 
-## Recent Completion (F1-014)
+## Completed tasks (summary)
 
-**Task:** Fix AdminControllerTest failure (regular user cannot delete prediction via admin) — done
-
-**What was done:**
-- Added `authorize('manage-predictions')` to `AdminController::deletePrediction` so admin delete route requires admin/moderator; regular users now receive 403 instead of 302.
-- Updated test to set prediction `status => 'draft'` (policy would otherwise allow owner delete) to assert admin-route exclusivity.
-
-**Tests:** `php artisan test tests/Feature/AdminControllerTest.php`
+F1-000 (MVP scope) through F1-018; F1-020 (race diffs 10–19 to spec); F1-021 (sprint scoring weights, FL +5, perfect bonus +15 top-8-only); F1-024 (WebsiteNavigationTest mock + RacesController route param fix). Details in git history.
 
 ---
 
-## Recent Completion (F1-002)
+## Current session handoff (2026-02-08)
 
-**Task:** Improve F1 API error reporting in races list — done
+**Task:** Scoring fixes to match spec, test fixes.
 
-**What was done:**
-- Added `App\Exceptions\F1ApiException` with `getLogContext()` for structured logging
-- Updated `F1ApiService` to throw `F1ApiException` on API/connection failures; `fetchAllRacesForYear` now throws when 0 races due to API failure
-- Updated `RacesList` to show user-friendly message ("We're having trouble loading race data right now...") and log with year/endpoint/status
-- Extended `F1ApiTest` and `RacesPageTest` for 500, connection failure, and no-technical-details-exposed scenarios
+**Status:** 373 tests passing, 0 failing. Scoring now matches spec for race position diffs 0–20+ and sprint scoring (weights, fastest lap, perfect bonus). BacktestScoringHarness updated to match.
 
-**Tests:** `php artisan test tests/Feature/F1ApiTest.php tests/Feature/RacesPageTest.php`
+**Completed this session:**
+- F1-020: Race `getPositionScore()` now uses explicit match for diffs 10–19 (non-linear spec values).
+- F1-021: Sprint `getSprintPositionScore()` rewritten (0→8..7→1, 8+→0), fastest lap +5, perfect bonus +15 (top 8 only).
+- F1-024: WebsiteNavigationTest mocks F1ApiService; RacesController `index()` now accepts route `$year` param.
+- Fixed LivewirePredictionFormTest strict type comparison (Livewire hydration converts int IDs to strings).
 
----
+**Focus next:** F1-022 (DNF wager, mixed); F1-023 (half-points, mixed); F1-025 (auto-lock); F1-026 (2026 data pipeline).
 
-## Recent Completion (F1-011)
-
-**Task:** Add luck and variance analytics for predictors — done
-
-**What was done:**
-- Added `ChartDataService::getPredictorLuckAndVariance($season)` returning per-user metrics: total_score, avg_accuracy, prediction_count, score_std_dev, expected_score, luck_index. Leaderboards unchanged.
-- Added "Luck & Variance" option to Prediction Accuracy chart on analytics page (bar chart: Total Score and Luck Index by user).
-- Extended `ChartDataServiceTest` and `DataVisualizationTest` with luck/variance structure and view tests.
-
-**Tests:** `php artisan test tests/Feature/ChartDataServiceTest.php tests/Feature/DataVisualizationTest.php`
-
----
-
-## Recent Completion (F1-000)
-
-**Task:** Define 2026 season MVP scope, legacy data strategy, and release plan — done
-
-**What was done:**
-- Documented a 2026 MVP feature set, legacy-import boundaries, and milestone structure in `AGENTS_PRD.md` (see “1.2 2026 Season MVP (F1-000)”).
-- Updated `TODO.md` so `F1-000` is marked done, related tasks reference the MVP plan, and legacy/import work (`F1-006A`) is clearly scoped as a Phase 1 import.
-
-**Tests:** No application behavior changed (docs and backlog only), so no PHP tests were run for this task.
-
----
-
-## Recent Completion (F1-001)
-
-**Task:** Harden race prediction scoring around DNS/DSQ edge cases — done
-
-**What was done:**
-- Updated `Prediction` so `score()`, `calculateScore()`, and `calculateAccuracy()` delegate into `ScoringService`, keeping `ScoringService` as the scoring system of record and deprecating model-level implementations.
-- Fixed `ScoringService::findDriverPosition()` to gracefully handle results without an explicit `position` field while preserving existing processed-results behavior.
-- Added tests in `ScoringServiceTest` for EXCLUDED drivers and for `Prediction::score()` integration with `ScoringService` to verify consistent scores/accuracy and status updates.
-
-**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php`
-
----
-
-## Recent Completion (F1-003)
-
-**Task:** Strengthen Livewire prediction form validation and editing flows — done
-
-**What was done:**
-- Updated `PredictionForm` and HTTP Form Requests so race predictions require a `race_round`, preseason/midseason predictions prohibit it, and core prediction arrays are validated consistently with existing rules.
-- Enforced `Prediction::isEditable` and user ownership in the Livewire prediction form, blocking edits to locked/scored or non-owned predictions and surfacing a clear message/disabled UI state.
-- Extended `LivewirePredictionFormTest` and `PredictionFormValidationTest` to cover invalid `type`/`season`/`raceRound` combinations and blocked edit scenarios.
-
-**Tests:** `php artisan test tests/Feature/LivewirePredictionFormTest.php tests/Feature/PredictionFormValidationTest.php`
-
----
-
-## Recent Completion (F1-004)
-
-**Task:** Add basic analytics smoke tests for dashboard and analytics page — done
-
-**What was done:**
-- Enhanced `PredictionAccuracyChart` to support multiple analytics views (`user-trends`, `user-comparison`, `race-accuracy`) driven by `ChartDataService` and kept in sync via Livewire state and events.
-- Ensured analytics and dashboard flows are covered by smoke tests that verify key chart components render and that chart data methods return expected structures for seeded data.
-
-**Tests:** `php artisan test tests/Feature/DashboardTest.php tests/Feature/DataVisualizationTest.php tests/Feature/ChartDataServiceTest.php`
-
----
-
-## Recent Completion (F1-005)
-
-**Task:** Improve race list filtering UX for status and text search — done
-
-**What was done:**
-- Ensured the `RacesList` Livewire component reads and syncs `statusFilter` and `searchQuery` from the URL/query so race filters can be restored from shared or revisited URLs without changing existing loading/error behavior.
-- Kept the Mary UI-based filters (status dropdown, search input, refresh button) clearly labeled and responsive, with Livewire updates avoiding full page reloads while maintaining the existing card layout and actions.
-- Added a Livewire component test in `RacesPageTest` that mocks `F1ApiService` and asserts that different combinations of status and search filters produce the expected subsets of races.
-
-**Tests:** `php artisan test tests/Feature/RacesPageTest.php`
-
----
-
-## Recent Completion (F1-006)
-
-**Task:** Refactor prediction scoring responsibilities out of the Prediction model — done
-
-**What was done:**
-- Removed deprecated `calculateScore()` and `calculateAccuracy()` methods from `Prediction` and routed all production scoring and accuracy flows (admin manual scoring, historical backfill) through `ScoringService`.
-- Updated `Prediction::score()` to delegate its persistence to `ScoringService::savePredictionScore()` so score, accuracy, status, and timestamps are owned by the service, not duplicated in the model.
-- Added a `savePredictionScore` regression test in `ScoringServiceTest` and verified the full scoring feature suite via `php artisan test tests/Feature/ScoringServiceTest.php` after running `vendor/bin/pint --dirty`.
-
-**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php`
-
----
-
-## Recent Completion (F1-007)
-
-**Task:** Normalize ChartDataService queries and reduce per-row model lookups — done
-
-**What was done:**
-- Updated `ChartDataService` to pre-load related drivers and teams for team standings progression, team points progression, and driver/team performance comparison, eliminating repeated `find()` calls inside tight loops to avoid N+1-style query patterns.
-- Kept all chart data shapes and semantics intact, with existing tests still green after the refactor.
-- Added a lightweight query-count regression test in `ChartDataServiceTest` around team points progression to ensure query volume remains bounded.
-
-**Tests:** `php artisan test tests/Feature/ChartDataServiceTest.php`
-
----
-
-## Recent Completion (F1-008)
-
-**Task:** Enhance notifications UX and coverage for scored predictions — done
-
-**What was done:**
-- Enriched `PredictionScored` and `NotificationService::sendPredictionScoredNotification` so prediction-scored notifications (stored and real-time) include race name, score, and accuracy in their payloads.
-- Updated the `NotificationDropdown` Livewire view to highlight prediction-scored notifications with a dedicated label, race name, points, and accuracy plus a “View prediction” call-to-action, while keeping existing unread/read behavior intact.
-- Extended `NotificationTest` and `RealTimeNotificationTest` to cover the new data shape and dropdown rendering for prediction-scored notifications, then ran `php artisan test tests/Feature/NotificationTest.php tests/Feature/RealTimeNotificationTest.php` successfully.
-
-**Tests:** `php artisan test tests/Feature/NotificationTest.php tests/Feature/RealTimeNotificationTest.php`
-
----
-
-## Recent Completion (F1-009)
-
-**Task:** Add backtest harness for alternative scoring experiments — done
-
-**What was done:**
-- Created `tests/Support/BacktestScoringHarness` with production, linear, and flatter position-scoring variants. Harness is compute-only (no DB persistence).
-- `compareVariants()` returns production_scores, alternative_scores, score_deltas, and rank_changes for experiment analysis.
-- Extended `ScoringServiceTest` and `SimpleHistoricalDataTest` with backtest harness tests; production variant matches ScoringService output.
-
-**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/SimpleHistoricalDataTest.php`
-
----
-
-## Recent Completion (F1-010)
-
-**Task:** Introduce sprint-only prediction mode — done
-
-**What was done:**
-- Added a `sprint` prediction type wired through `Prediction`, `Races` (including `sprintPredictions()` and `allowsSprintPredictions()`), and `ScoringService`, with sprint predictions scored via dedicated sprint position weights and a smaller perfect-bonus so they remain separate from full-race scoring.
-- Updated the Livewire `PredictionForm`, Blade prediction form component, and HTTP Form Requests so sprint predictions reuse the race-style driver order/fastest-lap data shape, require a `race_round`, and are only allowed on races flagged with `has_sprint = true`, leaving preseason/midseason flows unchanged.
-- Extended `ScoringServiceTest`, `PredictionFormValidationTest`, and `LivewirePredictionFormTest` with sprint-focused cases, then ran `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/PredictionFormValidationTest.php tests/Feature/LivewirePredictionFormTest.php` successfully after `vendor/bin/pint --dirty`.
-
-**Tests:** `php artisan test tests/Feature/ScoringServiceTest.php tests/Feature/PredictionFormValidationTest.php tests/Feature/LivewirePredictionFormTest.php`
-
----
-
-## Recent Completion (F1-006A)
-
-**Task:** Design and implement legacy data import pipeline — done
-
-**What was done:**
-- Phase 1 legacy import via `Database\Seeders\HistoricalPredictionsSeeder` (markdown from `previous/`), `legacy:import-historical-predictions` command, idempotent seeder and tests.
-- All import tests made self-contained: in-test markdown fixtures so `HistoricalDataImportTest` and `SimpleHistoricalDataTest` pass without a gitignored `previous/` directory.
-- Phase 2 (CSV/external legacy) deferred until representative data and human-approved migrations are available.
-
-**Tests:** `php artisan test tests/Feature/HistoricalDataImportTest.php tests/Feature/SimpleHistoricalDataTest.php`
-
----
-
-## Recent Completion (F1-012)
-
-**Task:** Social and head-to-head comparison mode — done
-
-**What was done:**
-- Added `ChartDataService::getHeadToHeadComparison()` and `getHeadToHeadScoreProgression()` for selected users in a season.
-- Added `/leaderboard/compare` route with shareable URL `?season=YEAR&users=1,2,3`; multi-select form and comparison table with cumulative score chart.
-- Added "Head-to-Head Compare" and "Compare" links on leaderboard index and user-stats pages.
-- Fixed layout `$slot` vs `@yield('content')` so both @extends and component usage work.
-- Extended `ChartDataServiceTest` and new `LeaderboardTest` with head-to-head and compare tests.
-
-**Tests:** `php artisan test tests/Feature/LeaderboardTest.php tests/Feature/ChartDataServiceTest.php`
+**Key files:** `app/Services/ScoringService.php`, `tests/Feature/ScoringServiceTest.php`, `tests/Support/BacktestScoringHarness.php`.

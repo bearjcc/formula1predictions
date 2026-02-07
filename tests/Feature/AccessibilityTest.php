@@ -30,14 +30,32 @@ test('color contrast compliance', function () {
     $response = $this->get('/');
     $content = $response->getContent();
 
-    // Check for proper text color classes
+    // Check for proper text color classes (WCAG AA: primary text high contrast)
     expect($content)->toContain('text-white'); // Hero text
     expect($content)->toContain('text-auto-muted'); // Card descriptions use auto-muted
     expect($content)->toContain('dark:text-zinc-300'); // Dark mode text
+    expect($content)->toContain('text-zinc-900'); // Primary text light mode
+    expect($content)->toContain('dark:text-zinc-100'); // Primary text dark mode
 
     // Check for proper background color classes
     expect($content)->toContain('bg-card'); // Card background utility
     expect($content)->toContain('dark:bg-zinc-900'); // Dark backgrounds
+});
+
+test('colour contrast design system usage', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $response = $this->get('/');
+    $content = $response->getContent();
+
+    // Design system contrast utilities or equivalent Tailwind classes must be present
+    $hasHighContrastText = str_contains($content, 'text-zinc-900') || str_contains($content, 'text-white') || str_contains($content, 'text-zinc-100');
+    expect($hasHighContrastText)->toBeTrue('Primary content should use high-contrast text (WCAG AA)');
+
+    // Secondary/muted text should use design system classes
+    $hasMutedText = str_contains($content, 'text-zinc-600') || str_contains($content, 'text-zinc-500') || str_contains($content, 'text-auto-muted') || str_contains($content, 'text-zinc-400');
+    expect($hasMutedText)->toBeTrue('Secondary text should use muted/contrast-appropriate classes');
 });
 
 test('focus management', function () {
@@ -49,7 +67,7 @@ test('focus management', function () {
 
     // Check for button elements with proper type attributes
     expect($content)->toContain('type="button"');
-    
+
     // Check for interactive elements
     expect($content)->toContain('<button');
     expect($content)->toContain('<a');
@@ -95,7 +113,7 @@ test('form accessibility', function () {
 
     // Check for proper button elements
     expect($content)->toContain('<button');
-    
+
     // Check for proper interactive attributes
     expect($content)->toContain('draggable="true"');
     expect($content)->toContain('@click');
@@ -112,16 +130,16 @@ function assertAccessibilityCompliance(string $content, string $page): void
     }
 
     // Check for proper heading structure (some pages might not have h1)
-    if (!str_contains($content, '<h1')) {
+    if (! str_contains($content, '<h1')) {
         $hasHeading = str_contains($content, '<h2') || str_contains($content, '<h3') || str_contains($content, '<h4') || str_contains($content, '<h5') || str_contains($content, '<h6');
         expect($hasHeading)->toBeTrue("Page {$page} should have at least a heading (h2-h6)");
     }
-    
+
     // Check for proper button semantics
     if (str_contains($content, '<button')) {
         // Debug: Check if type attribute exists in any form
-        $hasTypeAttribute = str_contains($content, 'type="button"') || 
-                           str_contains($content, "type='button'") || 
+        $hasTypeAttribute = str_contains($content, 'type="button"') ||
+                           str_contains($content, "type='button'") ||
                            str_contains($content, 'type=');
         expect($hasTypeAttribute)->toBeTrue("Buttons on {$page} should have type attributes");
     }
@@ -139,13 +157,13 @@ function assertAccessibilityCompliance(string $content, string $page): void
     // Check for proper color contrast classes
     $hasTextClasses = str_contains($content, 'text-');
     $hasBgClasses = str_contains($content, 'bg-');
-    
-    if (!$hasTextClasses) {
+
+    if (! $hasTextClasses) {
         // Debug: Show a snippet of the content to see what we're working with
         $snippet = substr($content, 0, 1000);
-        throw new Exception("Page {$page} does not contain 'text-' classes. Content snippet: " . $snippet);
+        throw new Exception("Page {$page} does not contain 'text-' classes. Content snippet: ".$snippet);
     }
-    
+
     expect($hasTextClasses)->toBeTrue("Page {$page} should use design system text colors");
     expect($hasBgClasses)->toBeTrue("Page {$page} should use design system background colors");
 }

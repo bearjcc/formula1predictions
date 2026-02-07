@@ -17,12 +17,10 @@ class RacesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, int $year)
     {
-        $year = $request->get('year', date('Y'));
-
         try {
-            $races = $this->f1ApiService->getRacesForYear((int) $year);
+            $races = $this->f1ApiService->getRacesForYear($year);
 
             return response()->json($races);
         } catch (\Exception $e) {

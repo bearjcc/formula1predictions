@@ -24,6 +24,7 @@ class Races extends Model
         'date',
         'time',
         'circuit_id',
+        'circuit_api_id',
         'circuit_name',
         'circuit_url',
         'country',

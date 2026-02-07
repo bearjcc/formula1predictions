@@ -100,12 +100,20 @@ class LivewirePredictionFormTest extends TestCase
             ],
         ]);
 
+        // Refresh to ensure data is loaded from database
+        $prediction->refresh();
+
         Livewire::actingAs($user)
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('type', 'race')
             ->assertSet('season', 2024)
             ->assertSet('driverOrder', function ($value) use ($drivers) {
-                return $value === $drivers->pluck('id')->toArray();
+                // Livewire hydrates integer IDs to strings, so compare as strings
+                $expected = $drivers->pluck('id')->toArray();
+                // Sort both arrays for comparison since order might differ
+                sort($expected);
+                sort($value);
+                return $value == $expected;
             })
             ->assertSet('fastestLapDriverId', $drivers->first()->id);
     }

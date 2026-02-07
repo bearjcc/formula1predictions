@@ -1,42 +1,22 @@
-# Formula 1 Predictions App
+# Formula 1 Predictions
 
-A Laravel 11 web application for F1 race predictions, evolved from a manual spreadsheet system (2022-2024). Built with LiveWire 3, Tailwind CSS, and real-time notifications.
+A Laravel 12 web app for F1 race predictions: users predict finishing order and optional extras, get scored automatically, and compete on leaderboards. Replaces the 2022–2024 spreadsheet with auth, persistence, and automated scoring.
 
-## 📋 Quick Links
-- [Status](#status)
-- [Features](#features)
+**Stack:** PHP 8.4.5, Laravel 12, Livewire 3, Volt, Mary UI / Flux UI (free), Tailwind v4, Pest v4. Served locally via [Laravel Herd](https://herd.laravel.com) at `https://formula1predictions.test` (or your project kebab-case name).
+
+---
+
+## Quick links
+
 - [Installation](#installation)
-- [Scoring](#scoring)
+- [Scoring (canonical)](#scoring)
+- [Project layout](#project-layout)
+- [Testing](#testing)
+- [Docs](#docs)
 
-## 📊 Status
+---
 
-### ✅ **Completed**
-- **Core Infrastructure**: Laravel 11 + LiveWire 3 + Tailwind CSS
-- **Database Schema**: Complete F1 models (drivers, teams, circuits, races, predictions, standings)
-- **Real-Time Notifications**: WebSocket system with email fallback (18 tests passing)
-- **Prediction System**: Drag-and-drop driver ordering with fastest lap selection
-- **User Authentication**: Laravel's built-in auth system
-- **Testing Framework**: 100% test pass rate across 28+ test files
-
-### 🚨 **Critical Next Steps**
-- [ ] **Automated Scoring**: Implement comprehensive scoring algorithm with DNF/edge cases
-- [ ] **Deadline Management**: Automated enforcement and reminder system
-- [ ] **Driver Substitutions**: Smart prediction replacement for mid-season changes
-- [ ] **Mobile Optimization**: Touch-friendly interface for all devices
-
-### 🔧 **High Priority**
-- [ ] **Leaderboard System**: Real-time standings with historical tracking
-- [ ] **Superlatives System**: Preseason/midseason prediction types
-- [ ] **Bot Integration**: AI-powered competitive predictions
-- [ ] **Historical Data Import**: Migration from spreadsheet data
-
-## 🚀 Features
-
-**Core**: Race predictions (1-20 + fastest lap), preseason/midseason superlatives, real-time scoring
-**UX**: Drag-and-drop interface, mobile-responsive, real-time notifications
-**Competitive**: Leaderboards, bot predictions, achievement system, head-to-head comparisons
-
-## ⚙️ Installation
+## Installation
 
 ```bash
 git clone <repo> && cd formula1predictions
@@ -44,43 +24,77 @@ composer install && npm install
 cp .env.example .env && php artisan key:generate
 php artisan migrate --seed
 npm run build
-php artisan serve
 ```
 
-## 🎯 Scoring System
+With Herd, the site is available at `https://formula1predictions.test`. Otherwise: `php artisan serve`.
 
-| Position Difference | Points |
-|-------------------|--------|
-| Correct | +25 |
-| 1 away | +18 |
-| 2 away | +15 |
-| 3 away | +12 |
-| 4 away | +10 |
-| 5 away | +8 |
-| 6 away | +6 |
-| 7 away | +4 |
-| 8 away | +2 |
-| 9 away | +1 |
-| 10+ away | -1 to -25 |
-| Correct DNF | +10 |
-| Incorrect DNF | -10 |
-| Perfect bonus | +50 |
+---
 
-**Historical Benchmarks**: Top performers 250-275 pts/race, average 220-250 pts/race, random baseline ~116.5 pts/race
+## Scoring
 
-## 🔌 API Integration
+Canonical scoring rules (implement in `ScoringService`; tests in `tests/Feature/ScoringServiceTest.php`).
 
-Uses [F1 API](https://f1api.dev/docs/sdk) for real-time race data, driver info, and standings.
+### Race (full race)
 
-## 🧪 Testing
+- **Position accuracy** (predicted vs actual):  
+  0 → 25 | 1 → 18 | 2 → 15 | 3 → 12 | 4 → 10 | 5 → 8 | 6 → 6 | 7 → 4 | 8 → 2 | 9 → 1  
+  10 → 0 | 11 → -1 | 12 → -2 | 13 → -4 | 14 → -6 | 15 → -8 | 16 → -10 | 17 → -12 | 18 → -15 | 19 → -18 | 20+ → -25  
+- **Fastest lap:** +10 if predicted driver matches actual.
+- **DNF wager:** +10 per correct DNF prediction, -10 per incorrect (optional predictions).
+- **Perfect prediction:** +50 if every predicted driver is in the correct position (all diffs 0).
+- **Half points:** When the FIA awards half points for a shortened race, halve the race score (rounded).
+- **Predictions optional:** Users may predict any subset of positions (e.g. only 1st, 8th, 20th); score only predicted positions.
+- **Missing drivers (DNP/DNQ/DNS/DSQ/EXCLUDED):** Omit from processed results; that driver’s prediction contributes 0. DNF drivers keep a position and are scored by position.
+
+### Sprint
+
+- **Position:** 0 → 8 | 1 → 7 | 2 → 6 | 3 → 5 | 4 → 4 | 5 → 3 | 6 → 2 | 7 → 1 | 8+ → 0 (no negative).
+- **Fastest lap:** +5.
+- **Perfect bonus:** +15 when top 8 predicted positions are all correct.
+
+### Result processing
+
+- **FINISHED / DNF:** Driver has a position; score by position.
+- **DNS / DSQ / EXCLUDED:** Omit from processed results; prediction for that driver = 0.
+- Admins can override scores. Cancelled races: predictions set to `cancelled`, score 0.
+
+---
+
+## Project layout
+
+| Path | Purpose |
+|------|---------|
+| `app/Models/` | Prediction, Races, Drivers, Teams, Standings |
+| `app/Services/` | ScoringService, F1ApiService, ChartDataService, NotificationService |
+| `app/Livewire/` | PredictionForm, DraggableDriverList, RacesList, Charts/* |
+| `resources/views/` | Blade + Volt views |
+| `config/f1.php` | F1/scoring config |
+| `tests/Feature/`, `tests/Browser/` | Pest tests |
+
+Use `F1ApiService` for all external API calls (no raw HTTP). Treat `ScoringService` as the single source of truth for scoring.
+
+---
+
+## Testing
 
 ```bash
-php artisan test                    # All tests
-php artisan test --filter=NotificationTest
-php artisan test --filter=LivewirePredictionFormTest
+php artisan test
+php artisan test tests/Feature/ScoringServiceTest.php
+php artisan test --filter=testName
 ```
 
-## 📝 License
+Coverage (optional): `composer run test:coverage` (requires pcov).
 
-All rights reserved. Proprietary software.
+---
 
+## Docs
+
+- **[TODO.md](TODO.md)** — Backlog and task status (Now / Next / Later).
+- **[AGENTS.md](AGENTS.md)** — AI/agent instructions: commands, conventions, guardrails, handoff.
+- **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** — UI, colours, components, accessibility.
+
+---
+
+## License
+
+Proprietary. All rights reserved.

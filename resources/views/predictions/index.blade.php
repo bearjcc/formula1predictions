@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Predictions</h1>
-        <a href="{{ route('predictions.create') }}" class="btn btn-primary">Create New Prediction</a>
+        <x-mary-button tag="a" href="{{ route('predict.create') }}" variant="primary" wire:navigate>Create New Prediction</x-mary-button>
     </div>
 
     @if($predictions->count() > 0)
@@ -30,9 +30,9 @@
                             </p>
                         @endif
                         <div class="card-actions justify-end">
-                            <a href="{{ route('predictions.show', $prediction) }}" class="btn btn-sm btn-outline">View</a>
+                            <x-mary-button tag="a" href="{{ route('predictions.show', $prediction) }}" variant="outline" size="sm" wire:navigate>View</x-mary-button>
                             @if($prediction->status === 'draft')
-                                <a href="{{ route('predictions.edit', $prediction) }}" class="btn btn-sm btn-primary">Edit</a>
+                                <x-mary-button tag="a" href="{{ route('predictions.edit', $prediction) }}" variant="primary" size="sm" wire:navigate>Edit</x-mary-button>
                             @endif
                         </div>
                     </div>
@@ -47,7 +47,7 @@
         <div class="text-center py-12">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No predictions yet</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">Start making predictions to see them here.</p>
-            <a href="{{ route('predictions.create') }}" class="btn btn-primary">Create Your First Prediction</a>
+            <x-mary-button tag="a" href="{{ route('predict.create') }}" variant="primary" wire:navigate>Create Your First Prediction</x-mary-button>
         </div>
     @endif
 </div>

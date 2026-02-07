@@ -549,8 +549,8 @@ test('sprint prediction uses sprint scoring rules', function () {
     $service = app(ScoringService::class);
     $score = $service->calculateSprintPredictionScore($prediction, $race);
 
-    // Perfect sprint prediction: 2 drivers × 15 points + 25 bonus = 55 points.
-    expect($score)->toBe(55);
+    // Sprint: 2 drivers × 8 points = 16. No perfect bonus (need all top 8 correct).
+    expect($score)->toBe(16);
 });
 
 test('can score sprint predictions for a race', function () {
@@ -668,6 +668,125 @@ test('backtest harness compares two scoring variants and outputs summary stats',
 
     $deltas = array_values($result['score_deltas']);
     expect($deltas)->not->toBe([0, 0]);
+});
+
+test('race position scoring returns correct values for large diffs', function () {
+    $user = User::factory()->create();
+
+    // Create a race with 21 drivers to test all diff ranges
+    $drivers = [];
+    for ($i = 0; $i < 21; $i++) {
+        $drivers[] = [
+            'driver' => ['driverId' => "driver_{$i}"],
+            'status' => 'finished',
+        ];
+    }
+
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => $drivers,
+    ]);
+
+    // Predict driver_10 at position 0 (actual position 10, diff = 10 → 0 points)
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => ['driver_order' => ['driver_10']],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+    expect($score)->toBe(0); // diff 10 → 0 points
+
+    // diff 15 → -8
+    $prediction->update(['prediction_data' => ['driver_order' => ['driver_15']]]);
+    $score = $service->calculatePredictionScore($prediction, $race);
+    expect($score)->toBe(-8);
+
+    // diff 19 → -18
+    $prediction->update(['prediction_data' => ['driver_order' => ['driver_19']]]);
+    $score = $service->calculatePredictionScore($prediction, $race);
+    expect($score)->toBe(-18);
+
+    // diff 20 → -25
+    $prediction->update(['prediction_data' => ['driver_order' => ['driver_20']]]);
+    $score = $service->calculatePredictionScore($prediction, $race);
+    expect($score)->toBe(-25);
+});
+
+test('sprint fastest lap bonus is 5 points', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'has_sprint' => true,
+        'results' => [
+            [
+                'driver' => ['driverId' => 'max_verstappen'],
+                'status' => 'finished',
+                'fastestLap' => true,
+            ],
+            [
+                'driver' => ['driverId' => 'lewis_hamilton'],
+                'status' => 'finished',
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+            'fastest_lap' => 'max_verstappen',
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculateSprintPredictionScore($prediction, $race);
+
+    // Sprint: 2 × 8 position + 5 fastest lap = 21. No perfect bonus (need 8 correct).
+    expect($score)->toBe(21);
+});
+
+test('sprint has no negative position scores', function () {
+    $user = User::factory()->create();
+
+    $drivers = [];
+    for ($i = 0; $i < 10; $i++) {
+        $drivers[] = [
+            'driver' => ['driverId' => "driver_{$i}"],
+            'status' => 'finished',
+        ];
+    }
+
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'has_sprint' => true,
+        'results' => $drivers,
+    ]);
+
+    // Predict driver_9 at position 0 (diff = 9 → 0 points, not negative)
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => ['driver_order' => ['driver_9']],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculateSprintPredictionScore($prediction, $race);
+
+    // diff 9 → 0 (no negative sprint scores)
+    expect($score)->toBe(0);
 });
 
 test('savePredictionScore updates core fields consistently', function () {

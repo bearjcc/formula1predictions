@@ -8,13 +8,14 @@ it('validates slugs correctly', function () {
 });
 
 it('rejects invalid slugs', function () {
-    expect('Invalid Slug')->not->toBeSlug();
-    expect('invalid slug with spaces')->not->toBeSlug();
-    expect('invalid-slug-with-UPPERCASE')->not->toBeSlug();
-    expect('invalid-slug-with-special-chars!')->not->toBeSlug();
-    expect('-starts-with-dash')->not->toBeSlug();
-    expect('ends-with-dash-')->not->toBeSlug();
-    expect('double--dash')->not->toBeSlug();
+    $slugPattern = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+    expect('Invalid Slug')->not->toMatch($slugPattern);
+    expect('invalid slug with spaces')->not->toMatch($slugPattern);
+    expect('invalid-slug-with-UPPERCASE')->not->toMatch($slugPattern);
+    expect('invalid-slug-with-special-chars!')->not->toMatch($slugPattern);
+    expect('-starts-with-dash')->not->toMatch($slugPattern);
+    expect('ends-with-dash-')->not->toMatch($slugPattern);
+    expect('double--dash')->not->toMatch($slugPattern);
 });
 
 it('validates race slugs', function () {

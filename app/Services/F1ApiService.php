@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Exceptions\F1ApiException;
+use App\Models\Races;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -18,53 +20,60 @@ class F1ApiService
     private const CACHE_TTL = 3600; // 1 hour
 
     /**
-     * Get race results for a specific year and round
+     * Get race results for a specific year and round.
+     * Uses DB first; only calls external API when no local data.
      *
      * @throws F1ApiException when API is unreachable or returns non-2xx
      */
     public function getRaceResults(int $year, int $round): array
     {
-        $cacheKey = "f1_race_{$year}_{$round}";
+        $race = Races::where('season', $year)->where('round', $round)->first();
+        if ($race !== null) {
+            return ['races' => $this->raceModelToApiShape($race)];
+        }
+
         $endpoint = "/{$year}/{$round}/race";
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($year, $endpoint) {
-            try {
-                $response = $this->makeApiCall($endpoint);
-
-                if (! $response->successful()) {
-                    throw new F1ApiException(
-                        'Failed to fetch race data',
-                        $response->status(),
-                        $endpoint,
-                        $year
-                    );
-                }
-
-                return $response->json();
-            } catch (F1ApiException $e) {
-                throw $e;
-            } catch (Throwable $e) {
+        try {
+            $response = $this->makeApiCall($endpoint);
+            if (! $response->successful()) {
                 throw new F1ApiException(
-                    'F1 API connection failed: '.$e->getMessage(),
-                    null,
+                    'Failed to fetch race data',
+                    $response->status(),
                     $endpoint,
-                    $year,
-                    $e instanceof Exception ? $e : null
+                    $year
                 );
             }
-        });
+            $data = $response->json();
+            if (isset($data['races'])) {
+                $this->syncRaceFromApi($data['races'], $year, $round);
+            }
+
+            return $data;
+        } catch (F1ApiException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            throw new F1ApiException(
+                'F1 API connection failed: '.$e->getMessage(),
+                null,
+                $endpoint,
+                $year,
+                $e instanceof Exception ? $e : null
+            );
+        }
     }
 
     /**
-     * Get all races for a specific year
+     * Get all races for a specific year.
+     * Uses DB first; only calls external API when no local data for that season.
      */
     public function getRacesForYear(int $year): array
     {
-        $cacheKey = "f1_races_{$year}";
+        $races = Races::where('season', $year)->orderBy('round')->get();
+        if ($races->isNotEmpty()) {
+            return $this->racesCollectionToApiShape($races);
+        }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($year) {
-            return $this->fetchAllRacesForYear($year);
-        });
+        return $this->fetchAllRacesForYear($year);
     }
 
     /**
@@ -117,7 +126,9 @@ class F1ApiService
      */
     private function determineRaceStatus(array $race): string
     {
-        $raceDate = Carbon::parse($race['date'].' '.$race['time']);
+        $time = $race['time'] ?? '00:00:00';
+        $time = is_string($time) ? $time : '00:00:00';
+        $raceDate = Carbon::parse($race['date'].' '.$time);
         $now = Carbon::now();
 
         // If race has results, it's completed
@@ -137,6 +148,88 @@ class F1ApiService
 
         // If race date is past but no results, it might be cancelled
         return 'cancelled';
+    }
+
+    /**
+     * Convert a Races model to the API-shaped array expected by views and consumers.
+     *
+     * @return array<string, mixed>
+     */
+    private function raceModelToApiShape(Races $race): array
+    {
+        $circuit = array_filter([
+            'circuitName' => $race->circuit_name,
+            'country' => $race->country,
+            'url' => $race->circuit_url,
+            'locality' => $race->locality,
+            'circuitLength' => $race->circuit_length !== null ? (string) $race->circuit_length : null,
+            'circuitId' => $race->circuit_api_id,
+        ], fn ($v) => $v !== null && $v !== '');
+
+        return [
+            'round' => $race->round,
+            'date' => $race->date->format('Y-m-d'),
+            'time' => $race->time ? $race->time->format('H:i:s') : '00:00:00',
+            'raceName' => $race->race_name,
+            'circuit' => $circuit,
+            'status' => $race->status,
+            'results' => $race->getResultsArray(),
+        ];
+    }
+
+    /**
+     * Convert a collection of Races models to API-shaped array for getRacesForYear.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function racesCollectionToApiShape(Collection $races): array
+    {
+        return $races->map(fn (Races $race) => $this->raceModelToApiShape($race))->values()->all();
+    }
+
+    /**
+     * Persist API race payload into the races table (create or update by season/round).
+     *
+     * @param  array<string, mixed>  $apiRace
+     */
+    private function syncRaceFromApi(array $apiRace, int $season, int $round): Races
+    {
+        $circuit = $apiRace['circuit'] ?? [];
+        $circuitLength = null;
+        if (isset($circuit['circuitLength'])) {
+            $circuitLength = is_numeric($circuit['circuitLength']) ? (float) $circuit['circuitLength'] : (float) preg_replace('/[^0-9.]/', '', (string) $circuit['circuitLength']);
+        }
+
+        $date = isset($apiRace['date']) ? Carbon::parse($apiRace['date']) : null;
+        $time = null;
+        if (isset($apiRace['time'])) {
+            $parsed = Carbon::parse($apiRace['time']);
+            $time = $parsed->format('H:i:s');
+        }
+
+        $status = $this->determineRaceStatus($apiRace);
+
+        $attributes = [
+            'race_name' => $apiRace['raceName'] ?? 'Unknown',
+            'date' => $date,
+            'time' => $time,
+            'circuit_api_id' => $circuit['circuitId'] ?? null,
+            'circuit_name' => $circuit['circuitName'] ?? null,
+            'circuit_url' => $circuit['url'] ?? null,
+            'country' => $circuit['country'] ?? null,
+            'locality' => $circuit['locality'] ?? null,
+            'circuit_length' => $circuitLength,
+            'laps' => $apiRace['laps'] ?? null,
+            'weather' => $apiRace['weather'] ?? null,
+            'temperature' => $apiRace['temperature'] ?? null,
+            'status' => $status,
+            'results' => $apiRace['results'] ?? null,
+        ];
+
+        return Races::updateOrCreate(
+            ['season' => $season, 'round' => $round],
+            $attributes
+        );
     }
 
     /**

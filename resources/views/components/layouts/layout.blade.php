@@ -1,6 +1,6 @@
 @props(['title' => 'F1 Predictor'])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-appearance="{{ session('appearance', 'system') }}">
 <head>
     @include('partials.head')
 </head>

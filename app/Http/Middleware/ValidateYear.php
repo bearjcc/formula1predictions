@@ -17,14 +17,12 @@ class ValidateYear
     {
         $year = $request->route('year');
 
-        // Validate year format and range - only allow 2022-2024 for now
-        if (!is_numeric($year) || $year < 2022 || $year > 2024) {
-            abort(404, 'Invalid year specified. Please select a year between 2022 and 2024.');
-        }
+        $minYear = 2022;
+        $maxYear = max(2027, (int) config('f1.current_season', 2026));
 
-        // TODO: Add database lookup for available years
-        // TODO: Add caching for valid years
-        // TODO: Add unit tests for year validation logic
+        if (! is_numeric($year) || $year < $minYear || $year > $maxYear) {
+            abort(404, "Invalid year specified. Please select a year between {$minYear} and {$maxYear}.");
+        }
 
         return $next($request);
     }

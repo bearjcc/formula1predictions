@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Integration-level prediction form validation tests.
+ * Tests validation via HTTP POST to /predictions (full stack, Form Requests).
+ * For unit-level rule tests, see FormValidationTest.
+ */
+
 use App\Models\Drivers;
 use App\Models\Teams;
 use App\Models\User;

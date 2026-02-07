@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Prediction;
 use App\Http\Requests\StorePredictionRequest;
 use App\Http\Requests\UpdatePredictionRequest;
+use App\Models\Prediction;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class PredictionController extends Controller
 {
@@ -19,16 +18,17 @@ class PredictionController extends Controller
     public function index(): View
     {
         $predictions = Auth::user()->predictions()->latest()->paginate(10);
-        
+
         return view('predictions.index', compact('predictions'));
     }
 
     /**
      * Show the form for creating a new resource.
+     * Redirects to Livewire prediction form for consistency.
      */
-    public function create(): View
+    public function create(): RedirectResponse
     {
-        return view('predictions.create');
+        return redirect()->route('predict.create');
     }
 
     /**
@@ -37,7 +37,7 @@ class PredictionController extends Controller
     public function store(StorePredictionRequest $request): RedirectResponse
     {
         $prediction = Auth::user()->predictions()->create($request->validated());
-        
+
         return redirect()->route('predictions.show', $prediction)
             ->with('success', 'Prediction created successfully.');
     }
@@ -48,7 +48,7 @@ class PredictionController extends Controller
     public function show(Prediction $prediction): View
     {
         Gate::authorize('view', $prediction);
-        
+
         return view('predictions.show', compact('prediction'));
     }
 
@@ -58,7 +58,7 @@ class PredictionController extends Controller
     public function edit(Prediction $prediction): View
     {
         Gate::authorize('update', $prediction);
-        
+
         return view('predictions.edit', compact('prediction'));
     }
 
@@ -68,9 +68,9 @@ class PredictionController extends Controller
     public function update(UpdatePredictionRequest $request, Prediction $prediction): RedirectResponse
     {
         Gate::authorize('update', $prediction);
-        
+
         $prediction->update($request->validated());
-        
+
         return redirect()->route('predictions.show', $prediction)
             ->with('success', 'Prediction updated successfully.');
     }
@@ -81,9 +81,9 @@ class PredictionController extends Controller
     public function destroy(Prediction $prediction): RedirectResponse
     {
         Gate::authorize('delete', $prediction);
-        
+
         $prediction->delete();
-        
+
         return redirect()->route('predictions.index')
             ->with('success', 'Prediction deleted successfully.');
     }

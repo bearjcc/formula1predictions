@@ -1,10 +1,11 @@
 {
     "private": true,
     "type": "module",
-    "scripts": {
-        "build": "vite build",
-        "dev": "vite"
-    },
+"scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "audit-screenshots": "node scripts/audit-screenshots.mjs"
+  },
     "dependencies": {
         "@f1api/sdk": "^1.1.0",
         "autoprefixer": "^10.4.20",

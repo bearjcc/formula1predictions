@@ -39,7 +39,17 @@ class BacktestScoringHarness
             7 => 4,
             8 => 2,
             9 => 1,
-            default => max(-25, -$positionDiff),
+            10 => 0,
+            11 => -1,
+            12 => -2,
+            13 => -4,
+            14 => -6,
+            15 => -8,
+            16 => -10,
+            17 => -12,
+            18 => -15,
+            19 => -18,
+            default => -25, // 20+ positions away
         };
     }
 

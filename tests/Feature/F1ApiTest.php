@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\F1ApiException;
+use App\Models\Races;
 use App\Services\F1ApiService;
 use Illuminate\Support\Facades\Http;
 
@@ -244,4 +245,36 @@ test('F1ApiException carries log context for debugging', function () {
         'endpoint' => '/2024/1/race',
         'status' => 500,
     ]);
+});
+
+test('getRacesForYear and getRaceResults use DB first when races exist', function () {
+    $season = 2035;
+    $round = 1;
+    Races::create([
+        'season' => $season,
+        'round' => $round,
+        'race_name' => 'Bahrain Grand Prix',
+        'date' => '2035-03-02',
+        'time' => null,
+        'circuit_name' => 'Bahrain International Circuit',
+        'country' => 'Bahrain',
+        'status' => 'completed',
+        'results' => [['position' => 1, 'driver' => ['driverId' => 'max_verstappen']]],
+    ]);
+
+    Http::fake(['*' => Http::response(null, 500)]);
+
+    $service = new F1ApiService;
+
+    $races = $service->getRacesForYear($season);
+    expect($races)->not->toBeEmpty();
+    $bahrain = collect($races)->first(fn ($r) => ($r['raceName'] ?? '') === 'Bahrain Grand Prix' && ($r['round'] ?? 0) === 1);
+    expect($bahrain)->not->toBeNull();
+    expect($bahrain['circuit']['circuitName'])->toBe('Bahrain International Circuit');
+    expect($bahrain['status'])->toBe('completed');
+
+    $single = $service->getRaceResults($season, $round);
+    expect($single)->toHaveKey('races');
+    expect($single['races']['raceName'])->toBe('Bahrain Grand Prix');
+    expect($single['races']['results'])->toHaveCount(1);
 });

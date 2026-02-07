@@ -122,26 +122,17 @@
         </div>
 
         <!-- Summary -->
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Prediction Summary</h5>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                        <p>Total Drivers: <span class="font-medium" x-text="driverOrder.length"></span></p>
-                        <p>Fastest Lap: <span class="font-medium" x-text="fastestLap ? (getDriverById(fastestLap)?.name + ' ' + getDriverById(fastestLap)?.surname) : 'Not set'"></span></p>
-                    </div>
-                </div>
-                
-                <div>
-                    <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Top 3 Prediction</h5>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                        <template x-for="(driverId, index) in driverOrder.slice(0, 3)" :key="driverId">
-                            <p><span class="font-medium" x-text="index + 1"></span>. <span x-text="getDriverById(driverId)?.name + ' ' + getDriverById(driverId)?.surname"></span></p>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-prediction-summary>
+            <x-slot:summary>
+                <p>Total Drivers: <span class="font-medium" x-text="driverOrder.length"></span></p>
+                <p>Fastest Lap: <span class="font-medium" x-text="fastestLap ? (getDriverById(fastestLap)?.name + ' ' + getDriverById(fastestLap)?.surname) : 'Not set'"></span></p>
+            </x-slot:summary>
+            <x-slot:top3>
+                <template x-for="(driverId, index) in driverOrder.slice(0, 3)" :key="driverId">
+                    <p><span class="font-medium" x-text="index + 1"></span>. <span x-text="getDriverById(driverId)?.name + ' ' + getDriverById(driverId)?.surname"></span></p>
+                </template>
+            </x-slot:top3>
+        </x-prediction-summary>
 
         <!-- Instructions -->
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
