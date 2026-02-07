@@ -32,6 +32,9 @@ class PredictionForm extends Component
 
     public ?string $fastestLapDriverId = null;
 
+    /** @var list<string> DNF wager: driver IDs predicted to DNF (race only). */
+    public array $dnfPredictions = [];
+
     // Preseason/Midseason prediction data
     public array $teamOrder = [];
 
@@ -72,22 +75,30 @@ class PredictionForm extends Component
             $this->raceRound = $existingPrediction->race_round;
             $this->notes = $existingPrediction->notes;
 
+            if (in_array($this->type, ['race', 'sprint'], true) && $this->season && $this->raceRound !== null) {
+                $this->race = Races::where('season', $this->season)->where('round', $this->raceRound)->first();
+            }
+
             $predictionData = $existingPrediction->prediction_data ?? [];
             if (in_array($this->type, ['race', 'sprint'], true)) {
                 $this->driverOrder = $predictionData['driver_order'] ?? $this->driverOrder;
                 $this->fastestLapDriverId = (string) ($predictionData['fastest_lap'] ?? '');
+                $rawDnf = $predictionData['dnf_predictions'] ?? [];
+                $this->dnfPredictions = is_array($rawDnf) ? array_values(array_map('strval', $rawDnf)) : [];
             } else {
                 $this->teamOrder = $predictionData['team_order'] ?? $this->teamOrder;
                 $this->driverChampionship = $predictionData['driver_championship'] ?? $this->driverChampionship;
                 $this->superlatives = $predictionData['superlatives'] ?? [];
             }
-            
-            $this->isLocked = !$existingPrediction->isEditable();
+
+            if ($user !== null && $existingPrediction->user_id === $user->id) {
+                $this->isLocked = ! $existingPrediction->isEditable();
+            }
         } elseif ($race !== null) {
             $this->season = $race->season ?? 2024;
             $this->raceRound = $race->round;
             $this->type = 'race';
-            $this->isLocked = !$race->allowsPredictions();
+            $this->isLocked = ! $race->allowsPredictions();
         }
     }
 
@@ -151,6 +162,7 @@ class PredictionForm extends Component
     {
         $this->driverOrder = [];
         $this->fastestLapDriverId = null;
+        $this->dnfPredictions = [];
         $this->teamOrder = [];
         $this->driverChampionship = [];
         $this->superlatives = [];
@@ -158,59 +170,94 @@ class PredictionForm extends Component
 
     public function updateDriverOrder(array $newOrder): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->driverOrder = $newOrder;
+    }
+
+    public function toggleDnfDriver(string $driverId): void
+    {
+        if ($this->isLocked || $this->type !== 'race') {
+            return;
+        }
+        $key = array_search($driverId, $this->dnfPredictions, true);
+        if ($key !== false) {
+            unset($this->dnfPredictions[$key]);
+            $this->dnfPredictions = array_values($this->dnfPredictions);
+        } else {
+            $this->dnfPredictions[] = $driverId;
+        }
     }
 
     public function setFastestLap(string $driverId): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->fastestLapDriverId = $this->fastestLapDriverId === $driverId ? null : $driverId;
     }
 
     public function updateTeamOrder(array $newOrder): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->teamOrder = $newOrder;
     }
 
     #[On('driver-order-updated')]
     public function handleDriverOrderUpdated(array $order): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->driverOrder = $order;
     }
 
     #[On('fastest-lap-updated')]
     public function handleFastestLapUpdated(?string $driverId): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->fastestLapDriverId = $driverId;
     }
 
     #[On('team-order-updated')]
     public function handleTeamOrderUpdated(array $order): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->teamOrder = $order;
     }
 
     public function updateDriverChampionship(array $newOrder): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->driverChampionship = $newOrder;
     }
 
     public function updateSuperlative(string $key, $value): void
     {
-        if ($this->isLocked) return;
+        if ($this->isLocked) {
+            return;
+        }
         $this->superlatives[$key] = $value;
+    }
+
+    public function getCanEditProperty(): bool
+    {
+        return ! $this->isLocked;
     }
 
     public function save(): void
     {
         if ($this->isLocked) {
-            session()->flash('error', 'This prediction is locked and cannot be saved.');
+            $this->addError('base', 'This prediction can no longer be edited.');
 
             return;
         }
@@ -284,6 +331,9 @@ class PredictionForm extends Component
             $data['driver_order'] = $this->driverOrder;
             if ($this->fastestLapDriverId) {
                 $data['fastest_lap'] = $this->fastestLapDriverId;
+            }
+            if ($this->type === 'race' && ! empty($this->dnfPredictions)) {
+                $data['dnf_predictions'] = array_values($this->dnfPredictions);
             }
         } else {
             $data['team_order'] = $this->teamOrder;

@@ -13,6 +13,7 @@ test('races page loads successfully', function () {
             ->with(2024)
             ->andReturn([
                 [
+                    'round' => 1,
                     'raceName' => 'Test Race 1',
                     'circuit' => ['circuitName' => 'Test Circuit', 'country' => 'Test Country'],
                     'date' => '2024-03-15',
@@ -78,6 +79,7 @@ test('races list filters by status and search query', function () {
             ->with(2024)
             ->andReturn([
                 [
+                    'round' => 1,
                     'raceName' => 'Australian Grand Prix',
                     'circuit' => [
                         'circuitName' => 'Albert Park',
@@ -89,6 +91,7 @@ test('races list filters by status and search query', function () {
                     'results' => [],
                 ],
                 [
+                    'round' => 2,
                     'raceName' => 'Canadian Grand Prix',
                     'circuit' => [
                         'circuitName' => 'Circuit Gilles Villeneuve',

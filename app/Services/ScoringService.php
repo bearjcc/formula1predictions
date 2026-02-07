@@ -138,9 +138,17 @@ class ScoringService
         $fastestLapScore = $this->calculateFastestLapScore($prediction, $actualResults);
         $score += $fastestLapScore;
 
-        // Perfect prediction bonus (Top 10)
-        if ($correctCount >= 10) {
+        // DNF wager: +10 per correct DNF prediction, -10 per incorrect (README)
+        $score += $this->calculateDnfWagerScore($prediction, $race);
+
+        // Perfect prediction bonus: +50 when every predicted driver is in the correct position (README)
+        if ($totalDrivers > 0 && $correctCount === $totalDrivers) {
             $score += 50;
+        }
+
+        // Half points for shortened races (README)
+        if ($race->half_points ?? false) {
+            $score = (int) round($score / 2);
         }
 
         return $score;
@@ -187,6 +195,11 @@ class ScoringService
         // Sprint perfect bonus: +15 when all top 8 positions predicted correctly
         if ($top8Correct >= 8) {
             $score += 15;
+        }
+
+        // Half points for shortened races (README)
+        if ($race->half_points ?? false) {
+            $score = (int) round($score / 2);
         }
 
         return $score;
@@ -325,6 +338,55 @@ class ScoringService
         }
 
         return 0;
+    }
+
+    /**
+     * DNF wager: +10 per correct DNF prediction, -10 per incorrect. Race only.
+     */
+    private function calculateDnfWagerScore(Prediction $prediction, Races $race): int
+    {
+        if ($prediction->type !== 'race') {
+            return 0;
+        }
+
+        $predictedDnf = $prediction->getDnfPredictions();
+        if (empty($predictedDnf)) {
+            return 0;
+        }
+
+        $actualDnf = $this->getActualDnfDriverIds($race->getResultsArray());
+        $score = 0;
+
+        foreach ($predictedDnf as $driverId) {
+            $driverIdStr = (string) $driverId;
+            if (in_array($driverIdStr, $actualDnf, true)) {
+                $score += 10;
+            } else {
+                $score -= 10;
+            }
+        }
+
+        return $score;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getActualDnfDriverIds(array $results): array
+    {
+        $ids = [];
+        foreach ($results as $result) {
+            $status = strtoupper((string) ($result['status'] ?? ''));
+            if ($status !== 'DNF') {
+                continue;
+            }
+            $driver = $result['driver'] ?? null;
+            if ($driver && isset($driver['driverId'])) {
+                $ids[] = (string) $driver['driverId'];
+            }
+        }
+
+        return $ids;
     }
 
     public function savePredictionScore(Prediction $prediction, int $score): void

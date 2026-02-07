@@ -36,6 +36,7 @@ class Races extends Model
         'status',
         'has_sprint',
         'is_special_event',
+        'half_points',
         'results',
     ];
 
@@ -54,6 +55,7 @@ class Races extends Model
             'temperature' => 'decimal:1',
             'has_sprint' => 'boolean',
             'is_special_event' => 'boolean',
+            'half_points' => 'boolean',
             'results' => 'array',
         ];
     }
@@ -165,7 +167,7 @@ class Races extends Model
      */
     public function isUpcoming(): bool
     {
-        return $this->status === 'upcoming' || $this->date->isFuture();
+        return $this->status === 'upcoming' || ($this->date !== null && $this->date->isFuture());
     }
 
     /**

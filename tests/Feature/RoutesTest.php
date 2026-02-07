@@ -153,6 +153,7 @@ test('races page loads successfully', function () {
             ->with($year)
             ->andReturn([
                 [
+                    'round' => 1,
                     'raceName' => 'Test Race',
                     'circuit' => ['circuitName' => 'Test Circuit', 'country' => 'Test Country'],
                     'date' => '2026-03-15',

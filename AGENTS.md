@@ -95,11 +95,9 @@ F1-000 (MVP scope) through F1-018; F1-020 (race diffs 10–19 to spec); F1-021 (
 **Status:** 373 tests passing, 0 failing. Scoring now matches spec for race position diffs 0–20+ and sprint scoring (weights, fastest lap, perfect bonus). BacktestScoringHarness updated to match.
 
 **Completed this session:**
-- F1-020: Race `getPositionScore()` now uses explicit match for diffs 10–19 (non-linear spec values).
-- F1-021: Sprint `getSprintPositionScore()` rewritten (0→8..7→1, 8+→0), fastest lap +5, perfect bonus +15 (top 8 only).
-- F1-024: WebsiteNavigationTest mocks F1ApiService; RacesController `index()` now accepts route `$year` param.
-- Fixed LivewirePredictionFormTest strict type comparison (Livewire hydration converts int IDs to strings).
+- F1-023: Half-points for shortened races — migration `half_points`, ScoringService halves race/sprint score when flag set, admin toggle route (`POST admin/races/{race}/toggle-half-points`).
+- F1-022: DNF wager — optional DNF predictions (race only), +10/−10 scoring, `prediction_data.dnf_predictions`, UI checkboxes on prediction form, ScoringServiceTest coverage.
 
-**Focus next:** F1-022 (DNF wager, mixed); F1-023 (half-points, mixed); F1-025 (auto-lock); F1-026 (2026 data pipeline).
+**Focus next:** F1-025 (auto-lock); F1-026 (2026 data pipeline).
 
 **Key files:** `app/Services/ScoringService.php`, `tests/Feature/ScoringServiceTest.php`, `tests/Support/BacktestScoringHarness.php`.

@@ -42,23 +42,10 @@
 
 Short-horizon, high-value tasks that are ready for agents to pick up immediately. **2026 MVP deadline: 2026-02-20.**
 
-- **id**: F1-033
-  - **title**: Fix ChartDataService crash on analytics page (foreach on string)
-  - **type**: bug
-  - **status**: todo
-  - **priority**: P1
-  - **risk_level**: low
-  - **owner**: agent
-  - **affected_areas**:
-    - app/Services/ChartDataService.php
-  - **description**: `ChartDataService::getRaceResultDistribution()` at line 443 does `foreach ($results as ...)` but `$race->results` can be a string instead of an array (despite the `array` cast on the model). This crashes the analytics page with `foreach() argument must be of type array|object, string given`. Needs a defensive check or investigation into why the cast isn't working for some race records.
-  - **test_expectations**:
-    - Analytics page test passes reliably in full suite runs.
-
 - **id**: F1-022
   - **title**: Implement DNF wager prediction system
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P1
   - **risk_level**: medium
   - **owner**: mixed
@@ -75,11 +62,13 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
     - Scoring handles DNF wagers independently of position scoring.
   - **test_expectations**:
     - New tests in tests/Feature/ScoringServiceTest.php for DNF wager scoring.
+  - **notes**:
+    - Completed 2026-02-08. PredictionForm has optional DNF wager section (race only); Store/UpdatePredictionRequest validate dnf_predictions.
 
 - **id**: F1-023
   - **title**: Implement half-points for shortened races
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P1
   - **risk_level**: medium
   - **owner**: mixed
@@ -220,7 +209,7 @@ Longer-horizon ideas and exploratory improvements.
   - **owner**: human
   - **description**: Non-gambling, non-ad monetization to recover costs. Ideas: premium stats/analytics, badges, special abilities. Free tier must allow full gameplay. No 3rd party ads. Minimal self-promotion (lock icon + "become a member" button). Needs cost-per-user and revenue-per-user analysis.
   - **notes**:
-    - Human-driven decision. Agent should not implement payments/billing without explicit approval.
+    - Monetization and payments for cost recovery are in scope and allowed; only gambling/real-money betting is forbidden. Implementing payment/billing code requires explicit human approval.
 
 - **id**: F1-032
   - **title**: Preseason and midseason prediction games

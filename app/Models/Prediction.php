@@ -199,4 +199,16 @@ class Prediction extends Model
     {
         return $this->getPredictionDataArray()['fastest_lap'] ?? null;
     }
+
+    /**
+     * Get DNF wager predictions (driver IDs predicted to DNF). Race predictions only.
+     *
+     * @return list<string|int>
+     */
+    public function getDnfPredictions(): array
+    {
+        $raw = $this->getPredictionDataArray()['dnf_predictions'] ?? [];
+
+        return is_array($raw) ? array_values($raw) : [];
+    }
 }

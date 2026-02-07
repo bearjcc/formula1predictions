@@ -27,3 +27,7 @@ yarn-error.log
 
 # Previous projects directory
 /previous/
+
+# Log files
+/laravel.log
+storage/logs/*.log

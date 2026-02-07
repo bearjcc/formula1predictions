@@ -1,3 +1,4 @@
+<div>
 <div class="card bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900 shadow-lg border-2 border-yellow-300 dark:border-yellow-700">
     <div class="card-body">
         <div class="flex items-start justify-between">
@@ -73,3 +74,4 @@
         <span class="text-sm">Stripe payments not yet configured for production. Contact the administrator.</span>
     </div>
 @endif
+</div>

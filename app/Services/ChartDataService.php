@@ -33,7 +33,7 @@ class ChartDataService
         $chartData = [];
 
         foreach ($races as $race) {
-            $results = $race->results ?? [];
+            $results = $race->getResultsArray();
             $raceData = [
                 'race' => $race->race_name,
                 'round' => $race->round,
@@ -68,7 +68,7 @@ class ChartDataService
         $chartData = [];
 
         foreach ($races as $race) {
-            $results = $race->results ?? [];
+            $results = $race->getResultsArray();
             $raceData = [
                 'race' => $race->race_name,
                 'round' => $race->round,
@@ -292,7 +292,7 @@ class ChartDataService
         $chartData = [];
 
         foreach ($races as $race) {
-            $results = $race->results ?? [];
+            $results = $race->getResultsArray();
             $raceData = [
                 'race' => $race->race_name,
                 'round' => $race->round,
@@ -331,7 +331,7 @@ class ChartDataService
         $chartData = [];
 
         foreach ($races as $race) {
-            $results = $race->results ?? [];
+            $results = $race->getResultsArray();
             $raceData = [
                 'race' => $race->race_name,
                 'round' => $race->round,
@@ -435,7 +435,7 @@ class ChartDataService
 
         $chartData = [];
         foreach ($races as $race) {
-            $results = $race->results ?? [];
+            $results = $race->getResultsArray();
             $podiums = 0;
             $points = 0;
             $dnfs = 0;
@@ -642,7 +642,7 @@ class ChartDataService
 
         // Collect all positions for each driver
         foreach ($races as $race) {
-            $results = $race->results ?? [];
+            $results = $race->getResultsArray();
             foreach ($results as $position => $driverData) {
                 $driverId = $driverData['driver_id'] ?? null;
                 if ($driverId && isset($drivers[$driverId])) {

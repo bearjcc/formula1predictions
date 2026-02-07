@@ -320,6 +320,36 @@ test('admin can cancel race', function () {
         ->assertSessionHas('success');
 });
 
+test('regular user cannot toggle half-points', function () {
+    $race = Races::factory()->create(['half_points' => false]);
+
+    actingAs($this->user)
+        ->post(route('admin.races.toggle-half-points', $race))
+        ->assertForbidden();
+});
+
+test('admin can toggle half-points', function () {
+    $race = Races::factory()->create(['half_points' => false]);
+
+    actingAs($this->admin)
+        ->from(route('admin.scoring'))
+        ->post(route('admin.races.toggle-half-points', $race))
+        ->assertRedirect(route('admin.scoring'))
+        ->assertSessionHas('success');
+
+    $race->refresh();
+    expect($race->half_points)->toBeTrue();
+
+    actingAs($this->admin)
+        ->from(route('admin.scoring'))
+        ->post(route('admin.races.toggle-half-points', $race))
+        ->assertRedirect(route('admin.scoring'))
+        ->assertSessionHas('success');
+
+    $race->refresh();
+    expect($race->half_points)->toBeFalse();
+});
+
 test('authenticated user can get race scoring stats', function () {
     $race = Races::factory()->create();
 

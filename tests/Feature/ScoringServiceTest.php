@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Scoring tests. Canonical scoring rules: README.md § Scoring.
+ * ScoringService is the single source of truth; tests assert behaviour matches docs.
+ */
+
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
@@ -79,7 +84,7 @@ test('perfect prediction gets maximum score', function () {
     $service = app(ScoringService::class);
     $score = $service->calculatePredictionScore($prediction, $race);
 
-    // Perfect prediction: 2 drivers × 25 points + 50 bonus = 100 points
+    // README: perfect prediction +50 when every predicted driver correct (all diffs 0). 2×25 + 50 = 100
     expect($score)->toBe(100);
 });
 
@@ -112,8 +117,34 @@ test('prediction with position errors gets appropriate score', function () {
     $service = app(ScoringService::class);
     $score = $service->calculatePredictionScore($prediction, $race);
 
-    // Both drivers 1 position off: 2 × 18 points = 36 points
+    // Both drivers 1 position off: 2 × 18 points = 36 (no perfect bonus; README: every predicted must be correct)
     expect($score)->toBe(36);
+});
+
+test('perfect bonus only when every predicted driver correct', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'a'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'b'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'c'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => ['driver_order' => ['a', 'c', 'b']], // a correct, c wrong (actual 3rd), b wrong (actual 2nd)
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    // a: diff 0 = 25; c: predicted 2nd actual 3rd = diff 1 = 18; b: predicted 3rd actual 2nd = diff 1 = 18. Total 61, no +50
+    expect($score)->toBe(61);
 });
 
 test('handles DNS drivers correctly', function () {
@@ -281,6 +312,247 @@ test('handles fastest lap bonus', function () {
 
     // Perfect positions (50) + fastest lap bonus (10) + perfect bonus (50) = 110 points
     expect($score)->toBe(110);
+});
+
+test('half points halves race score when race has half_points flag', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'half_points' => true,
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    // Raw: 2x25 + 50 perfect = 100. Halved = 50
+    expect($score)->toBe(50);
+});
+
+test('half points halves sprint score when race has half_points flag', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'has_sprint' => true,
+        'half_points' => true,
+        'results' => [
+            ['driver' => ['driverId' => 'a'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'b'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'c'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'd'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'e'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'f'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'g'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'h'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'prediction_data' => [
+            'driver_order' => ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculateSprintPredictionScore($prediction, $race);
+
+    // Raw: 8x8 top positions + 15 perfect = 79. Halved (round) = 40
+    expect($score)->toBe(40);
+});
+
+test('half points rounds race score correctly', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'half_points' => true,
+        'results' => [
+            ['driver' => ['driverId' => 'a'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'b'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'c'], 'status' => 'finished'],
+        ],
+    ]);
+
+    // Prediction: a correct, b and c swapped. Raw: 25 + 18 + 18 = 61. Halved = 30.5 -> 31
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => ['driver_order' => ['a', 'c', 'b']],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    expect($score)->toBe(31);
+});
+
+test('DNF wager awards plus 10 per correct DNF prediction', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'DNF'],
+            ['driver' => ['driverId' => 'charles_leclerc'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton', 'charles_leclerc'],
+            'dnf_predictions' => ['lewis_hamilton'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    // With DNF wager +10 (correct): score includes position + perfect + DNF. Without DNF wager would be 20 less.
+    $scoreWithoutDnf = $service->calculatePredictionScore(
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'race_id' => $race->id,
+            'type' => 'race',
+            'prediction_data' => [
+                'driver_order' => ['max_verstappen', 'lewis_hamilton', 'charles_leclerc'],
+            ],
+            'status' => 'submitted',
+        ]),
+        $race
+    );
+    expect($score - $scoreWithoutDnf)->toBe(10);
+});
+
+test('DNF wager deducts 10 per incorrect DNF prediction', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'charles_leclerc'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton', 'charles_leclerc'],
+            'dnf_predictions' => ['lewis_hamilton'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    $scoreWithoutDnf = $service->calculatePredictionScore(
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'race_id' => $race->id,
+            'type' => 'race',
+            'prediction_data' => ['driver_order' => ['max_verstappen', 'lewis_hamilton', 'charles_leclerc']],
+            'status' => 'submitted',
+        ]),
+        $race
+    );
+    expect($scoreWithoutDnf - $score)->toBe(10);
+});
+
+test('DNF wager mixed correct and incorrect', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'a'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'b'], 'status' => 'DNF'],
+            ['driver' => ['driverId' => 'c'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'd'], 'status' => 'DNF'],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['a', 'b', 'c', 'd'],
+            'dnf_predictions' => ['b', 'c'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+
+    // DNF: b correct +10, c incorrect -10 => net 0. Same as no DNF wager.
+    $scoreNoDnf = $service->calculatePredictionScore(
+        Prediction::factory()->create([
+            'user_id' => $user->id,
+            'race_id' => $race->id,
+            'type' => 'race',
+            'prediction_data' => ['driver_order' => ['a', 'b', 'c', 'd']],
+            'status' => 'submitted',
+        ]),
+        $race
+    );
+    expect($score)->toBe($scoreNoDnf);
+});
+
+test('DNF wager is zero for sprint predictions', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'has_sprint' => true,
+        'results' => [
+            ['driver' => ['driverId' => 'a'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'b'], 'status' => 'DNF'],
+        ],
+    ]);
+
+    $withDnf = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'prediction_data' => ['driver_order' => ['a', 'b'], 'dnf_predictions' => ['b']],
+        'status' => 'submitted',
+    ]);
+    $withoutDnf = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'prediction_data' => ['driver_order' => ['a', 'b']],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    // DNF wager applies to race only; sprint score unchanged by dnf_predictions.
+    expect($service->calculateSprintPredictionScore($withDnf, $race))
+        ->toBe($service->calculateSprintPredictionScore($withoutDnf, $race));
 });
 
 test('admin can override prediction score', function () {
@@ -455,7 +727,7 @@ test('dry run shows what would be scored', function () {
     ]);
 
     $result->assertExitCode(0);
-    $result->expectsOutput("DRY RUN: Would score 1 predictions for race {$race->id}");
+    $result->expectsOutput('[DRY RUN] Would score 1 predictions.');
 });
 
 test('prediction model score method delegates to scoring service', function () {
@@ -506,7 +778,7 @@ test('prediction model score method delegates to scoring service', function () {
 
     $service = app(ScoringService::class);
     $expectedScore = $service->calculatePredictionScore($prediction, $race);
-    $expectedAccuracy = $service->calculateAccuracy($prediction);
+    $expectedAccuracy = $service->calculateAccuracyValue($prediction);
 
     $prediction->score();
     $prediction->refresh();

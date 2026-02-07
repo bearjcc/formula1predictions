@@ -32,6 +32,8 @@ class UpdatePredictionRequest extends FormRequest
             'prediction_data.driver_order' => ['required_if:type,race,sprint', 'array', 'min:20', 'max:20'],
             'prediction_data.driver_order.*' => ['required_if:type,race,sprint', 'integer', 'exists:drivers,id'],
             'prediction_data.fastest_lap' => ['nullable', 'integer', 'exists:drivers,id'],
+            'prediction_data.dnf_predictions' => ['nullable', 'array'],
+            'prediction_data.dnf_predictions.*' => ['string', 'exists:drivers,driver_id'],
             'prediction_data.team_order' => ['required_if:type,preseason,midseason', 'array', 'min:10', 'max:10'],
             'prediction_data.team_order.*' => ['required_if:type,preseason,midseason', 'integer', 'exists:teams,id'],
             'prediction_data.driver_championship' => ['required_if:type,preseason,midseason', 'array', 'min:20', 'max:20'],

@@ -282,6 +282,20 @@ class AdminController extends Controller
     }
 
     /**
+     * Toggle half-points flag for a race (FIA shortened-race rule).
+     */
+    public function toggleHalfPoints(Request $request, Races $race): RedirectResponse
+    {
+        $this->authorize('update', $race);
+
+        $race->update(['half_points' => ! $race->half_points]);
+
+        $label = $race->half_points ? 'enabled' : 'disabled';
+
+        return redirect()->back()->with('success', "Half-points {$label} for {$race->race_name}");
+    }
+
+    /**
      * Get scoring statistics for a race.
      */
     public function getRaceScoringStats(Races $race): JsonResponse

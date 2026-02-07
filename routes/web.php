@@ -66,6 +66,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/races/{race}/queue-scoring', [AdminController::class, 'queueRaceScoring'])->name('races.queue-scoring');
         Route::post('/races/{race}/substitutions', [AdminController::class, 'handleDriverSubstitutions'])->name('races.substitutions');
         Route::post('/races/{race}/cancel', [AdminController::class, 'handleRaceCancellation'])->name('races.cancel');
+        Route::post('/races/{race}/toggle-half-points', [AdminController::class, 'toggleHalfPoints'])->name('races.toggle-half-points');
         Route::get('/races/{race}/scoring-stats', [AdminController::class, 'getRaceScoringStats'])->name('races.scoring-stats');
         Route::post('/bulk-score', [AdminController::class, 'bulkScoreRaces'])->name('bulk-score');
 
@@ -77,11 +78,15 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
         Route::get('/', [LeaderboardController::class, 'index'])->name('index');
         Route::get('/compare', [LeaderboardController::class, 'compare'])->name('compare');
-        Route::get('/livewire', function () { return view('leaderboard.index-livewire'); })->name('livewire');
+        Route::get('/livewire', function () {
+            return view('leaderboard.index-livewire');
+        })->name('livewire');
         Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
         Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
         Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');
-        Route::get('/user/{user}/livewire', function ($user) { return view('leaderboard.user-stats-livewire', ['user' => $user]); })->name('user-stats-livewire');
+        Route::get('/user/{user}/livewire', function ($user) {
+            return view('leaderboard.user-stats-livewire', ['user' => $user]);
+        })->name('user-stats-livewire');
     });
 
     // Stripe checkout routes
