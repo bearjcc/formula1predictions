@@ -114,7 +114,7 @@ Medium-horizon improvements that should be tackled soon.
 - **id**: F1-026
   - **title**: 2026 season data pipeline
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P1
   - **risk_level**: medium
   - **owner**: mixed
@@ -127,7 +127,7 @@ Medium-horizon improvements that should be tackled soon.
     - 2026 races, drivers, and teams loaded into the database.
     - Race dates and qualifying times available for prediction deadlines.
   - **notes**:
-    - Depends on f1api.dev having 2026 data available.
+    - Completed 2026-02-08. F1ApiService: syncSeasonRacesFromSchedule (create/update races from schedule API), fetchDriversChampionship/fetchConstructorsChampionship, syncTeamsForSeason, syncDriversForSeason. f1:sync-season {year} command syncs races, teams, drivers (options: --races-only, --drivers-only, --teams-only). syncScheduleToRaces now creates missing races from schedule. getAvailableYears includes 2026. When f1api.dev has 2026 data, run `php artisan f1:sync-season 2026`.
 
 - **id**: F1-027
   - **title**: Dashboard content and user experience

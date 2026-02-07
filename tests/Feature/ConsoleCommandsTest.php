@@ -82,7 +82,7 @@ test('send test notification command fails for invalid type', function () {
 });
 
 test('sync race schedule command runs and updates races when API returns data', function () {
-    $race = Races::factory()->create([
+    Races::factory()->create([
         'season' => 2025,
         'round' => 1,
         'qualifying_start' => null,
@@ -95,5 +95,32 @@ test('sync race schedule command runs and updates races when API returns data', 
 
     $this->artisan('f1:sync-schedule', ['year' => 2025])
         ->expectsOutputToContain('Updated 1 race(s)')
+        ->assertExitCode(0);
+});
+
+test('sync season data command runs and syncs races teams drivers', function () {
+    $mock = \Mockery::mock(\App\Services\F1ApiService::class);
+    $mock->shouldReceive('syncSeasonRacesFromSchedule')->once()->with(2026)->andReturn(['created' => 24, 'updated' => 0]);
+    $mock->shouldReceive('syncTeamsForSeason')->once()->with(2026)->andReturn(10);
+    $mock->shouldReceive('syncDriversForSeason')->once()->with(2026)->andReturn(22);
+    $this->app->instance(\App\Services\F1ApiService::class, $mock);
+
+    $this->artisan('f1:sync-season', ['year' => 2026])
+        ->expectsOutputToContain('Races: 24 created, 0 updated.')
+        ->expectsOutputToContain('Teams: 10 synced.')
+        ->expectsOutputToContain('Drivers: 22 synced.')
+        ->expectsOutputToContain('Done.')
+        ->assertExitCode(0);
+});
+
+test('sync season data command respects races-only option', function () {
+    $mock = \Mockery::mock(\App\Services\F1ApiService::class);
+    $mock->shouldReceive('syncSeasonRacesFromSchedule')->once()->with(2025)->andReturn(['created' => 0, 'updated' => 24]);
+    $mock->shouldReceive('syncTeamsForSeason')->never();
+    $mock->shouldReceive('syncDriversForSeason')->never();
+    $this->app->instance(\App\Services\F1ApiService::class, $mock);
+
+    $this->artisan('f1:sync-season', ['year' => 2025, '--races-only' => true])
+        ->expectsOutputToContain('Races: 0 created, 24 updated.')
         ->assertExitCode(0);
 });

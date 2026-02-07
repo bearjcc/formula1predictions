@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Exceptions\F1ApiException;
+use App\Models\Drivers;
 use App\Models\Races;
+use App\Models\Teams;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Client\Response;
@@ -261,52 +263,233 @@ class F1ApiService
     }
 
     /**
-     * Sync qualifying and sprint qualifying times from F1 API season schedule to races table.
-     * Updates qualifying_start, sprint_qualifying_start, has_sprint for each race by season/round.
+     * Sync full season from F1 API schedule: create or update all races for the year.
+     * Populates race_name, date, time, circuit fields, qualifying_start, sprint_qualifying_start, has_sprint.
      *
-     * @return int Number of races updated
+     * @return array{created: int, updated: int}
      */
-    public function syncScheduleToRaces(int $year): int
+    public function syncSeasonRacesFromSchedule(int $year): array
     {
         $data = $this->fetchSeasonSchedule($year);
         $races = $data['races'] ?? [];
-
+        $created = 0;
         $updated = 0;
+
         foreach ($races as $apiRace) {
             $round = isset($apiRace['round']) ? (int) $apiRace['round'] : null;
             if ($round === null) {
                 continue;
             }
 
-            $race = Races::where('season', $year)->where('round', $round)->first();
-            if ($race === null) {
-                continue;
+            $race = $this->upsertRaceFromScheduleEntry($apiRace, $year, $round);
+            if ($race->wasRecentlyCreated) {
+                $created++;
+            } else {
+                $updated++;
             }
-
-            $schedule = $apiRace['schedule'] ?? [];
-            $qualy = $schedule['qualy'] ?? [];
-            $sprintQualy = $schedule['sprintQualy'] ?? [];
-
-            $qualifyingStart = null;
-            if (! empty($qualy['date']) && ! empty($qualy['time'])) {
-                $qualifyingStart = Carbon::parse($qualy['date'].' '.$qualy['time']);
-            }
-
-            $sprintQualifyingStart = null;
-            if (! empty($sprintQualy['date']) && ! empty($sprintQualy['time'])) {
-                $sprintQualifyingStart = Carbon::parse($sprintQualy['date'].' '.$sprintQualy['time']);
-            }
-
-            $hasSprint = $sprintQualifyingStart !== null;
-
-            $race->qualifying_start = $qualifyingStart;
-            $race->sprint_qualifying_start = $sprintQualifyingStart;
-            $race->has_sprint = $hasSprint;
-            $race->save();
-            $updated++;
         }
 
-        return $updated;
+        return ['created' => $created, 'updated' => $updated];
+    }
+
+    /**
+     * Map one API schedule race entry to Races model and updateOrCreate.
+     *
+     * @param  array<string, mixed>  $apiRace
+     */
+    private function upsertRaceFromScheduleEntry(array $apiRace, int $season, int $round): Races
+    {
+        $schedule = $apiRace['schedule'] ?? [];
+        $raceSchedule = $schedule['race'] ?? [];
+        $qualy = $schedule['qualy'] ?? [];
+        $sprintQualy = $schedule['sprintQualy'] ?? [];
+        $circuit = $apiRace['circuit'] ?? [];
+
+        $date = ! empty($raceSchedule['date']) ? Carbon::parse($raceSchedule['date']) : null;
+        $time = null;
+        if (! empty($raceSchedule['time'])) {
+            $parsed = Carbon::parse($raceSchedule['time']);
+            $time = $parsed->format('H:i:s');
+        }
+
+        $qualifyingStart = null;
+        if (! empty($qualy['date']) && ! empty($qualy['time'])) {
+            $qualifyingStart = Carbon::parse($qualy['date'].' '.$qualy['time']);
+        }
+        $sprintQualifyingStart = null;
+        if (! empty($sprintQualy['date']) && ! empty($sprintQualy['time'])) {
+            $sprintQualifyingStart = Carbon::parse($sprintQualy['date'].' '.$sprintQualy['time']);
+        }
+        $hasSprint = $sprintQualifyingStart !== null;
+
+        $circuitLength = null;
+        if (isset($circuit['circuitLength'])) {
+            $raw = $circuit['circuitLength'];
+            $circuitLength = is_numeric($raw) ? (float) $raw : (float) preg_replace('/[^0-9.]/', '', (string) $raw);
+        }
+
+        $status = ! empty($apiRace['winner']) ? 'completed' : 'upcoming';
+
+        $attributes = [
+            'race_name' => $apiRace['raceName'] ?? 'Unknown',
+            'date' => $date,
+            'time' => $time,
+            'qualifying_start' => $qualifyingStart,
+            'sprint_qualifying_start' => $sprintQualifyingStart,
+            'has_sprint' => $hasSprint,
+            'circuit_api_id' => $circuit['circuitId'] ?? null,
+            'circuit_name' => $circuit['circuitName'] ?? null,
+            'circuit_url' => $circuit['url'] ?? null,
+            'country' => $circuit['country'] ?? null,
+            'locality' => $circuit['city'] ?? null,
+            'circuit_length' => $circuitLength,
+            'laps' => $apiRace['laps'] ?? null,
+            'status' => $status,
+        ];
+
+        return Races::updateOrCreate(
+            ['season' => $season, 'round' => $round],
+            $attributes
+        );
+    }
+
+    /**
+     * Sync qualifying and sprint qualifying times from F1 API season schedule to races table.
+     * Creates missing races from schedule, then updates qualifying_start, sprint_qualifying_start, has_sprint.
+     *
+     * @return int Number of races created + updated
+     */
+    public function syncScheduleToRaces(int $year): int
+    {
+        $result = $this->syncSeasonRacesFromSchedule($year);
+
+        return $result['created'] + $result['updated'];
+    }
+
+    /**
+     * Fetch drivers championship data for a season (uses drivers-championship endpoint).
+     *
+     * @return array<string, mixed>
+     */
+    public function fetchDriversChampionship(int $year): array
+    {
+        $response = $this->makeApiCall("/{$year}/drivers-championship");
+        if (! $response->successful()) {
+            throw new F1ApiException("Failed to fetch drivers championship for {$year}", $response->status(), "/{$year}/drivers-championship", $year);
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Fetch constructors championship data for a season (uses constructors-championship endpoint).
+     *
+     * @return array<string, mixed>
+     */
+    public function fetchConstructorsChampionship(int $year): array
+    {
+        $response = $this->makeApiCall("/{$year}/constructors-championship");
+        if (! $response->successful()) {
+            throw new F1ApiException("Failed to fetch constructors championship for {$year}", $response->status(), "/{$year}/constructors-championship", $year);
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Sync teams (constructors) for a season from constructors championship. Upserts by team_id.
+     *
+     * @return int Number of teams created or updated
+     */
+    public function syncTeamsForSeason(int $year): int
+    {
+        try {
+            $data = $this->fetchConstructorsChampionship($year);
+        } catch (F1ApiException $e) {
+            Log::warning('Could not sync teams for season', ['year' => $year, 'message' => $e->getMessage()]);
+
+            return 0;
+        }
+
+        $entries = $data['constructors_championship'] ?? [];
+        $count = 0;
+        foreach ($entries as $entry) {
+            $teamId = $entry['teamId'] ?? null;
+            if ($teamId === null) {
+                continue;
+            }
+            $team = $entry['team'] ?? [];
+            $founded = isset($team['firstAppareance']) ? (int) $team['firstAppareance'] : null;
+
+            Teams::updateOrCreate(
+                ['team_id' => $teamId],
+                [
+                    'team_name' => $team['teamName'] ?? $teamId,
+                    'nationality' => $team['country'] ?? null,
+                    'url' => $team['url'] ?? null,
+                    'founded' => $founded,
+                    'world_championships' => $team['constructorsChampionships'] ?? 0,
+                    'is_active' => true,
+                ]
+            );
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Sync drivers for a season from drivers championship. Upserts by driver_id; links to team when present.
+     *
+     * @return int Number of drivers created or updated
+     */
+    public function syncDriversForSeason(int $year): int
+    {
+        try {
+            $data = $this->fetchDriversChampionship($year);
+        } catch (F1ApiException $e) {
+            Log::warning('Could not sync drivers for season', ['year' => $year, 'message' => $e->getMessage()]);
+
+            return 0;
+        }
+
+        $entries = $data['drivers_championship'] ?? [];
+        $count = 0;
+        foreach ($entries as $entry) {
+            $driverId = $entry['driverId'] ?? null;
+            if ($driverId === null) {
+                continue;
+            }
+            $driver = $entry['driver'] ?? [];
+            $teamId = $entry['teamId'] ?? null;
+            $teamDbId = $teamId ? Teams::where('team_id', $teamId)->value('id') : null;
+
+            $birthday = null;
+            if (! empty($driver['birthday'])) {
+                try {
+                    $birthday = Carbon::parse($driver['birthday'])->format('Y-m-d');
+                } catch (Throwable) {
+                    // ignore invalid date
+                }
+            }
+
+            Drivers::updateOrCreate(
+                ['driver_id' => $driverId],
+                [
+                    'name' => $driver['name'] ?? 'Unknown',
+                    'surname' => $driver['surname'] ?? '',
+                    'nationality' => $driver['nationality'] ?? null,
+                    'url' => $driver['url'] ?? null,
+                    'driver_number' => isset($driver['number']) ? (string) $driver['number'] : null,
+                    'date_of_birth' => $birthday,
+                    'team_id' => $teamDbId,
+                    'is_active' => true,
+                ]
+            );
+            $count++;
+        }
+
+        return $count;
     }
 
     /**
@@ -327,7 +510,7 @@ class F1ApiService
      */
     public function getAvailableYears(): array
     {
-        return [2022, 2023, 2024, 2025];
+        return [2022, 2023, 2024, 2025, 2026];
     }
 
     /**
