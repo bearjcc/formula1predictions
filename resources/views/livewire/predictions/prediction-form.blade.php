@@ -40,6 +40,11 @@
                         <div class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                             Predicting for: <strong>{{ $race->race_name }}</strong>
                         </div>
+                        @if($this->predictionDeadline && !$isLocked)
+                            <div class="mt-1 text-sm text-amber-600 dark:text-amber-400">
+                                Closes 1 hour before {{ $type === 'sprint' ? 'sprint qualifying' : 'qualifying' }}: {{ $this->predictionDeadline->format('M j, Y g:i A T') }}
+                            </div>
+                        @endif
                     @endif
                 </div>
             @endif

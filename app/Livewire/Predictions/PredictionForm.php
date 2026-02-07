@@ -254,6 +254,20 @@ class PredictionForm extends Component
         return ! $this->isLocked;
     }
 
+    /**
+     * Get the prediction deadline for display (race or sprint, 1 hour before qualifying).
+     */
+    public function getPredictionDeadlineProperty(): ?\Carbon\Carbon
+    {
+        if ($this->race === null || ! in_array($this->type, ['race', 'sprint'], true)) {
+            return null;
+        }
+
+        return $this->type === 'sprint'
+            ? $this->race->getSprintPredictionDeadline()
+            : $this->race->getRacePredictionDeadline();
+    }
+
     public function save(): void
     {
         if ($this->isLocked) {

@@ -23,6 +23,8 @@ class Races extends Model
         'race_name',
         'date',
         'time',
+        'qualifying_start',
+        'sprint_qualifying_start',
         'circuit_id',
         'circuit_api_id',
         'circuit_name',
@@ -50,6 +52,8 @@ class Races extends Model
         return [
             'date' => 'date',
             'time' => 'datetime',
+            'qualifying_start' => 'datetime',
+            'sprint_qualifying_start' => 'datetime',
             'circuit_length' => 'decimal:3',
             'laps' => 'integer',
             'temperature' => 'decimal:1',
@@ -180,11 +184,31 @@ class Races extends Model
 
     /**
      * Check if predictions are still allowed for this race.
+     * Closes 1 hour before qualifying start. Fallback to isUpcoming() when qualifying_start is null.
      */
     public function allowsPredictions(): bool
     {
-        // Predictions are allowed until the race starts
-        return $this->isUpcoming();
+        if (! $this->isUpcoming()) {
+            return false;
+        }
+
+        if ($this->qualifying_start === null) {
+            return true;
+        }
+
+        return now()->lt($this->getRacePredictionDeadline());
+    }
+
+    /**
+     * Deadline for race predictions: 1 hour before qualifying start. Null when schedule unknown.
+     */
+    public function getRacePredictionDeadline(): ?\Carbon\Carbon
+    {
+        if ($this->qualifying_start === null) {
+            return null;
+        }
+
+        return $this->qualifying_start->copy()->subHour();
     }
 
     /**
@@ -197,6 +221,7 @@ class Races extends Model
 
     /**
      * Check if sprint predictions are still allowed for this race.
+     * Closes 1 hour before sprint qualifying start. Fallback when sprint_qualifying_start is null.
      */
     public function allowsSprintPredictions(): bool
     {
@@ -204,7 +229,27 @@ class Races extends Model
             return false;
         }
 
-        return $this->isUpcoming();
+        if (! $this->isUpcoming()) {
+            return false;
+        }
+
+        if ($this->sprint_qualifying_start === null) {
+            return true;
+        }
+
+        return now()->lt($this->getSprintPredictionDeadline());
+    }
+
+    /**
+     * Deadline for sprint predictions: 1 hour before sprint qualifying start.
+     */
+    public function getSprintPredictionDeadline(): ?\Carbon\Carbon
+    {
+        if ($this->sprint_qualifying_start === null) {
+            return null;
+        }
+
+        return $this->sprint_qualifying_start->copy()->subHour();
     }
 
     /**

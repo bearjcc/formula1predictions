@@ -86,7 +86,7 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
 - **id**: F1-025
   - **title**: Auto-lock predictions before qualifying
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P1
   - **risk_level**: medium
   - **owner**: agent
@@ -102,6 +102,8 @@ Short-horizon, high-value tasks that are ready for agents to pick up immediately
     - UI shows countdown/deadline to users.
   - **test_expectations**:
     - Tests for time-based prediction locking.
+  - **notes**:
+    - Completed 2026-02-08. Migration qualifying_start/sprint_qualifying_start; Races.allowsPredictions/allowsSprintPredictions use 1h-before-qualifying; LockPredictionsPastDeadline command + schedule; SyncRaceSchedule command; UI deadline on prediction form; AutoLockPredictionsTest.
 
 ---
 

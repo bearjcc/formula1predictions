@@ -80,3 +80,20 @@ test('send test notification command fails for invalid type', function () {
         ->expectsOutputToContain('Invalid notification type')
         ->assertExitCode(1);
 });
+
+test('sync race schedule command runs and updates races when API returns data', function () {
+    $race = Races::factory()->create([
+        'season' => 2025,
+        'round' => 1,
+        'qualifying_start' => null,
+        'sprint_qualifying_start' => null,
+    ]);
+
+    $mock = \Mockery::mock(\App\Services\F1ApiService::class);
+    $mock->shouldReceive('syncScheduleToRaces')->once()->with(2025)->andReturn(1);
+    $this->app->instance(\App\Services\F1ApiService::class, $mock);
+
+    $this->artisan('f1:sync-schedule', ['year' => 2025])
+        ->expectsOutputToContain('Updated 1 race(s)')
+        ->assertExitCode(0);
+});

@@ -246,6 +246,70 @@ class F1ApiService
     }
 
     /**
+     * Fetch full season schedule from /{year} (includes qualifying and sprint times).
+     *
+     * @return array<string, mixed>
+     */
+    public function fetchSeasonSchedule(int $year): array
+    {
+        $response = $this->makeApiCall("/{$year}");
+        if (! $response->successful()) {
+            throw new F1ApiException("Failed to fetch season schedule for {$year}", $response->status(), "/{$year}", $year);
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Sync qualifying and sprint qualifying times from F1 API season schedule to races table.
+     * Updates qualifying_start, sprint_qualifying_start, has_sprint for each race by season/round.
+     *
+     * @return int Number of races updated
+     */
+    public function syncScheduleToRaces(int $year): int
+    {
+        $data = $this->fetchSeasonSchedule($year);
+        $races = $data['races'] ?? [];
+
+        $updated = 0;
+        foreach ($races as $apiRace) {
+            $round = isset($apiRace['round']) ? (int) $apiRace['round'] : null;
+            if ($round === null) {
+                continue;
+            }
+
+            $race = Races::where('season', $year)->where('round', $round)->first();
+            if ($race === null) {
+                continue;
+            }
+
+            $schedule = $apiRace['schedule'] ?? [];
+            $qualy = $schedule['qualy'] ?? [];
+            $sprintQualy = $schedule['sprintQualy'] ?? [];
+
+            $qualifyingStart = null;
+            if (! empty($qualy['date']) && ! empty($qualy['time'])) {
+                $qualifyingStart = Carbon::parse($qualy['date'].' '.$qualy['time']);
+            }
+
+            $sprintQualifyingStart = null;
+            if (! empty($sprintQualy['date']) && ! empty($sprintQualy['time'])) {
+                $sprintQualifyingStart = Carbon::parse($sprintQualy['date'].' '.$sprintQualy['time']);
+            }
+
+            $hasSprint = $sprintQualifyingStart !== null;
+
+            $race->qualifying_start = $qualifyingStart;
+            $race->sprint_qualifying_start = $sprintQualifyingStart;
+            $race->has_sprint = $hasSprint;
+            $race->save();
+            $updated++;
+        }
+
+        return $updated;
+    }
+
+    /**
      * Clear cache for a specific year
      */
     public function clearCache(int $year): void
