@@ -222,7 +222,8 @@ test('f1 api service throws F1ApiException when API returns 500', function () {
 
     $service = new F1ApiService;
 
-    expect(fn () => $service->getRacesForYear(2024))
+    // Use getRaceResults (single round) so we don't trigger fetchAllRacesForYear's 24-round loop
+    expect(fn () => $service->getRaceResults(2024, 1))
         ->toThrow(F1ApiException::class);
 });
 

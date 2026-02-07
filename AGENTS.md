@@ -113,6 +113,18 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 
 ---
 
+## Recent Completion (F1-018)
+
+**Task:** Optimize or isolate F1ApiTest to avoid full-suite timeout — done
+
+**What was done:**
+- Changed the "throws F1ApiException when API returns 500" test to call `getRaceResults(2024, 1)` instead of `getRacesForYear(2024)` so it no longer triggers `fetchAllRacesForYear`'s 24-round loop. Still asserts that a 500 response throws `F1ApiException`.
+- F1ApiTest now completes in ~5s instead of ~48s. Removed F1-018 from TODO Next; updated AUDIT_REPORT Known Issues.
+
+**Tests:** `php artisan test tests/Feature/F1ApiTest.php`
+
+---
+
 ## Recent Completion (F1-014)
 
 **Task:** Fix AdminControllerTest failure (regular user cannot delete prediction via admin) — done
@@ -135,7 +147,7 @@ Put commands and key paths in handoffs so the next agent can resume immediately.
 - Updated `RacesList` to show user-friendly message ("We're having trouble loading race data right now...") and log with year/endpoint/status
 - Extended `F1ApiTest` and `RacesPageTest` for 500, connection failure, and no-technical-details-exposed scenarios
 
-**Tests:** `php artisan test tests/Feature/F1ApiTest.php tests/Feature/RacesPageTest.php` (note: F1Api 500 test ~48s due to 24-round loop)
+**Tests:** `php artisan test tests/Feature/F1ApiTest.php tests/Feature/RacesPageTest.php`
 
 ---
 

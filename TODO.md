@@ -43,7 +43,7 @@
 
 Short-horizon, high-value tasks that are ready for agents to pick up immediately.
 
-_(None; F1-016, F1-017 completed.)_
+_(None; F1-016, F1-017, F1-018 completed.)_
 
 ---
 
@@ -51,21 +51,7 @@ _(None; F1-016, F1-017 completed.)_
 
 Medium-horizon improvements that should be tackled soon.
 
-- **id**: F1-018
-  - **title**: Optimize or isolate F1ApiTest to avoid full-suite timeout
-  - **type**: chore
-  - **status**: todo
-  - **priority**: P3
-  - **risk_level**: low
-  - **owner**: agent
-  - **affected_areas**:
-    - tests/Feature/F1ApiTest.php
-  - **description**: F1ApiTest loops over many rounds (~48s); full `php artisan test` can timeout. Consider reducing iterations, mocking external calls in default suite, or excluding from default run.
-  - **acceptance_criteria**:
-    - Full test suite completes without timeout.
-    - F1 API integration still verified when run explicitly.
-  - **notes**:
-    - See AUDIT_REPORT.md Known Issues.
+_(None; F1-018 completed.)_
 
 ---
 
