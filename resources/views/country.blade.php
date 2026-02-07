@@ -3,8 +3,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">{{ ucfirst($slug) }} F1 Profile</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <h1 class="text-heading-1 mb-2">{{ ucfirst($slug) }} F1 Profile</h1>
+                <p class="text-auto-muted">
                     Formula 1 history and statistics for {{ ucfirst($slug) }}
                 </p>
             </div>
@@ -31,8 +31,8 @@
 
             <!-- Country Info -->
             <div class="flex-1">
-                <h2 class="text-2xl font-bold mb-2">{{ ucfirst($slug) }}</h2>
-                <p class="text-zinc-600 dark:text-zinc-400 mb-4">
+                <h2 class="text-heading-2 mb-2">{{ ucfirst($slug) }}</h2>
+                <p class="text-auto-muted mb-4">
                     Home to some of the most successful teams and drivers in Formula 1 history.
                 </p>
 
@@ -63,7 +63,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- F1 History -->
         <x-mary-card class="p-6">
-            <h3 class="text-xl font-semibold mb-4">F1 History</h3>
+            <h3 class="text-heading-3 mb-4">F1 History</h3>
             <div class="space-y-4">
                 <div class="flex justify-between">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">First Grand Prix</p>
@@ -94,7 +94,7 @@
 
         <!-- Current Drivers -->
         <x-mary-card class="p-6">
-            <h3 class="text-xl font-semibold mb-4">Current Drivers</h3>
+            <h3 class="text-heading-3 mb-4">Current Drivers</h3>
             <div class="space-y-4">
                 <!-- Driver 1 -->
                 <div class="flex items-center space-x-4 p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
@@ -143,7 +143,7 @@
 
     <!-- Circuits -->
     <x-mary-card class="p-6 mb-8">
-        <h3 class="text-xl font-semibold mb-4">Circuits in {{ ucfirst($slug) }}</h3>
+        <h3 class="text-heading-3 mb-4">Circuits in {{ ucfirst($slug) }}</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Circuit 1 -->
             <div class="p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
@@ -197,7 +197,7 @@
 
     <!-- Recent Race Results -->
     <x-mary-card class="p-6 mb-8">
-        <h3 class="text-xl font-semibold mb-4">Recent Race Results</h3>
+        <h3 class="text-heading-3 mb-4">Recent Race Results</h3>
         <div class="space-y-4">
             <!-- Recent Race 1 -->
             <div class="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
@@ -254,7 +254,7 @@
 
     <!-- Country Statistics -->
     <x-mary-card class="p-6">
-        <h3 class="text-xl font-semibold mb-4">{{ ucfirst($slug) }} F1 Statistics</h3>
+        <h3 class="text-heading-3 mb-4">{{ ucfirst($slug) }} F1 Statistics</h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <!-- Total Wins -->
             <div class="text-center p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">

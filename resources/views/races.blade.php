@@ -7,8 +7,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">{{ $year }} Races</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <h1 class="text-heading-1 mb-2">{{ $year }} Races</h1>
+                <p class="text-auto-muted">
                     View the complete race schedule for the {{ $year }} Formula 1 season
                 </p>
             </div>

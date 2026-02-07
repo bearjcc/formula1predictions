@@ -1,8 +1,8 @@
 <x-layouts.layout title="Admin Dashboard">
 <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-        <p class="text-zinc-600 dark:text-zinc-400">Manage F1 Predictions system</p>
+        <h1 class="text-heading-1">Admin Dashboard</h1>
+        <p class="text-auto-muted">Manage F1 Predictions system</p>
     </div>
 
     <!-- Statistics Cards -->

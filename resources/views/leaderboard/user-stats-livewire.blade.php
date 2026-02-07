@@ -6,7 +6,7 @@
         <a href="{{ route('leaderboard.index') }}" class="btn btn-sm btn-outline mb-4">
             ← Back to Leaderboard
         </a>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">📊 Profile Statistics</h1>
+        <h1 class="text-heading-1">Profile Statistics</h1>
     </div>
 
     <livewire:user-profile-stats :user="$user" />

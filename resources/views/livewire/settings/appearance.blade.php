@@ -7,7 +7,7 @@ new class extends Component {
 
     public function mount(): void
     {
-        $this->appearance = session('appearance', 'system');
+        $this->appearance = session('appearance', config('f1.default_appearance', 'system'));
     }
 
     public function updateAppearance(string $value): void

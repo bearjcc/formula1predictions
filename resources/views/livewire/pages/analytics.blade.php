@@ -11,10 +11,10 @@ use App\Services\ChartDataService;
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-6">
                     <div>
-                        <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+                        <h1 class="text-heading-1">
                             Analytics Dashboard
                         </h1>
-                        <p class="mt-2 text-zinc-600 dark:text-zinc-400">
+                        <p class="mt-2 text-auto-muted">
                             Comprehensive data visualization and insights for Formula 1 predictions
                         </p>
                     </div>
@@ -125,10 +125,10 @@ use App\Services\ChartDataService;
 
             <!-- Additional Analytics -->
             <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6">
-                <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+                <h2 class="text-heading-3 mb-4">
                     Detailed Analytics
                 </h2>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <p class="text-auto-muted">
                     Additional analytics and insights will be displayed here as more data becomes available.
                 </p>
             </div>

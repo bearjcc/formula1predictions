@@ -3,7 +3,7 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">F1 Countries</h1>
+                <h1 class="text-heading-1 mb-2">F1 Countries</h1>
                 <p class="text-zinc-600 dark:text-zinc-400">
                     Explore Formula 1 history and statistics by country
                 </p>
@@ -21,7 +21,7 @@
 
     <!-- Filters Section -->
     <x-mary-card class="mb-8">
-        <h3 class="text-xl font-bold mb-4">Filters</h3>
+        <h3 class="text-heading-3 mb-4">Filters</h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="space-y-2">
                 <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Region</label>

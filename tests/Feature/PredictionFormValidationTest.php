@@ -77,9 +77,10 @@ test('race prediction requires driver order', function () {
     $response->assertSessionHasErrors(['prediction_data.driver_order']);
 });
 
-test('race prediction driver order must have between 1 and 20 drivers', function () {
+test('race prediction driver order must have between 1 and max drivers', function () {
     $user = User::factory()->create();
-    $drivers = Drivers::factory()->count(25)->create();
+    $maxDrivers = config('f1.max_drivers', 22);
+    $drivers = Drivers::factory()->count($maxDrivers + 5)->create();
     $this->actingAs($user);
 
     // Empty driver order fails (min 1)
@@ -147,10 +148,11 @@ test('preseason prediction requires team order', function () {
     $response->assertSessionHasErrors(['prediction_data.team_order']);
 });
 
-test('preseason prediction team order must have between 1 and 10 teams', function () {
+test('preseason prediction team order must have between 1 and max teams', function () {
     $user = User::factory()->create();
-    $teams = Teams::factory()->count(15)->create();
-    $drivers = Drivers::factory()->count(20)->create();
+    $maxTeams = config('f1.max_teams', 11);
+    $teams = Teams::factory()->count($maxTeams + 5)->create();
+    $drivers = Drivers::factory()->count(config('f1.max_drivers', 22))->create();
     $this->actingAs($user);
 
     // Empty team order fails (min 1)
@@ -203,10 +205,11 @@ test('preseason prediction requires driver championship order', function () {
     $response->assertSessionHasErrors(['prediction_data.driver_championship']);
 });
 
-test('preseason prediction driver championship must have between 1 and 20 drivers', function () {
+test('preseason prediction driver championship must have between 1 and max drivers', function () {
     $user = User::factory()->create();
-    $drivers = Drivers::factory()->count(25)->create();
-    $teams = Teams::factory()->count(10)->create();
+    $maxDrivers = config('f1.max_drivers', 22);
+    $drivers = Drivers::factory()->count($maxDrivers + 5)->create();
+    $teams = Teams::factory()->count(config('f1.max_teams', 11))->create();
     $this->actingAs($user);
 
     // Empty driver championship fails (min 1)

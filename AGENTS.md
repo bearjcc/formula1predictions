@@ -90,16 +90,13 @@ F1-000 (MVP scope) through F1-018; F1-020 (race diffs 10–19 to spec); F1-021 (
 
 ## Current session handoff (2026-02-08)
 
-**Task:** Scoring fixes to match spec, test fixes.
+**Task:** F1-030 (bots) and F1-032 (preseason/midseason scoring) complete.
 
-**Status:** 373 tests passing, 0 failing. Scoring now matches spec for race position diffs 0–20+ and sprint scoring (weights, fastest lap, perfect bonus). BacktestScoringHarness updated to match.
+**Status:** F1-030 done. F1-032 done: ScoringService.calculateChampionshipPredictionScore, scoreChampionshipPredictions; `php artisan predictions:score-championship {season} --type=preseason|midseason`.
 
 **Completed this session:**
-- F1-027: Dashboard UX — DashboardController with real stats, upcoming races (deadline countdown), leaderboard top 5, recent predictions; view dynamic with links.
-- F1-025: Auto-lock predictions — migration `qualifying_start`, `sprint_qualifying_start`; Races.allowsPredictions/allowsSprintPredictions close 1h before qualifying; LockPredictionsPastDeadline command (scheduled every 15 min); SyncRaceSchedule command; F1ApiService.fetchSeasonSchedule/syncScheduleToRaces; UI deadline on prediction form; AutoLockPredictionsTest.
-- F1-023: Half-points for shortened races — migration `half_points`, ScoringService halves race/sprint score when flag set, admin toggle route (`POST admin/races/{race}/toggle-half-points`).
-- F1-022: DNF wager — optional DNF predictions (race only), +10/−10 scoring, `prediction_data.dnf_predictions`, UI checkboxes on prediction form, ScoringServiceTest coverage.
+- bots:seed command; F1-032: preseason/midseason scoring (same position-diff table as race, +50 perfect bonus); Prediction getTeamOrder/getDriverChampionshipOrder; README scoring docs; ScoringServiceTest preseason tests; RefreshDatabase added to ScoringServiceTest.
 
-**Focus next:** F1-026 (2026 data pipeline).
+**Focus next:** F1-031 (monetization, human-led).
 
-**Key files:** `app/Http/Controllers/DashboardController.php`, `app/Services/ScoringService.php`, `tests/Feature/ScoringServiceTest.php`, `tests/Support/BacktestScoringHarness.php`.
+**Key files:** `app/Services/ScoringService.php`, `app/Console/Commands/ScoreChampionshipPredictions.php`, `tests/Feature/ScoringServiceTest.php`.

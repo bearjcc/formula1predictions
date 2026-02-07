@@ -5,7 +5,7 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Head-to-Head Comparison</h1>
+                <h1 class="text-heading-1">Head-to-Head Comparison</h1>
                 <p class="text-zinc-600 dark:text-zinc-400">Compare scores and accuracy with other predictors</p>
             </div>
             <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">

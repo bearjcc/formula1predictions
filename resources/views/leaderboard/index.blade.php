@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Leaderboard</h1>
+            <h1 class="text-heading-1">Leaderboard</h1>
             <p class="text-zinc-600 dark:text-zinc-400">F1 Predictions Rankings</p>
         </div>
         <a href="{{ route('leaderboard.compare', ['season' => $season]) }}" class="btn btn-outline btn-primary">

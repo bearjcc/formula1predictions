@@ -3,7 +3,7 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">Dashboard</h1>
+                <h1 class="text-heading-1 mb-2">Dashboard</h1>
                 <p class="text-auto-muted">
                     Your personalized Formula 1 prediction dashboard
                 </p>
@@ -74,7 +74,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         {{-- Upcoming Races --}}
         <x-mary-card class="lg:col-span-2 p-6">
-            <h3 class="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">Upcoming Races</h3>
+            <h3 class="text-heading-3 mb-4">Upcoming Races</h3>
             @if($upcomingRaces->isNotEmpty())
                 <div class="space-y-4">
                     @foreach($upcomingRaces as $race)
@@ -122,7 +122,7 @@
 
         {{-- Leaderboard --}}
         <x-mary-card class="p-6">
-            <h3 class="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">Leaderboard</h3>
+            <h3 class="text-heading-3 mb-4">Leaderboard</h3>
             @if($leaderboard->isNotEmpty())
                 <div class="space-y-3">
                     @foreach($leaderboard as $entry)
@@ -145,7 +145,7 @@
                         </div>
                     @endforeach
                 </div>
-                <a href="{{ route('leaderboard.index', ['season' => $season]) }}" class="btn btn-sm btn-ghost mt-3 w-full" wire:navigate>View full leaderboard</a>
+                <x-mary-button variant="ghost" size="sm" class="mt-3 w-full" link="{{ route('leaderboard.index', ['season' => $season]) }}" wire:navigate>View full leaderboard</x-mary-button>
             @else
                 <p class="text-sm text-zinc-500 dark:text-zinc-400">No leaderboard data for {{ $season }} yet.</p>
             @endif
@@ -154,7 +154,7 @@
 
     {{-- #region Recent Predictions --}}
     <x-mary-card class="p-6 mb-8">
-        <h3 class="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">Recent Predictions</h3>
+        <h3 class="text-heading-3 mb-4">Recent Predictions</h3>
         @if($recentPredictions->isNotEmpty())
             <div class="space-y-4">
                 @foreach($recentPredictions as $prediction)
@@ -189,9 +189,9 @@
 
     {{-- #region Quick Actions --}}
     <x-mary-card class="p-6">
-        <h3 class="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">Quick Actions</h3>
+        <h3 class="text-heading-3 mb-4">Quick Actions</h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <x-mary-button variant="outline" size="lg" icon="o-plus" class="h-20" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
+            <x-mary-button variant="primary" size="lg" icon="o-plus" class="h-20" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
                 Make Prediction
             </x-mary-button>
             <x-mary-button variant="outline" size="lg" icon="o-chart-bar" class="h-20" link="{{ route('analytics') }}" wire:navigate>

@@ -1,6 +1,6 @@
 @props(['title' => 'F1 Predictor'])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-appearance="{{ session('appearance', 'system') }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-appearance="{{ session('appearance', config('f1.default_appearance', 'system')) }}">
 <head>
     @include('partials.head')
 </head>
@@ -11,8 +11,8 @@
             <!-- App Logo/Title -->
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
                 <div class="flex items-center justify-between">
-                    <a href="{{ route('home') }}" class="flex items-center space-x-2" wire:navigate>
-                        <h2 class="text-lg font-semibold">🏎️ F1 Predictor</h2>
+                    <a href="{{ route('home') }}" class="flex items-center space-x-2 text-zinc-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 transition-colors" wire:navigate>
+                        <h2 class="text-lg font-semibold">F1 Predictor</h2>
                     </a>
                     <!-- Close button for mobile -->
                     <button type="button" id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
@@ -26,27 +26,27 @@
                 <div>
                     <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('F1 Predictions') }}</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('home') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ request()->routeIs('home') ? 'bg-zinc-100 dark:bg-zinc-800' : '' }}" wire:navigate>
+                        <a href="{{ route('home') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('home') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-home" class="w-4 h-4" />
                             <span>{{ __('Home') }}</span>
                         </a>
-                        <a href="{{ route('races', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('races', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('races') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-calendar" class="w-4 h-4" />
                             <span>{{ __('Races') }}</span>
                         </a>
-                        <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings') && !request()->routeIs('standings.predictions') && !request()->routeIs('standings.teams') && !request()->routeIs('standings.drivers') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />
                             <span>{{ __('Standings') }}</span>
                         </a>
-                        <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.predictions') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
                             <span>{{ __('Predictions') }}</span>
                         </a>
-                        <a href="{{ route('leaderboard.index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ request()->routeIs('leaderboard.*') ? 'bg-zinc-100 dark:bg-zinc-800' : '' }}" wire:navigate>
+                        <a href="{{ route('leaderboard.index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('leaderboard.*') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />
                             <span>{{ __('Leaderboard') }}</span>
                         </a>
-                        <a href="{{ route('analytics') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ request()->routeIs('analytics') ? 'bg-zinc-100 dark:bg-zinc-800' : '' }}" wire:navigate>
+                        <a href="{{ route('analytics') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('analytics') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
                             <span>{{ __('Analytics') }}</span>
                         </a>
@@ -56,15 +56,15 @@
                 <div>
                     <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('Teams & Drivers') }}</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('standings.teams', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.teams', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.teams') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-users" class="w-4 h-4" />
                             <span>{{ __('Teams') }}</span>
                         </a>
-                        <a href="{{ route('standings.drivers', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('standings.drivers', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.drivers') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-user" class="w-4 h-4" />
                             <span>{{ __('Drivers') }}</span>
                         </a>
-                        <a href="{{ route('countries') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800" wire:navigate>
+                        <a href="{{ route('countries') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('countries') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-map-pin" class="w-4 h-4" />
                             <span>{{ __('Countries') }}</span>
                         </a>
@@ -74,7 +74,7 @@
                 <div>
                     <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('Development') }}</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('components') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ request()->routeIs('components') ? 'bg-zinc-100 dark:bg-zinc-800' : '' }}" wire:navigate>
+                        <a href="{{ route('components') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('components') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-puzzle-piece" class="w-4 h-4" />
                             <span>{{ __('Components') }}</span>
                         </a>

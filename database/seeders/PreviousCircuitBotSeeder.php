@@ -32,10 +32,12 @@ class PreviousCircuitBotSeeder extends Seeder
         $races = Races::where('season', $season)->orderBy('round')->get();
 
         foreach ($races as $race) {
-            // Find the last race at this circuit from previous years
+            if (! $race->circuit_id) {
+                continue;
+            }
             $previousRaceAtCircuit = $this->findLastRaceAtCircuit($race->circuit_id, $season);
 
-            if ($previousRaceAtCircuit && !empty($previousRaceAtCircuit['results'])) {
+            if ($previousRaceAtCircuit && ! empty($previousRaceAtCircuit['results'])) {
                 $previousResults = Arr::get($previousRaceAtCircuit, 'results', []);
                 $driverOrder = $this->extractDriverOrder($previousResults);
 
@@ -56,7 +58,7 @@ class PreviousCircuitBotSeeder extends Seeder
 
         foreach ($previousRaces as $race) {
             $raceData = $race->toArray();
-            if (!empty($raceData['results'])) {
+            if (! empty($raceData['results'])) {
                 return $raceData;
             }
         }
@@ -85,7 +87,7 @@ class PreviousCircuitBotSeeder extends Seeder
         foreach ($driverOrder as $apiId) {
             $driver = Drivers::where('driver_id', $apiId)->first();
 
-            if (!$driver) {
+            if (! $driver) {
                 $driver = Drivers::create([
                     'driver_id' => (string) $apiId,
                     'name' => $apiId,
@@ -132,4 +134,3 @@ class PreviousCircuitBotSeeder extends Seeder
         );
     }
 }
-

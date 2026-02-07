@@ -211,4 +211,28 @@ class Prediction extends Model
 
         return is_array($raw) ? array_values($raw) : [];
     }
+
+    /**
+     * Get predicted team order for preseason/midseason.
+     *
+     * @return list<int>
+     */
+    public function getTeamOrder(): array
+    {
+        $raw = $this->getPredictionDataArray()['team_order'] ?? [];
+
+        return is_array($raw) ? array_map('intval', array_values($raw)) : [];
+    }
+
+    /**
+     * Get predicted driver championship order for preseason/midseason.
+     *
+     * @return list<int>
+     */
+    public function getDriverChampionshipOrder(): array
+    {
+        $raw = $this->getPredictionDataArray()['driver_championship'] ?? [];
+
+        return is_array($raw) ? array_map('intval', array_values($raw)) : [];
+    }
 }

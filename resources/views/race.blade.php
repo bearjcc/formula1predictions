@@ -3,8 +3,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">Race {{ $id ?? $slug ?? 'Details' }}</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <h1 class="text-heading-1 mb-2">Race {{ $id ?? $slug ?? 'Details' }}</h1>
+                <p class="text-auto-muted">
                     Complete race information and results for {{ isset($id) && $id ? "Race #{$id}" : ($slug ?? 'this race') }}
                 </p>
             </div>
@@ -31,8 +31,8 @@
 
             <!-- Race Info -->
             <div class="flex-1">
-                <h2 class="text-2xl font-bold mb-2">Race {{ $id ?? $slug ?? 'Details' }}</h2>
-                <p class="text-zinc-600 dark:text-zinc-400 mb-4">
+                <h2 class="text-heading-2 mb-2">Race {{ $id ?? $slug ?? 'Details' }}</h2>
+                <p class="text-auto-muted mb-4">
                     Silverstone Circuit • United Kingdom • July 9, 2023
                 </p>
 
@@ -63,7 +63,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Race Information -->
         <x-mary-card class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Race Information</h2>
+            <h2 class="text-heading-3 mb-4">Race Information</h2>
             <div class="space-y-4">
                 <div class="flex justify-between">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">Race Name</p>
@@ -96,7 +96,7 @@
 
         <!-- Race Results -->
         <x-mary-card class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Race Results</h2>
+            <h2 class="text-heading-3 mb-4">Race Results</h2>
             <div class="space-y-4">
                 <!-- Winner -->
                 <div class="p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
@@ -120,7 +120,7 @@
     <!-- Race Results Table -->
     <x-mary-card class="overflow-hidden mb-8">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
-            <h2 class="text-xl font-semibold">Complete Race Results</h2>
+            <h2 class="text-heading-3">Complete Race Results</h2>
         </div>
         
         <div class="overflow-x-auto">
@@ -214,7 +214,7 @@
 
     <!-- Race Statistics -->
     <x-mary-card class="p-6">
-        <h2 class="text-xl font-semibold mb-4">Race Statistics</h2>
+        <h2 class="text-heading-3 mb-4">Race Statistics</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <!-- Fastest Lap -->
             <div class="text-center p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">

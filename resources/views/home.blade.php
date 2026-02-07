@@ -29,7 +29,7 @@
     <div class="px-6 py-10 bg-white dark:bg-zinc-900">
         <div class="mx-auto max-w-7xl">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">Explore F1 Predictions</h2>
+                <h2 class="text-heading-1 mb-4">Explore F1 Predictions</h2>
                 <p class="text-lg text-zinc-700 dark:text-zinc-300">
                     Navigate through different sections to make predictions, view standings, and track your performance
                 </p>
@@ -45,7 +45,7 @@
                                 <x-mary-icon name="o-calendar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-xl font-semibold text-zinc-900 dark:text-white">Races</h3>
+                                <h3 class="text-heading-3">Races</h3>
                                 <p class="text-sm text-auto-muted">View race schedule</p>
                             </div>
                         </div>
@@ -68,7 +68,7 @@
                                 <x-mary-icon name="o-trophy" class="w-6 h-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-xl font-semibold text-zinc-900 dark:text-white">Standings</h3>
+                                <h3 class="text-heading-3">Standings</h3>
                                 <p class="text-sm text-auto-muted">Driver & team rankings</p>
                             </div>
                         </div>
@@ -91,7 +91,7 @@
                                 <x-mary-icon name="o-chart-bar" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-xl font-semibold text-zinc-900 dark:text-white">Predictions</h3>
+                                <h3 class="text-heading-3">Predictions</h3>
                                 <p class="text-sm text-auto-muted">Leaderboard & accuracy</p>
                             </div>
                         </div>
@@ -114,7 +114,7 @@
                                 <x-mary-icon name="o-users" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-xl font-semibold text-zinc-900 dark:text-white">Teams</h3>
+                                <h3 class="text-heading-3">Teams</h3>
                                 <p class="text-sm text-auto-muted">Constructor standings</p>
                             </div>
                         </div>
@@ -137,7 +137,7 @@
                                 <x-mary-icon name="o-user" class="w-6 h-6 text-red-600 dark:text-red-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-xl font-semibold text-zinc-900 dark:text-white">Drivers</h3>
+                                <h3 class="text-heading-3">Drivers</h3>
                                 <p class="text-sm text-auto-muted">Driver standings</p>
                             </div>
                         </div>
@@ -160,7 +160,7 @@
                                 <x-mary-icon name="o-map-pin" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-xl font-semibold text-zinc-900 dark:text-white">Countries</h3>
+                                <h3 class="text-heading-3">Countries</h3>
                                 <p class="text-sm text-auto-muted">Geographic overview</p>
                             </div>
                         </div>
@@ -181,7 +181,7 @@
     <div class="px-6 py-10 bg-zinc-50 dark:bg-zinc-800">
         <div class="mx-auto max-w-7xl">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">Why F1 Predictions?</h2>
+                <h2 class="text-heading-1 mb-4">Why F1 Predictions?</h2>
                 <p class="text-lg text-zinc-700 dark:text-zinc-300">
                     Join the ultimate F1 prediction community
                 </p>

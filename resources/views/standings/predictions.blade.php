@@ -3,8 +3,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">{{ $year }} Prediction Standings</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <h1 class="text-heading-1 mb-2">{{ $year }} Prediction Standings</h1>
+                <p class="text-auto-muted">
                     Prediction championship standings for the {{ $year }} Formula 1 season
                 </p>
             </div>
@@ -21,7 +21,7 @@
 
     <!-- Filters Section -->
     <x-mary-card class="p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-4">Filters</h2>
+        <h2 class="text-heading-3 mb-4">Filters</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="space-y-2">
                 <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Time Period</label>
@@ -63,7 +63,7 @@
     <!-- Prediction Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
-            <h2 class="text-xl font-semibold">Prediction Championship Leaderboard</h2>
+            <h2 class="text-heading-3">Prediction Championship Leaderboard</h2>
         </div>
         
         <div class="overflow-x-auto">

@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Cashier\Billable;
 use Illuminate\Support\Str;
+use Laravel\Cashier\Billable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Billable;
+    use Billable, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -73,7 +73,7 @@ class User extends Authenticatable
 
     /**
      * Get the predictions for the user.
-     * 
+     *
      * TODO: Create Prediction model and migration
      * TODO: Add prediction statistics methods (accuracy, total predictions, etc.)
      * TODO: Add prediction history with pagination
@@ -93,16 +93,16 @@ class User extends Authenticatable
         $scoredPredictions = $this->predictions()
             ->where('status', 'scored')
             ->where('score', '>', 0);
-        
+
         $totalPredictions = $scoredPredictions->count();
-        
+
         if ($totalPredictions === 0) {
             return 0.0;
         }
-        
+
         $totalScore = $scoredPredictions->sum('score');
         $maxPossibleScore = $totalPredictions * 25; // Assuming 25 points per perfect prediction
-        
+
         return round(($totalScore / $maxPossibleScore) * 100, 2);
     }
 
@@ -118,8 +118,23 @@ class User extends Authenticatable
             'system' => ['system@example.com', 'bot@example.com'],
             'moderator' => ['moderator@example.com'],
         ];
-        
+
         return in_array($this->email, $roles[$role] ?? []);
+    }
+
+    /**
+     * Whether this user is an algorithm bot (seeded, not a human).
+     */
+    public function isBot(): bool
+    {
+        return in_array($this->email, [
+            'lastracebot@example.com',
+            'championshipbot@example.com',
+            'championshiporderbot@example.com',
+            'randombot@example.com',
+            'circuitbot@example.com',
+            'smartbot@example.com',
+        ], true);
     }
 
     /**
@@ -132,7 +147,7 @@ class User extends Authenticatable
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -142,11 +157,11 @@ class User extends Authenticatable
     public function hasAllRoles(array $roles): bool
     {
         foreach ($roles as $role) {
-            if (!$this->hasRole($role)) {
+            if (! $this->hasRole($role)) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -180,13 +195,14 @@ class User extends Authenticatable
     public function addBadge(string $badge): bool
     {
         $badges = $this->getBadges();
-        
-        if (!in_array($badge, $badges)) {
+
+        if (! in_array($badge, $badges)) {
             $badges[] = $badge;
             $this->badges = $badges;
+
             return $this->save();
         }
-        
+
         return false;
     }
 
@@ -197,13 +213,14 @@ class User extends Authenticatable
     {
         $badges = $this->getBadges();
         $key = array_search($badge, $badges);
-        
+
         if ($key !== false) {
             unset($badges[$key]);
             $this->badges = array_values($badges); // Reindex array
+
             return $this->save();
         }
-        
+
         return false;
     }
 
@@ -212,13 +229,14 @@ class User extends Authenticatable
      */
     public function makeSeasonSupporter(): bool
     {
-        if (!$this->is_season_supporter) {
+        if (! $this->is_season_supporter) {
             $this->is_season_supporter = true;
             $this->supporter_since = now();
             $this->addBadge('season-supporter');
+
             return $this->save();
         }
-        
+
         return false;
     }
 
@@ -228,13 +246,13 @@ class User extends Authenticatable
     public function getDetailedStats(?int $season = null): array
     {
         $query = $this->predictions()->where('status', 'scored');
-        
+
         if ($season) {
             $query->where('season', $season);
         }
 
         $predictions = $query->get();
-        
+
         if ($predictions->isEmpty()) {
             return [
                 'total_predictions' => 0,
@@ -259,20 +277,21 @@ class User extends Authenticatable
 
         // Perfect predictions (score >= 25 per driver)
         $perfectPredictions = $predictions->filter(function ($p) {
-            return $p->score >= 25; // Assuming 20 drivers, 25 points each = 500 for perfect
+            return $p->score >= 25; // e.g. 22 drivers, 25 pts each = 550 max; 25 is minimum for one correct
         })->count();
 
         // Top 3 leaderboard appearances (for season stats)
         // This is a simplified version - in production, you'd query the actual leaderboard
-        
+
         // Points progression over time
         $pointsOverTime = $predictions
             ->sortBy('scored_at')
             ->map(function ($p) use (&$runningTotal) {
-                if (!isset($runningTotal)) {
+                if (! isset($runningTotal)) {
                     $runningTotal = 0;
                 }
                 $runningTotal += $p->score;
+
                 return [
                     'date' => $p->scored_at ? $p->scored_at->format('Y-m-d') : null,
                     'race' => $p->race_round ?? 'N/A',
@@ -334,7 +353,7 @@ class User extends Authenticatable
         $query = $this->predictions()
             ->where('type', 'race')
             ->where('status', 'scored');
-        
+
         if ($season) {
             $query->where('season', $season);
         }
@@ -342,11 +361,11 @@ class User extends Authenticatable
         $predictions = $query->get();
 
         $heatmap = [];
-        
+
         foreach ($predictions as $prediction) {
             $predictedOrder = $prediction->getPredictedDriverOrder();
             $raceResults = $prediction->race ? $prediction->race->getResultsArray() : [];
-            
+
             if (empty($raceResults)) {
                 continue;
             }
@@ -354,14 +373,14 @@ class User extends Authenticatable
             // Build position accuracy matrix
             foreach ($predictedOrder as $predictedPosition => $driverId) {
                 $actualPosition = $this->findDriverPosition($driverId, $raceResults);
-                
+
                 if ($actualPosition !== null) {
                     $diff = abs($predictedPosition - $actualPosition);
-                    
-                    if (!isset($heatmap[$predictedPosition][$actualPosition])) {
+
+                    if (! isset($heatmap[$predictedPosition][$actualPosition])) {
                         $heatmap[$predictedPosition][$actualPosition] = 0;
                     }
-                    
+
                     $heatmap[$predictedPosition][$actualPosition]++;
                 }
             }
@@ -394,6 +413,7 @@ class User extends Authenticatable
                 return $position;
             }
         }
+
         return null;
     }
 
@@ -405,7 +425,7 @@ class User extends Authenticatable
         $query = $this->predictions()
             ->where('type', 'race')
             ->where('status', 'scored');
-        
+
         if ($season) {
             $query->where('season', $season);
         }
@@ -414,12 +434,12 @@ class User extends Authenticatable
 
         $trends = [];
         $windowSize = 5; // Moving average window
-        $accuracies = $predictions->pluck('accuracy')->map(fn($a) => (float) $a)->toArray();
+        $accuracies = $predictions->pluck('accuracy')->map(fn ($a) => (float) $a)->toArray();
 
         for ($i = 0; $i < count($accuracies); $i++) {
             $window = array_slice($accuracies, max(0, $i - $windowSize + 1), $windowSize);
             $avg = count($window) > 0 ? array_sum($window) / count($window) : 0;
-            
+
             $trends[] = [
                 'index' => $i,
                 'race' => $predictions[$i]->race_round ?? 'N/A',

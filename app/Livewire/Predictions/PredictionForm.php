@@ -291,7 +291,7 @@ class PredictionForm extends Component
             'season' => 'required|integer|min:2020|max:2030',
             'raceRound' => 'required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25',
             'notes' => 'nullable|string|max:1000',
-            'driverOrder' => 'required_if:type,race,sprint|array|min:1|max:20',
+            'driverOrder' => 'required_if:type,race,sprint|array|min:1|max:'.config('f1.max_drivers', 22),
             'driverOrder.*' => [
                 'required',
                 function (string $attribute, mixed $value, \Closure $fail): void {
@@ -306,13 +306,13 @@ class PredictionForm extends Component
             'teamOrder' => [
                 'required_if:type,preseason,midseason',
                 'array',
-                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:10', 'min:0|max:10'),
+                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:'.config('f1.max_teams', 11), 'min:0|max:'.config('f1.max_teams', 11)),
             ],
             'teamOrder.*' => 'integer|exists:teams,id',
             'driverChampionship' => [
                 'required_if:type,preseason,midseason',
                 'array',
-                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:20', 'min:0|max:20'),
+                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:'.config('f1.max_drivers', 22), 'min:0|max:'.config('f1.max_drivers', 22)),
             ],
             'driverChampionship.*' => [
                 'required',

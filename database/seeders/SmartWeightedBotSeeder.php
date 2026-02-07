@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Drivers;
 use App\Models\Prediction;
 use App\Models\Races;
-use App\Models\Teams;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
@@ -37,6 +36,9 @@ class SmartWeightedBotSeeder extends Seeder
         $previousRaces = $this->getLast20Races($season);
 
         foreach ($races as $race) {
+            if (! $race->circuit_id) {
+                continue;
+            }
             $driverScores = $this->calculateWeightedScores($previousRaces, $race->circuit_id);
             $predictedOrder = $this->generatePredictionOrder($driverScores);
 
@@ -66,11 +68,13 @@ class SmartWeightedBotSeeder extends Seeder
 
             foreach ($results as $position => $result) {
                 $driverId = Arr::get($result, 'driver.driverId');
-                if (!$driverId) continue;
+                if (! $driverId) {
+                    continue;
+                }
 
                 $positionScore = $this->getPositionScore($position);
 
-                if (!$driverScores->has($driverId)) {
+                if (! $driverScores->has($driverId)) {
                     $driverScores->put($driverId, [
                         'total_score' => 0,
                         'race_count' => 0,
@@ -90,6 +94,7 @@ class SmartWeightedBotSeeder extends Seeder
         // Calculate final weighted averages
         return $driverScores->map(function ($data) {
             $data['average_score'] = $data['race_count'] > 0 ? $data['total_score'] / $data['race_count'] : 0;
+
             return $data;
         })->sortByDesc('weighted_score');
     }
@@ -150,7 +155,7 @@ class SmartWeightedBotSeeder extends Seeder
         foreach ($driverOrder as $apiId) {
             $driver = Drivers::where('driver_id', $apiId)->first();
 
-            if (!$driver) {
+            if (! $driver) {
                 $driver = Drivers::create([
                     'driver_id' => (string) $apiId,
                     'name' => $apiId,
@@ -197,4 +202,3 @@ class SmartWeightedBotSeeder extends Seeder
         );
     }
 }
-

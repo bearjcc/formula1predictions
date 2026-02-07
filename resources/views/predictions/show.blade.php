@@ -1,7 +1,7 @@
 <x-layouts.layout title="Prediction Details">
     <div class="mb-8 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold mb-2">
+            <h1 class="text-heading-1 mb-2">
                 @if($prediction->type === 'race')
                     {{ $prediction->race->race_name ?? "Round {$prediction->race_round}" }} Prediction
                 @else

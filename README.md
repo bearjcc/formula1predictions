@@ -52,6 +52,13 @@ Canonical scoring rules (implement in `ScoringService`; tests in `tests/Feature/
 - **Fastest lap:** +5.
 - **Perfect bonus:** +15 when top 8 predicted positions are all correct.
 
+### Preseason / Midseason
+
+- **Driver championship order** and **team (constructor) order** scored against final season standings.
+- **Position diff:** Same table as race (0 → 25, 1 → 18, …, 9 → 1, 10 → 0, 11+ → negative).
+- **Perfect bonus:** +50 when every predicted driver and team is in the correct position.
+- Scored via `php artisan predictions:score-championship {season} --type=preseason|midseason`.
+
 ### Result processing
 
 - **FINISHED / DNF:** Driver has a position; score by position.

@@ -1,7 +1,7 @@
 <x-layouts.layout title="My Predictions">
     <div class="mb-8 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold mb-2">My Predictions</h1>
+            <h1 class="text-heading-1 mb-2">My Predictions</h1>
             <p class="text-zinc-600 dark:text-zinc-400">
                 Track your performance across the season.
             </p>

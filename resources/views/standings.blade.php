@@ -3,8 +3,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">{{ $year }} Standings</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <h1 class="text-heading-1 mb-2">{{ $year }} Standings</h1>
+                <p class="text-auto-muted">
                     View the complete standings for the {{ $year }} Formula 1 season
                 </p>
             </div>
@@ -23,13 +23,13 @@
     <div class="mb-8">
         <div class="border-b border-zinc-200 dark:border-zinc-700">
             <nav class="flex space-x-8">
-                <a href="{{ route('standings.drivers', ['year' => $year]) }}" class="border-b-2 border-transparent py-2 px-1 text-sm font-medium text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-zinc-600">
+                <a href="{{ route('standings.drivers', ['year' => $year]) }}" class="border-b-2 border-transparent py-2 px-1 text-sm font-medium text-zinc-500 hover:text-zinc-700 hover:border-red-600 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-red-500" wire:navigate>
                     Driver Standings
                 </a>
-                <a href="{{ route('standings.teams', ['year' => $year]) }}" class="border-b-2 border-transparent py-2 px-1 text-sm font-medium text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-zinc-600">
+                <a href="{{ route('standings.teams', ['year' => $year]) }}" class="border-b-2 border-transparent py-2 px-1 text-sm font-medium text-zinc-500 hover:text-zinc-700 hover:border-red-600 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-red-500" wire:navigate>
                     Team Standings
                 </a>
-                <a href="{{ route('standings.predictions', ['year' => $year]) }}" class="border-b-2 border-transparent py-2 px-1 text-sm font-medium text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-zinc-600">
+                <a href="{{ route('standings.predictions', ['year' => $year]) }}" class="border-b-2 border-transparent py-2 px-1 text-sm font-medium text-zinc-500 hover:text-zinc-700 hover:border-red-600 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-red-500" wire:navigate>
                     Prediction Standings
                 </a>
             </nav>
@@ -41,7 +41,7 @@
         <!-- Driver Championship -->
         <x-mary-card>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold">Driver Championship</h3>
+                <h3 class="text-heading-3">Driver Championship</h3>
                 <x-mary-icon name="o-trophy" class="w-6 h-6 text-yellow-500" />
             </div>
             <div class="space-y-3">
@@ -66,7 +66,7 @@
         <!-- Constructor Championship -->
         <x-mary-card>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold">Constructor Championship</h3>
+                <h3 class="text-heading-3">Constructor Championship</h3>
                 <x-mary-icon name="o-users" class="w-6 h-6 text-blue-500" />
             </div>
             <div class="space-y-3">
@@ -91,7 +91,7 @@
         <!-- Prediction Championship -->
         <x-mary-card>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold">Prediction Championship</h3>
+                <h3 class="text-heading-3">Prediction Championship</h3>
                 <x-mary-icon name="o-chart-bar" class="w-6 h-6 text-purple-500" />
             </div>
             <div class="space-y-3">
@@ -116,7 +116,7 @@
 
     <!-- Recent Results -->
     <x-mary-card>
-        <h3 class="text-xl font-bold mb-4">Recent Race Results</h3>
+        <h3 class="text-heading-3 mb-4">Recent Race Results</h3>
         <div class="space-y-4">
             <!-- Recent Race 1 -->
             <div class="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">

@@ -3,8 +3,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">{{ ucfirst($slug) }} Circuit</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <h1 class="text-heading-1 mb-2">{{ ucfirst($slug) }} Circuit</h1>
+                <p class="text-auto-muted">
                     Complete circuit information and statistics for {{ ucfirst($slug) }}
                 </p>
             </div>
@@ -31,8 +31,8 @@
 
             <!-- Circuit Info -->
             <div class="flex-1">
-                <h2 class="text-2xl font-bold mb-2">{{ ucfirst($slug) }} Circuit</h2>
-                <p class="text-zinc-600 dark:text-zinc-400 mb-4">
+                <h2 class="text-heading-2 mb-2">{{ ucfirst($slug) }} Circuit</h2>
+                <p class="text-auto-muted mb-4">
                     Located in {{ ucfirst($slug) }}, United Kingdom. Home of the British Grand Prix.
                 </p>
 
@@ -63,7 +63,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Circuit Information -->
         <x-mary-card>
-            <h3 class="text-xl font-bold mb-4">Circuit Information</h3>
+            <h3 class="text-heading-3 mb-4">Circuit Information</h3>
             <div class="space-y-4">
                 <div class="flex justify-between">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">Full Name</p>
@@ -94,7 +94,7 @@
 
         <!-- Lap Record -->
         <x-mary-card>
-            <h3 class="text-xl font-bold mb-4">Lap Records</h3>
+            <h3 class="text-heading-3 mb-4">Lap Records</h3>
             <div class="space-y-4">
                 <div class="p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
                     <h4 class="font-semibold mb-2">Qualifying Record</h4>
@@ -114,7 +114,7 @@
 
     <!-- Recent Race Results -->
     <x-mary-card class="mb-8">
-        <h3 class="text-xl font-bold mb-4">Recent Race Results</h3>
+        <h3 class="text-heading-3 mb-4">Recent Race Results</h3>
         <div class="space-y-4">
             <!-- Recent Race 1 -->
             <div class="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
@@ -171,7 +171,7 @@
 
     <!-- Circuit Statistics -->
     <x-mary-card>
-        <h3 class="text-xl font-bold mb-4">Circuit Statistics</h3>
+        <h3 class="text-heading-3 mb-4">Circuit Statistics</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Most Wins -->
             <div class="text-center p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">

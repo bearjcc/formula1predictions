@@ -97,8 +97,9 @@ test('store prediction request validates preseason prediction requires team orde
     expect($validator->errors()->has('prediction_data.team_order'))->toBeTrue();
 });
 
-test('store prediction request validates driver order must have between 1 and 20 drivers', function () {
-    $drivers = Drivers::factory()->count(25)->create();
+test('store prediction request validates driver order must have between 1 and max drivers', function () {
+    $maxDrivers = config('f1.max_drivers', 22);
+    $drivers = Drivers::factory()->count($maxDrivers + 5)->create();
 
     // Too many (max 20) fails
     $request = new StorePredictionRequest;
@@ -124,9 +125,10 @@ test('store prediction request validates driver order must have between 1 and 20
     expect($validator->passes())->toBeTrue();
 });
 
-test('store prediction request validates team order must have between 1 and 10 teams', function () {
-    $teams = Teams::factory()->count(15)->create();
-    $drivers = Drivers::factory()->count(20)->create();
+test('store prediction request validates team order must have between 1 and max teams', function () {
+    $maxTeams = config('f1.max_teams', 11);
+    $teams = Teams::factory()->count($maxTeams + 5)->create();
+    $drivers = Drivers::factory()->count(config('f1.max_drivers', 22))->create();
 
     // Too many (max 10) fails
     $request = new StorePredictionRequest;

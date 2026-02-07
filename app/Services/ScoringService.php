@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Drivers;
 use App\Models\Prediction;
 use App\Models\Races;
+use App\Models\Standings;
+use App\Models\Teams;
 use App\Notifications\PredictionScored;
 use Illuminate\Support\Facades\Log;
 
@@ -203,6 +206,131 @@ class ScoringService
         }
 
         return $score;
+    }
+
+    /**
+     * Calculate score for a preseason or midseason championship prediction.
+     * Uses same position-diff table as race scoring. Scored against final season standings.
+     */
+    public function calculateChampionshipPredictionScore(Prediction $prediction, int $season): int
+    {
+        if (! in_array($prediction->type, ['preseason', 'midseason'], true)) {
+            return 0;
+        }
+
+        $driverStandings = Standings::getDriverStandings($season, null);
+        $constructorStandings = Standings::getConstructorStandings($season, null);
+
+        if ($driverStandings->isEmpty() && $constructorStandings->isEmpty()) {
+            return 0;
+        }
+
+        $driverScore = $this->scoreChampionshipOrder(
+            $prediction->getDriverChampionshipOrder(),
+            $driverStandings,
+            fn (int $localId) => Drivers::find($localId)?->driver_id
+        );
+
+        $teamScore = $this->scoreChampionshipOrder(
+            $prediction->getTeamOrder(),
+            $constructorStandings,
+            fn (int $localId) => Teams::find($localId)?->team_id
+        );
+
+        $score = $driverScore['score'] + $teamScore['score'];
+        $correctCount = $driverScore['correct'] + $teamScore['correct'];
+        $totalPredicted = $driverScore['total'] + $teamScore['total'];
+
+        if ($totalPredicted > 0 && $correctCount === $totalPredicted) {
+            $score += 50;
+        }
+
+        return $score;
+    }
+
+    /**
+     * Score predicted order vs actual standings. Returns score and correct count.
+     *
+     * @param  array<int>  $predictedLocalIds  Predicted order (0-based positions)
+     * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\Standings>  $actualStandings
+     * @param  callable(int): ?string  $resolveToEntityId  Maps local ID to API entity_id
+     * @return array{score: int, correct: int, total: int}
+     */
+    private function scoreChampionshipOrder(
+        array $predictedLocalIds,
+        \Illuminate\Database\Eloquent\Collection $actualStandings,
+        callable $resolveToEntityId
+    ): array {
+        $entityToPosition = $actualStandings->keyBy('entity_id')->map(fn ($s) => $s->position - 1)->all();
+        $score = 0;
+        $correct = 0;
+
+        foreach ($predictedLocalIds as $position => $localId) {
+            $entityId = $resolveToEntityId($localId);
+            if ($entityId === null) {
+                continue;
+            }
+
+            $actualPosition = $entityToPosition[$entityId] ?? null;
+            if ($actualPosition === null) {
+                continue;
+            }
+
+            $diff = abs($position - $actualPosition);
+            $score += $this->getPositionScore($diff, (int) date('Y'));
+            if ($diff === 0) {
+                $correct++;
+            }
+        }
+
+        return ['score' => $score, 'correct' => $correct, 'total' => count($predictedLocalIds)];
+    }
+
+    /**
+     * Score all preseason or midseason predictions for a season.
+     *
+     * @return array{total_predictions: int, scored_predictions: int, failed_predictions: int, total_score: int, errors: list<string>}
+     */
+    public function scoreChampionshipPredictions(int $season, string $type = 'preseason'): array
+    {
+        if (! in_array($type, ['preseason', 'midseason'], true)) {
+            throw new \InvalidArgumentException("Type must be preseason or midseason, got: {$type}");
+        }
+
+        $predictions = Prediction::where('type', $type)
+            ->where('season', $season)
+            ->whereIn('status', ['submitted', 'locked'])
+            ->get();
+
+        $results = [
+            'total_predictions' => $predictions->count(),
+            'scored_predictions' => 0,
+            'failed_predictions' => 0,
+            'total_score' => 0,
+            'errors' => [],
+        ];
+
+        foreach ($predictions as $prediction) {
+            try {
+                $score = $this->calculateChampionshipPredictionScore($prediction, $season);
+                $this->savePredictionScore($prediction, $score);
+
+                $results['scored_predictions']++;
+                $results['total_score'] += $score;
+
+                try {
+                    $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+                } catch (\Exception $e) {
+                    Log::warning("Could not notify user {$prediction->user_id} for prediction {$prediction->id}");
+                }
+            } catch (\Exception $e) {
+                $results['failed_predictions']++;
+                $results['errors'][] = "Prediction {$prediction->id}: ".$e->getMessage();
+                Log::error("Failed to score championship prediction {$prediction->id}: ".$e->getMessage());
+            }
+        }
+
+        return $results;
     }
 
     /**

@@ -3,7 +3,7 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">Create Prediction</h1>
+                <h1 class="text-heading-1 mb-2">Create Prediction</h1>
                 <p class="text-zinc-600 dark:text-zinc-400">
                     Make your prediction for the upcoming race
                 </p>
@@ -21,7 +21,7 @@
 
     <!-- Race Information -->
     <x-mary-card class="p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-4">Race Information</h2>
+        <h2 class="text-heading-3 mb-4">Race Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="flex items-center space-x-4">
                 <div class="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
@@ -55,7 +55,7 @@
 
     <!-- Prediction Form -->
     <x-mary-card class="p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-6">Race Prediction</h2>
+        <h2 class="text-heading-3 mb-6">Race Prediction</h2>
         
         <form class="space-y-6">
             <!-- Podium Predictions -->
@@ -200,7 +200,7 @@
 
     <!-- Prediction Tips -->
     <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700 p-6">
-        <h2 class="text-xl font-semibold mb-4 text-blue-800 dark:text-blue-200">💡 Prediction Tips</h2>
+        <h2 class="text-heading-3 mb-4 text-blue-800 dark:text-blue-200">Prediction Tips</h2>
         <div class="space-y-2 text-blue-700 dark:text-blue-300">
             <p>• Consider recent form and track history when making predictions</p>
             <p>• Weather conditions can significantly impact race outcomes</p>

@@ -5,7 +5,7 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $user->name }}'s Statistics</h1>
+                <h1 class="text-heading-1">{{ $user->name }}'s Statistics</h1>
                 <p class="text-zinc-600 dark:text-zinc-400">Prediction performance overview</p>
             </div>
             <div class="flex gap-2">

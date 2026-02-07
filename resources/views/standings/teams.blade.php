@@ -3,8 +3,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold mb-2">{{ $year }} Team Standings</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
+                <h1 class="text-heading-1 mb-2">{{ $year }} Team Standings</h1>
+                <p class="text-auto-muted">
                     Current constructor championship standings for the {{ $year }} Formula 1 season
                 </p>
             </div>
@@ -21,7 +21,7 @@
 
     <!-- Filters Section -->
     <x-mary-card class="mb-8">
-        <h3 class="text-xl font-bold mb-4">Filters</h3>
+        <h3 class="text-heading-3 mb-4">Filters</h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="space-y-2">
                 <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Engine</label>
@@ -64,7 +64,7 @@
     <!-- Team Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
-            <h3 class="text-xl font-bold">Constructor Championship Standings</h3>
+            <h3 class="text-heading-3">Constructor Championship Standings</h3>
         </div>
         
         <div class="overflow-x-auto">
@@ -270,7 +270,7 @@
     <!-- Pagination -->
     <div class="mt-8 flex items-center justify-between">
         <p class="text-zinc-600 dark:text-zinc-400">
-            Showing 1-3 of 10 teams
+            Showing 1-3 of {{ config('f1.max_teams', 11) }} teams
         </p>
 
         <div class="flex items-center space-x-2">

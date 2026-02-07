@@ -146,7 +146,7 @@ Medium-horizon improvements that should be tackled soon.
 - **id**: F1-028
   - **title**: F1-branded UI styling
   - **type**: chore
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: low
   - **owner**: mixed
@@ -155,6 +155,8 @@ Medium-horizon improvements that should be tackled soon.
     - resources/views/**
     - tailwind.config.js
   - **description**: Style the site to fit with f1.com, f1tv.com, and f1api.dev aesthetic. Dark theme, F1 red accents, racing-inspired typography. Ensure all assets used are fair use or open source.
+  - **notes**:
+    - Layout: F1 red accent for active nav, sidebar, standings tabs. Design-system typography (text-heading-1/2/3, text-auto-muted) applied app-wide: dashboard, races, standings, home, leaderboard (index, compare, user-stats), predict create/edit, predictions index/show, countries, race/circuit/country detail, analytics, admin dashboard. F1-028 complete.
 
 - **id**: F1-029
   - **title**: Predictions should be fully optional (partial predictions)
@@ -196,14 +198,16 @@ Longer-horizon ideas and exploratory improvements.
 - **id**: F1-030
   - **title**: Bot accounts and algorithm-based predictions
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P3
   - **risk_level**: low
   - **owner**: mixed
   - **affected_areas**:
     - database/seeders/*
     - app/Console/Commands/*
-  - **description**: Expand bot system beyond LastRaceBot. Add bots like "ChampionshipOrderBot" (always predicts current championship standings), "RandomBot", etc. Bots should be applicable retroactively to all seasons. Previously called "dummies" in the spreadsheet era.
+  - **description**: Expand bot system beyond LastRaceBot. Add bots like "ChampionshipOrderBot" (always predicts current championship standings), "RandomBot", etc. Bots should be applicable retroactively to all seasons.
+  - **notes**:
+    - Completed 2026-02-08. ChampionshipOrderBotSeeder, RandomBotSeeder, PreviousYearChampionshipBotSeeder, PreviousCircuitBotSeeder, SmartWeightedBotSeeder. User::isBot() for known bot emails. `php artisan bots:seed` runs all; `--only=championship-order,random,...` for specific bots. PreviousCircuitBot and SmartWeightedBot skip races with null circuit_id.
 
 - **id**: F1-031
   - **title**: Monetization strategy (premium features)
@@ -219,8 +223,10 @@ Longer-horizon ideas and exploratory improvements.
 - **id**: F1-032
   - **title**: Preseason and midseason prediction games
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P3
   - **risk_level**: low
   - **owner**: mixed
   - **description**: Review previous spreadsheets for ideas and inspiration for preseason/midseason mini-games (e.g., predict championship order, team performance, superlatives). Design and implement scoring for these prediction types.
+  - **notes**:
+    - Completed 2026-02-08. ScoringService: calculateChampionshipPredictionScore, scoreChampionshipPredictions. Same position-diff table as race. Perfect bonus +50 when all predicted correct. `php artisan predictions:score-championship {season} --type=preseason|midseason`. Prediction helpers: getTeamOrder, getDriverChampionshipOrder.
