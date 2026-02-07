@@ -43,28 +43,13 @@
 
 Short-horizon, high-value tasks that are ready for agents to pick up immediately.
 
-_(None; F1-015 completed.)_
+_(None; F1-016 completed.)_
 
 ---
 
 ### Next
 
 Medium-horizon improvements that should be tackled soon.
-
-- **id**: F1-016
-  - **title**: Add data-appearance to auth layouts for theme consistency
-  - **type**: bug
-  - **status**: todo
-  - **priority**: P2
-  - **risk_level**: low
-  - **owner**: agent
-  - **affected_areas**:
-    - resources/views/components/layouts/auth/*.blade.php
-  - **description**: Main layout uses data-appearance for theme toggle. Auth layouts (login, register, forgot-password) may not support appearance toggle. Ensure auth pages get data-appearance so theme is consistent.
-  - **acceptance_criteria**:
-    - Auth pages respect appearance (light/dark/system) when user has set preference.
-  - **notes**:
-    - Follow-up from F1-AUDIT-3 dark mode fix.
 
 - **id**: F1-017
   - **title**: Add tests for admin routes (races.substitutions, races.cancel, bulk-score)

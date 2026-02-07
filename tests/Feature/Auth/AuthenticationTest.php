@@ -11,6 +11,22 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
+test('auth pages use data-appearance for theme consistency', function () {
+    $response = $this->get('/login');
+    $response->assertOk();
+    expect($response->getContent())->toContain('data-appearance="system"');
+});
+
+test('auth pages respect session appearance preference', function () {
+    $response = $this->withSession(['appearance' => 'dark'])->get('/login');
+    $response->assertOk();
+    expect($response->getContent())->toContain('data-appearance="dark"');
+
+    $response = $this->withSession(['appearance' => 'light'])->get('/register');
+    $response->assertOk();
+    expect($response->getContent())->toContain('data-appearance="light"');
+});
+
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
