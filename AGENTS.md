@@ -57,6 +57,7 @@ Use `F1ApiService` for external API calls; never raw HTTP. Use `ScoringService` 
 
 **Always do:**
 - Follow `.cursor/rules/*.mdc` and sibling-file conventions
+- When editing TODO.md: remove completed (done) items and add new items you identify as needing work but did not complete (enables agent-to-agent handoff)
 - Use Eloquent relationships; prefer Form Requests for validation
 - Run `vendor/bin/pint --dirty` after code changes
 - Add/update Pest tests for behavioral changes
@@ -109,6 +110,18 @@ When ending a session with incomplete work, generate a handoff block for the nex
 ```
 
 Put commands and key paths in handoffs so the next agent can resume immediately.
+
+---
+
+## Recent Completion (F1-014)
+
+**Task:** Fix AdminControllerTest failure (regular user cannot delete prediction via admin) — done
+
+**What was done:**
+- Added `authorize('manage-predictions')` to `AdminController::deletePrediction` so admin delete route requires admin/moderator; regular users now receive 403 instead of 302.
+- Updated test to set prediction `status => 'draft'` (policy would otherwise allow owner delete) to assert admin-route exclusivity.
+
+**Tests:** `php artisan test tests/Feature/AdminControllerTest.php`
 
 ---
 

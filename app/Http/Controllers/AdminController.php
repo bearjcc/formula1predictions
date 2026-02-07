@@ -136,6 +136,7 @@ class AdminController extends Controller
      */
     public function deletePrediction(Prediction $prediction): RedirectResponse
     {
+        $this->authorize('manage-predictions');
         $this->authorize('delete', $prediction);
 
         $prediction->delete();
@@ -302,7 +303,7 @@ class AdminController extends Controller
      */
     public function bulkScoreRaces(Request $request): RedirectResponse
     {
-        $this->authorize('manageResults', Races::class);
+        $this->authorize('view-admin-dashboard');
 
         $request->validate([
             'race_ids' => 'required|array',
