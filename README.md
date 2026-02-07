@@ -2,7 +2,7 @@
 
 A Laravel 12 web app for F1 race predictions: users predict finishing order and optional extras, get scored automatically, and compete on leaderboards. Replaces the 2022–2024 spreadsheet with auth, persistence, and automated scoring.
 
-**Stack:** PHP 8.4.5, Laravel 12, Livewire 3, Volt, Mary UI / Flux UI (free), Tailwind v4, Pest v4. Served locally via [Laravel Herd](https://herd.laravel.com) at `https://formula1predictions.test` (or your project kebab-case name).
+**Stack:** PHP 8.4.5, Laravel 12, Livewire 3, Volt, Mary UI, Tailwind v4, Pest v4. Served locally via [Laravel Herd](https://herd.laravel.com) at `https://formula1predictions.test` (or your project kebab-case name).
 
 ---
 

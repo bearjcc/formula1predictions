@@ -21,7 +21,7 @@ Use minimal test filters when validating changes. No verification scripts or tin
 
 ## Stack & structure
 
-- **Stack:** PHP 8.4.5, Laravel 12, Livewire 3, Volt, Mary UI (primary) / Flux UI, Tailwind v4, Pest v4, Laravel Pint.
+- **Stack:** PHP 8.4.5, Laravel 12, Livewire 3, Volt, Mary UI, Tailwind v4, Pest v4, Laravel Pint.
 - **Key paths:** `app/Models/` (Prediction, Races, Drivers, Teams, Standings) | `app/Services/` (ScoringService, F1ApiService, ChartDataService, NotificationService) | `app/Livewire/` (PredictionForm, DraggableDriverList, RacesList, Charts/*) | `resources/views/` (Blade + Volt).
 - **Integrations:** Use `F1ApiService` for external API; never raw HTTP. Use `ScoringService` as system of record for scoring. Use Laravel Boost MCP when available (search-docs, tinker, get-absolute-url, browser-logs). Herd serves the app at `https://[kebab-dir].test`.
 
@@ -31,7 +31,7 @@ Use minimal test filters when validating changes. No verification scripts or tin
 
 - **Laravel:** `php artisan make:*` for new files. `bootstrap/app.php` for middleware; no `app/Console/Kernel.php`. Eloquent and relationships over `DB::`; eager load to avoid N+1. Form Request classes for controller validation; Livewire/Volt validation in components. Named routes and `route()`. `config()` only — never `env()` outside config files. Queued jobs for long work (`ShouldQueue`).
 - **PHP:** Curly braces for control structures. Constructor property promotion; explicit return types and parameter types. PHPDoc for array shapes and complex returns. Enums: TitleCase keys.
-- **UI:** Mary UI (`x-mary-*`) first; Flux if needed; Blade fallback. Single root per Livewire/Volt component. `wire:key` in loops; `wire:model.live` for real-time; `wire:loading` / `wire:dirty` for loading. Tailwind v4 (`@import "tailwindcss"`); use `gap` for list spacing; support `dark:` where the app does. No deprecated Tailwind utilities (see README/tailwind v4 replacements).
+- **UI:** Mary UI (`x-mary-*`) first; Blade fallback. Single root per Livewire/Volt component. `wire:key` in loops; `wire:model.live` for real-time; `wire:loading` / `wire:dirty` for loading. Tailwind v4 (`@import "tailwindcss"`); use `gap` for list spacing; support `dark:` where the app does. No deprecated Tailwind utilities (see README/tailwind v4 replacements).
 - **Livewire/Volt:** State on server; validate and authorize in actions. Use `mount()`, `updatedFoo()` for init and side effects. Volt for new interactive pages: `php artisan make:volt [name] [--pest]`. Namespace `App\Livewire`; dispatch with `$this->dispatch()`.
 - **Testing:** Pest only. `php artisan make:test --pest <name>`. Feature tests preferred. Use `assertForbidden`, `assertNotFound` etc. instead of raw `assertStatus`. Mock external APIs (e.g. `Http::fake()`); do not hit real F1 API in tests. Factories for models; datasets for validation tests. Browser tests in `tests/Browser/`.
 - **Format:** Run `vendor/bin/pint --dirty` before finalizing. Do not remove or disable tests to get green.
@@ -61,13 +61,15 @@ Preserve model relationships and existing patterns when changing schema or behav
 
 **Never:** Read/write `.env` or secrets; drop tables or irreversibly change data outside migrations; disable/delete tests to get green; implement gambling or real-money betting.
 
+**Monetization:** We need a monetization strategy to cover costs. Cost-recovery monetization is allowed (e.g. subscriptions, tips, season supporter, premium features). Implementing payment/billing code requires explicit approval. Gambling and real-money betting on race outcomes are forbidden.
+
 ---
 
 ## Autonomy by area
 
 - **Safe (no review):** UI-only tweaks, localized bug fixes and refactors with tests, new analytics that don't change scores or standings.
-- **Review required:** Any scoring change that can alter user scores; migrations that remove/alter columns or cause data loss; auth/policy changes; external API endpoint/key changes.
-- **Forbidden:** Touching secrets; dropping production tables; gambling or real-money betting. Monetization (e.g. subscriptions, tips, season supporter) to cover costs is allowed.
+- **Review required:** Any scoring change that can alter user scores; migrations that remove/alter columns or cause data loss; auth/policy changes; external API endpoint/key changes; payment/billing implementation.
+- **Forbidden:** Touching secrets; dropping production tables; gambling or real-money betting. Monetization to cover costs is allowed.
 
 ---
 
