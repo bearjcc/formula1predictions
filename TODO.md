@@ -43,21 +43,7 @@
 
 Short-horizon, high-value tasks that are ready for agents to pick up immediately.
 
-- **id**: F1-015
-  - **title**: Complete bladewind removal from composer.json
-  - **type**: chore
-  - **status**: todo
-  - **priority**: P2
-  - **risk_level**: low
-  - **owner**: agent
-  - **affected_areas**:
-    - composer.json
-  - **description**: Remove mkocansey/bladewind from require; it is unused. Run `composer update` after removal.
-  - **acceptance_criteria**:
-    - composer.json has no bladewind dependency.
-    - `composer install` succeeds.
-  - **notes**:
-    - Follow-up from F1-AUDIT-1; initial removal attempt may not have persisted.
+_(None; F1-015 completed.)_
 
 ---
 

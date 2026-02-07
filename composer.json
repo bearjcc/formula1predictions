@@ -15,7 +15,6 @@
         "livewire/flux": "^2.5",
         "livewire/livewire": "^3.6",
         "livewire/volt": "^1.7.0",
-        "mkocansey/bladewind": "^3.1",
         "robsontenorio/mary": "^2.4"
     },
     "require-dev": {
@@ -64,6 +63,10 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "test:coverage": [
+            "@php artisan config:clear --ansi",
+            "@php -dpcov.enabled=1 -dpcov.directory=app vendor/bin/pest --coverage --coverage-html=build/coverage"
         ]
     },
     "extra": {
