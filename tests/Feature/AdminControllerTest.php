@@ -293,6 +293,15 @@ test('admin can handle driver substitutions', function () {
         ->assertSessionHas('success');
 });
 
+test('substitutions validation requires substitutions array', function () {
+    $race = Races::factory()->create();
+
+    actingAs($this->admin)
+        ->from(route('admin.scoring'))
+        ->post(route('admin.races.substitutions', $race), [])
+        ->assertSessionHasErrors('substitutions');
+});
+
 test('regular user cannot cancel race', function () {
     $race = Races::factory()->create();
 

@@ -43,27 +43,13 @@
 
 Short-horizon, high-value tasks that are ready for agents to pick up immediately.
 
-_(None; F1-016 completed.)_
+_(None; F1-016, F1-017 completed.)_
 
 ---
 
 ### Next
 
 Medium-horizon improvements that should be tackled soon.
-
-- **id**: F1-017
-  - **title**: Add tests for admin routes (races.substitutions, races.cancel, bulk-score)
-  - **type**: chore
-  - **status**: todo
-  - **priority**: P2
-  - **risk_level**: low
-  - **owner**: agent
-  - **affected_areas**:
-    - tests/Feature/AdminControllerTest.php
-  - **description**: Admin routes for driver substitutions, race cancellation, and bulk scoring have limited or no test coverage. Add feature tests.
-  - **acceptance_criteria**:
-    - AdminControllerTest (or dedicated tests) cover races.substitutions, races.cancel, bulk-score flows.
-    - Unauthorized access returns 403.
 
 - **id**: F1-018
   - **title**: Optimize or isolate F1ApiTest to avoid full-suite timeout
