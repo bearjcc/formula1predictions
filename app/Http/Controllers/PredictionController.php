@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePredictionRequest;
 use App\Http\Requests\UpdatePredictionRequest;
 use App\Models\Prediction;
+use App\Models\Races;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -17,7 +19,10 @@ class PredictionController extends Controller
      */
     public function index(): View
     {
-        $predictions = Auth::user()->predictions()->latest()->paginate(10);
+        $predictions = Auth::user()->predictions()
+            ->with('race')
+            ->latest()
+            ->paginate(10);
 
         return view('predictions.index', compact('predictions'));
     }

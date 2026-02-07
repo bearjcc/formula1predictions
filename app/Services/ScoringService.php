@@ -6,7 +6,6 @@ use App\Models\Prediction;
 use App\Models\Races;
 use App\Notifications\PredictionScored;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 
 class ScoringService
 {
@@ -43,9 +42,11 @@ class ScoringService
                 $results['scored_predictions']++;
                 $results['total_score'] += $score;
 
-                // Send notification
-                $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
-
+                try {
+                    $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+                } catch (\Exception $e) {
+                    Log::warning("Could not notify user {$prediction->user_id} for prediction {$prediction->id}");
+                }
             } catch (\Exception $e) {
                 $results['failed_predictions']++;
                 $results['errors'][] = "Prediction {$prediction->id}: ".$e->getMessage();
@@ -114,7 +115,7 @@ class ScoringService
 
         $score = 0;
         $totalDrivers = count($predictedOrder);
-        $correctPredictions = 0;
+        $correctCount = 0;
 
         foreach ($predictedOrder as $position => $driverId) {
             $actualPosition = $this->findDriverPosition($driverId, $actualResults);
@@ -125,21 +126,21 @@ class ScoringService
                 $score += $positionScore;
 
                 if ($positionDiff === 0) {
-                    $correctPredictions++;
+                    $correctCount++;
                 }
             } else {
-                // Driver not found in results (DNS, DSQ, etc.)
+                // Driver not in results (DNS, DSQ, etc.)
                 $score += $this->getMissingDriverScore($driverId, $actualResults, $race->season);
             }
         }
 
-        // Add fastest lap bonus if implemented
+        // Fastest lap bonus
         $fastestLapScore = $this->calculateFastestLapScore($prediction, $actualResults);
         $score += $fastestLapScore;
 
-        // Add perfect prediction bonus
-        if ($correctPredictions === $totalDrivers && $totalDrivers > 0) {
-            $score += 50; // Perfect prediction bonus
+        // Perfect prediction bonus (Top 10)
+        if ($correctCount >= 10) {
+            $score += 50;
         }
 
         return $score;
@@ -202,12 +203,15 @@ class ScoringService
         foreach ($results as $result) {
             $status = $result['status'] ?? 'finished';
 
-            // Handle different status types
             switch (strtoupper($status)) {
                 case 'FINISHED':
-                case 'DNF': // Did Not Finish - still gets position
+                case 'DNF':
+                    $driver = $result['driver'] ?? null;
+                    if (! $driver) {
+                        break;
+                    }
                     $processedResults[] = [
-                        'driver' => $result['driver'],
+                        'driver' => $driver,
                         'position' => $position,
                         'status' => $status,
                         'points' => $result['points'] ?? 0,
@@ -216,16 +220,18 @@ class ScoringService
                     $position++;
                     break;
 
-                case 'DNS': // Did Not Start - remove from results
-                case 'DSQ': // Disqualified - remove from results
+                case 'DNS':
+                case 'DSQ':
                 case 'EXCLUDED':
-                    // Skip these drivers entirely
                     break;
 
                 default:
-                    // Unknown status, treat as finished
+                    $driver = $result['driver'] ?? null;
+                    if (! $driver) {
+                        break;
+                    }
                     $processedResults[] = [
-                        'driver' => $result['driver'],
+                        'driver' => $driver,
                         'position' => $position,
                         'status' => $status,
                         'points' => $result['points'] ?? 0,
@@ -239,23 +245,18 @@ class ScoringService
         return $processedResults;
     }
 
-    /**
-     * Find driver position in processed results
-     */
-    public function findDriverPosition(string $driverId, array $results): ?int
+    private function findDriverPosition(string $driverId, array $processedResults): ?int
     {
-        foreach ($results as $index => $result) {
-            if (($result['driver']['driverId'] ?? '') === $driverId) {
-                return $result['position'] ?? $index;
+        foreach ($processedResults as $result) {
+            $rid = $result['driver']['driverId'] ?? '';
+            if ((string) $rid === (string) $driverId) {
+                return $result['position'];
             }
         }
 
         return null;
     }
 
-    /**
-     * Get score for position difference (season-specific)
-     */
     private function getPositionScore(int $positionDiff, int $season): int
     {
         return match ($positionDiff) {
@@ -279,7 +280,7 @@ class ScoringService
             17 => -12,
             18 => -15,
             19 => -18,
-            default => -25, // 20+ positions away
+            default => -25,
         };
     }
 
@@ -297,66 +298,46 @@ class ScoringService
             5 => 3,
             6 => 2,
             7 => 1,
-            default => 0, // 8+ positions away, no negative scores
+            default => 0,
         };
     }
 
-    /**
-     * Handle missing drivers (DNS, DSQ, etc.)
-     */
     private function getMissingDriverScore(string $driverId, array $results, int $season): int
     {
-        // Check if driver was DNS/DSQ in original results
-        // For now, return 0 points for missing drivers
-        // This could be enhanced to check original race data
-
-        return 0; // DNS/DSQ drivers get 0 points
+        return 0;
     }
 
-    /**
-     * Calculate fastest lap bonus (if implemented)
-     */
-    private function calculateFastestLapScore(Prediction $prediction, array $results): int
+    private function calculateFastestLapScore(Prediction $prediction, array $processedResults): int
     {
-        $predictedFastestLap = $prediction->getPredictedFastestLap();
-
-        if (! $predictedFastestLap) {
+        $predictedFL = $prediction->getPredictedFastestLap();
+        if (! $predictedFL) {
             return 0;
         }
 
-        // Find actual fastest lap from results
-        $actualFastestLap = null;
-        foreach ($results as $result) {
+        foreach ($processedResults as $result) {
             if (($result['fastestLap'] ?? false) === true) {
-                $actualFastestLap = $result['driver']['driverId'] ?? null;
+                $actual = $result['driver']['driverId'] ?? null;
+                if ($actual && (string) $actual === (string) $predictedFL) {
+                    return $prediction->type === 'sprint' ? 5 : 10;
+                }
                 break;
             }
-        }
-
-        if ($actualFastestLap && $actualFastestLap === $predictedFastestLap) {
-            return $prediction->type === 'sprint' ? 5 : 10;
         }
 
         return 0;
     }
 
-    /**
-     * Save prediction score to database
-     */
     public function savePredictionScore(Prediction $prediction, int $score): void
     {
         $prediction->update([
             'score' => $score,
-            'accuracy' => $this->calculateAccuracy($prediction),
+            'accuracy' => $this->calculateAccuracyValue($prediction),
             'status' => 'scored',
             'scored_at' => now(),
         ]);
     }
 
-    /**
-     * Calculate prediction accuracy
-     */
-    public function calculateAccuracy(Prediction $prediction): float
+    public function calculateAccuracyValue(Prediction $prediction): float
     {
         if (! in_array($prediction->type, ['race', 'sprint'], true)) {
             return 0.0;
@@ -369,18 +350,18 @@ class ScoringService
             return 0.0;
         }
 
-        $correctPredictions = 0;
-        $totalPredictions = count($predictedOrder);
+        $processed = $this->processRaceResults($actualResults);
+        $correctCount = 0;
+        $total = count($predictedOrder);
 
-        foreach ($predictedOrder as $position => $driverId) {
-            $actualPosition = $this->findDriverPosition($driverId, $actualResults);
-
-            if ($actualPosition !== null && $position === $actualPosition) {
-                $correctPredictions++;
+        foreach ($predictedOrder as $pos => $driverId) {
+            $actualPosition = $this->findDriverPosition((string) $driverId, $processed);
+            if ($actualPosition !== null && $actualPosition === $pos) {
+                $correctCount++;
             }
         }
 
-        return ($correctPredictions / $totalPredictions) * 100;
+        return $total > 0 ? ($correctCount / $total) * 100 : 0.0;
     }
 
     /**
@@ -390,7 +371,7 @@ class ScoringService
     {
         $prediction->update([
             'score' => $score,
-            'accuracy' => $this->calculateAccuracy($prediction),
+            'accuracy' => $this->calculateAccuracyValue($prediction),
             'status' => 'scored',
             'scored_at' => now(),
             'notes' => $reason ? "Admin override: {$reason}" : 'Admin override',

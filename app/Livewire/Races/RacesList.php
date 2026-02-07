@@ -3,6 +3,7 @@
 namespace App\Livewire\Races;
 
 use App\Exceptions\F1ApiException;
+use App\Models\Races;
 use App\Services\F1ApiService;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Url;
@@ -60,6 +61,21 @@ class RacesList extends Component
     public function refreshRaces(): void
     {
         $this->loadRaces();
+    }
+
+    /**
+     * Redirect to prediction creation with race context
+     */
+    public function makePrediction(int $round): void
+    {
+        $race = Races::where('season', $this->year)->where('round', $round)->first();
+        
+        if (!$race) {
+            $this->error = "Race details not found in database. Please sync races first.";
+            return;
+        }
+
+        $this->redirect(route('predict.create', ['race_id' => $race->id]));
     }
 
     public function getFilteredRacesProperty(): array

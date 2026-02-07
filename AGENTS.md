@@ -55,26 +55,26 @@ Preserve model relationships and existing patterns when changing schema or behav
 
 ## Boundaries
 
-**Always:** Follow conventions above; update TODO.md (remove done, add new items you didn’t complete); use Eloquent and Form Requests; run Pint and add/update tests for behavior changes.
+**Always:** Follow conventions above; update TODO.md (remove done, add new items you didn't complete); use Eloquent and Form Requests; run Pint and add/update tests for behavior changes.
 
 **Ask first:** Scoring formula or rule changes in `ScoringService`; migrations that alter/remove columns or risk data loss; auth/authorization changes; new Composer/NPM deps or external services.
 
-**Never:** Read/write `.env` or secrets; drop tables or irreversibly change data outside migrations; disable/delete tests to get green; implement gambling, payments, or betting.
+**Never:** Read/write `.env` or secrets; drop tables or irreversibly change data outside migrations; disable/delete tests to get green; implement gambling or real-money betting.
 
 ---
 
 ## Autonomy by area
 
-- **Safe (no review):** UI-only tweaks, localized bug fixes and refactors with tests, new analytics that don’t change scores or standings.
+- **Safe (no review):** UI-only tweaks, localized bug fixes and refactors with tests, new analytics that don't change scores or standings.
 - **Review required:** Any scoring change that can alter user scores; migrations that remove/alter columns or cause data loss; auth/policy changes; external API endpoint/key changes.
-- **Forbidden:** Touching secrets; dropping production tables; gambling/payments.
+- **Forbidden:** Touching secrets; dropping production tables; gambling or real-money betting. Monetization (e.g. subscriptions, tips, season supporter) to cover costs is allowed.
 
 ---
 
 ## TODO & handoff
 
 - **TODO.md:** Single backlog; schema in file. Status: `todo` | `in_progress` | `blocked` | `done` | `cancelled`. When finishing work: set `done`, add brief completion note. When leaving work incomplete: remove done items, add new items you identified. Respect `risk_level`, `owner`, and `affected_areas`.
-- **Handoff template:** Task title and goal; current status (test pass rate, what’s done); key areas to focus on; recent accomplishments; env (test command, key files).
+- **Handoff template:** Task title and goal; current status (test pass rate, what's done); key areas to focus on; recent accomplishments; env (test command, key files).
 
 Note recurring pitfalls or better patterns in handoff notes (1–3 lines) for the next agent.
 

@@ -109,6 +109,11 @@ new class extends Component {
             </div>
         </form>
 
+        <!-- Season Supporter Section -->
+        <div class="my-6">
+            <livewire:season-supporter />
+        </div>
+
         <livewire:settings.delete-user-form />
     </x-settings.layout>
 </section>

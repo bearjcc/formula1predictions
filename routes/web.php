@@ -77,10 +77,24 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
         Route::get('/', [LeaderboardController::class, 'index'])->name('index');
         Route::get('/compare', [LeaderboardController::class, 'compare'])->name('compare');
+        Route::get('/livewire', function () { return view('leaderboard.index-livewire'); })->name('livewire');
         Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
         Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
         Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');
+        Route::get('/user/{user}/livewire', function ($user) { return view('leaderboard.user-stats-livewire', ['user' => $user]); })->name('user-stats-livewire');
     });
+
+    // Stripe checkout routes
+    Route::prefix('checkout')->name('checkout.')->group(function () {
+        Route::get('/season-supporter', [\App\Http\Controllers\StripeCheckoutController::class, 'createCheckoutSession'])->name('season-supporter');
+        Route::get('/success', [\App\Http\Controllers\StripeCheckoutController::class, 'success'])->name('success');
+        Route::get('/cancel', [\App\Http\Controllers\StripeCheckoutController::class, 'cancel'])->name('cancel');
+        Route::get('/portal', [\App\Http\Controllers\StripeCheckoutController::class, 'portal'])->name('portal');
+    });
+
+    // Stripe webhook (no auth middleware for Stripe callbacks)
+    Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
+        ->name('stripe.webhook');
 });
 
 // F1 API Test Routes

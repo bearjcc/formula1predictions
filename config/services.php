@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'season_supporter_price_id' => env('STRIPE_PRICE_ID', 'price_1PwXXXXXX'),
+        'season_supporter_amount' => 1000, // $10.00 in cents
+    ],
+
 ];

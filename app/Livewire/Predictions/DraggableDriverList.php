@@ -10,9 +10,7 @@ class DraggableDriverList extends Component
 
     public array $driverOrder = [];
 
-    public ?int $selectedDriverId = null;
-
-    public ?int $fastestLapDriverId = null;
+    public ?string $fastestLapDriverId = null;
 
     public string $raceName = '';
 
@@ -20,14 +18,15 @@ class DraggableDriverList extends Component
 
     public ?int $raceRound = 1;
 
-    public function mount(array $drivers = [], string $raceName = '', int $season = 2024, ?int $raceRound = 1)
+    public function mount(array $drivers = [], string $raceName = '', int $season = 2024, ?int $raceRound = 1, array $driverOrder = [], ?string $fastestLapDriverId = null)
     {
         $this->drivers = $drivers;
         $this->raceName = $raceName;
         $this->season = $season;
         $this->raceRound = $raceRound;
+        $this->driverOrder = $driverOrder;
+        $this->fastestLapDriverId = $fastestLapDriverId;
 
-        // Initialize driver order if not provided
         if (empty($this->driverOrder)) {
             $this->driverOrder = collect($this->drivers)->pluck('id')->toArray();
         }
@@ -39,18 +38,10 @@ class DraggableDriverList extends Component
         $this->dispatch('driver-order-updated', order: $newOrder);
     }
 
-    public function setFastestLap(int $driverId): void
+    public function setFastestLap(string $driverId): void
     {
         $this->fastestLapDriverId = $this->fastestLapDriverId === $driverId ? null : $driverId;
         $this->dispatch('fastest-lap-updated', driverId: $this->fastestLapDriverId);
-    }
-
-    public function getDriverOrderData()
-    {
-        return [
-            'driver_order' => $this->driverOrder,
-            'fastest_lap' => $this->fastestLapDriverId,
-        ];
     }
 
     public function render()
