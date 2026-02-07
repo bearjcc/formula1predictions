@@ -132,13 +132,16 @@ Medium-horizon improvements that should be tackled soon.
 - **id**: F1-027
   - **title**: Dashboard content and user experience
   - **type**: feature
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: low
   - **owner**: agent
   - **affected_areas**:
+    - app/Http/Controllers/DashboardController.php
     - resources/views/dashboard.blade.php
   - **description**: Dashboard should show: upcoming race with prediction deadline countdown, user's recent predictions and scores, current leaderboard position, quick links to create predictions.
+  - **notes**:
+    - Completed 2026-02-08. DashboardController loads real stats, upcoming races with deadline, leaderboard top 5, recent predictions; view uses dynamic data and proper links.
 
 - **id**: F1-028
   - **title**: F1-branded UI styling

@@ -19,7 +19,7 @@ Route::get('/draggable-demo', function () {
     return view('draggable-demo');
 })->name('draggable-demo');
 
-Route::view('dashboard', 'dashboard')
+Route::get('dashboard', App\Http\Controllers\DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 

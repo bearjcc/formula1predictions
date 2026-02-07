@@ -95,10 +95,11 @@ F1-000 (MVP scope) through F1-018; F1-020 (race diffs 10–19 to spec); F1-021 (
 **Status:** 373 tests passing, 0 failing. Scoring now matches spec for race position diffs 0–20+ and sprint scoring (weights, fastest lap, perfect bonus). BacktestScoringHarness updated to match.
 
 **Completed this session:**
+- F1-027: Dashboard UX — DashboardController with real stats, upcoming races (deadline countdown), leaderboard top 5, recent predictions; view dynamic with links.
 - F1-025: Auto-lock predictions — migration `qualifying_start`, `sprint_qualifying_start`; Races.allowsPredictions/allowsSprintPredictions close 1h before qualifying; LockPredictionsPastDeadline command (scheduled every 15 min); SyncRaceSchedule command; F1ApiService.fetchSeasonSchedule/syncScheduleToRaces; UI deadline on prediction form; AutoLockPredictionsTest.
 - F1-023: Half-points for shortened races — migration `half_points`, ScoringService halves race/sprint score when flag set, admin toggle route (`POST admin/races/{race}/toggle-half-points`).
 - F1-022: DNF wager — optional DNF predictions (race only), +10/−10 scoring, `prediction_data.dnf_predictions`, UI checkboxes on prediction form, ScoringServiceTest coverage.
 
-**Focus next:** F1-026 (2026 data pipeline); F1-027 (dashboard UX).
+**Focus next:** F1-026 (2026 data pipeline).
 
-**Key files:** `app/Services/ScoringService.php`, `tests/Feature/ScoringServiceTest.php`, `tests/Support/BacktestScoringHarness.php`.
+**Key files:** `app/Http/Controllers/DashboardController.php`, `app/Services/ScoringService.php`, `tests/Feature/ScoringServiceTest.php`, `tests/Support/BacktestScoringHarness.php`.

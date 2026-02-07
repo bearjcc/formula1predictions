@@ -16,3 +16,16 @@ test('authenticated users can visit the dashboard', function () {
     $response = $this->get('/dashboard');
     $response->assertStatus(200);
 });
+
+test('dashboard shows dynamic stats for authenticated user', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $response = $this->get('/dashboard');
+    $response->assertStatus(200);
+    $response->assertSee('Total Predictions', false);
+    $response->assertSee('Prediction Accuracy', false);
+    $response->assertSee('Total Points', false);
+    $response->assertSee('Current Rank', false);
+    $response->assertSee('Quick Actions', false);
+});
