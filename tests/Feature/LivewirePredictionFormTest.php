@@ -163,15 +163,16 @@ class LivewirePredictionFormTest extends TestCase
         $raceWithoutSprint = \App\Models\Races::factory()->create([
             'has_sprint' => false,
         ]);
-
-        Teams::factory()->count(10)->create();
-        Drivers::factory()->count(20)->create();
+        $team = Teams::factory()->create();
+        $drivers = Drivers::factory()->count(20)->create(['team_id' => $team->id]);
+        $driverOrder = $drivers->pluck('driver_id')->toArray();
 
         Livewire::actingAs($user)
             ->test(PredictionForm::class, ['race' => $raceWithoutSprint])
             ->set('type', 'sprint')
             ->set('season', (int) $raceWithoutSprint->season)
             ->set('raceRound', (int) $raceWithoutSprint->round)
+            ->set('driverOrder', $driverOrder)
             ->call('save')
             ->assertHasErrors(['type']);
     }

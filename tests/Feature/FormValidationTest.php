@@ -97,40 +97,60 @@ test('store prediction request validates preseason prediction requires team orde
     expect($validator->errors()->has('prediction_data.team_order'))->toBeTrue();
 });
 
-test('store prediction request validates driver order must have exactly 20 drivers', function () {
+test('store prediction request validates driver order must have between 1 and 20 drivers', function () {
     $drivers = Drivers::factory()->count(25)->create();
 
+    // Too many (max 20) fails
     $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'race',
         'season' => 2024,
+        'race_round' => 1,
         'prediction_data' => [
-            'driver_order' => $drivers->take(15)->pluck('id')->toArray(), // Too few
+            'driver_order' => $drivers->pluck('id')->toArray(),
         ],
     ]);
-
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('prediction_data.driver_order'))->toBeTrue();
+
+    // Partial (15 drivers) passes
+    $request->merge([
+        'prediction_data' => [
+            'driver_order' => $drivers->take(15)->pluck('id')->toArray(),
+        ],
+    ]);
+    $validator = Validator::make($request->all(), $request->rules(), $request->messages());
+    expect($validator->passes())->toBeTrue();
 });
 
-test('store prediction request validates team order must have exactly 10 teams', function () {
+test('store prediction request validates team order must have between 1 and 10 teams', function () {
     $teams = Teams::factory()->count(15)->create();
+    $drivers = Drivers::factory()->count(20)->create();
 
+    // Too many (max 10) fails
     $request = new StorePredictionRequest;
     $request->merge([
         'type' => 'preseason',
         'season' => 2024,
         'prediction_data' => [
-            'team_order' => $teams->take(8)->pluck('id')->toArray(), // Too few
+            'team_order' => $teams->pluck('id')->toArray(),
+            'driver_championship' => $drivers->pluck('id')->toArray(),
         ],
     ]);
-
     $validator = Validator::make($request->all(), $request->rules(), $request->messages());
-
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('prediction_data.team_order'))->toBeTrue();
+
+    // Partial (8 teams) passes
+    $request->merge([
+        'prediction_data' => [
+            'team_order' => $teams->take(8)->pluck('id')->toArray(),
+            'driver_championship' => $drivers->take(8)->pluck('id')->toArray(),
+        ],
+    ]);
+    $validator = Validator::make($request->all(), $request->rules(), $request->messages());
+    expect($validator->passes())->toBeTrue();
 });
 
 test('store prediction request validates notes field maximum length', function () {

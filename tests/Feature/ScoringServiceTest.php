@@ -147,6 +147,41 @@ test('perfect bonus only when every predicted driver correct', function () {
     expect($score)->toBe(61);
 });
 
+test('partial prediction scores only predicted positions and awards perfect bonus when all predicted correct', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'a'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'b'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'c'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $allCorrect = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => ['driver_order' => ['a', 'b', 'c']],
+        'status' => 'submitted',
+    ]);
+    $service = app(ScoringService::class);
+    $scoreAllCorrect = $service->calculatePredictionScore($allCorrect, $race);
+    // 25+25+25 + 50 perfect = 125
+    expect($scoreAllCorrect)->toBe(125);
+
+    $oneWrong = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => ['driver_order' => ['a', 'c', 'b']],
+        'status' => 'submitted',
+    ]);
+    $scoreOneWrong = $service->calculatePredictionScore($oneWrong, $race);
+    // 25 + 18 + 18 = 61, no perfect bonus
+    expect($scoreOneWrong)->toBe(61);
+});
+
 test('handles DNS drivers correctly', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create([

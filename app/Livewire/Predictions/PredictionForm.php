@@ -9,6 +9,7 @@ use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\Teams;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule as ValidationRule;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
@@ -290,9 +291,40 @@ class PredictionForm extends Component
             'season' => 'required|integer|min:2020|max:2030',
             'raceRound' => 'required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25',
             'notes' => 'nullable|string|max:1000',
-            'driverOrder' => 'required_if:type,race,sprint|array',
-            'teamOrder' => 'required_if:type,preseason,midseason|array',
-            'driverChampionship' => 'required_if:type,preseason,midseason|array',
+            'driverOrder' => 'required_if:type,race,sprint|array|min:1|max:20',
+            'driverOrder.*' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $exists = is_numeric($value)
+                        ? \App\Models\Drivers::where('id', (int) $value)->exists()
+                        : \App\Models\Drivers::where('driver_id', (string) $value)->exists();
+                    if (! $exists) {
+                        $fail(__('The selected driver is invalid.'));
+                    }
+                },
+            ],
+            'teamOrder' => [
+                'required_if:type,preseason,midseason',
+                'array',
+                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:10', 'min:0|max:10'),
+            ],
+            'teamOrder.*' => 'integer|exists:teams,id',
+            'driverChampionship' => [
+                'required_if:type,preseason,midseason',
+                'array',
+                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:20', 'min:0|max:20'),
+            ],
+            'driverChampionship.*' => [
+                'required',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $exists = is_numeric($value)
+                        ? \App\Models\Drivers::where('id', (int) $value)->exists()
+                        : \App\Models\Drivers::where('driver_id', (string) $value)->exists();
+                    if (! $exists) {
+                        $fail(__('The selected driver is invalid.'));
+                    }
+                },
+            ],
         ]);
 
         if ($this->type === 'sprint' && ($this->race === null || ! $this->race->hasSprint())) {

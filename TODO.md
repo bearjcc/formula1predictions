@@ -159,7 +159,7 @@ Medium-horizon improvements that should be tackled soon.
 - **id**: F1-029
   - **title**: Predictions should be fully optional (partial predictions)
   - **type**: bug
-  - **status**: todo
+  - **status**: done
   - **priority**: P2
   - **risk_level**: medium
   - **owner**: agent
@@ -169,7 +169,7 @@ Medium-horizon improvements that should be tackled soon.
     - app/Http/Requests/*
   - **description**: Per the spec, all predictions are optional — users can predict only positions 1, 8, and 20 if they want. Current validation requires exactly 20 drivers for race predictions and exactly 10 teams for preseason. Validation should allow partial predictions while scoring only the positions the user predicted.
   - **notes**:
-    - This is a significant change to validation and scoring. Need to determine how partial predictions interact with the perfect prediction bonus (likely: no bonus unless all 20 predicted).
+    - Completed 2026-02-08. Store/UpdatePredictionRequest and Livewire form allow driver_order 1–20, team_order 1–10, driver_championship 1–20. ScoringService already scored only predicted positions; perfect bonus +50 when all predicted positions correct (not only when 20 predicted). Livewire validates driverOrder/driverChampionship with id or driver_id; teamOrder/driverChampionship allow empty when type is race/sprint. Tests updated; partial prediction scoring test added.
 
 ---
 
