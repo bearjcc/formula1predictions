@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 
 test('faker basic seeder creates expected number of records', function () {
     // Run the seeder
-    $seeder = new FakerBasicSeeder();
+    $seeder = new FakerBasicSeeder;
     $seeder->run();
 
     // Verify users were created
@@ -24,7 +24,7 @@ test('faker basic seeder creates expected number of records', function () {
 });
 
 test('faker basic seeder creates valid user data', function () {
-    $seeder = new FakerBasicSeeder();
+    $seeder = new FakerBasicSeeder;
     $seeder->run();
 
     $users = User::all();
@@ -38,7 +38,7 @@ test('faker basic seeder creates valid user data', function () {
 });
 
 test('faker basic seeder creates valid team data', function () {
-    $seeder = new FakerBasicSeeder();
+    $seeder = new FakerBasicSeeder;
     $seeder->run();
 
     $teams = Teams::all();
@@ -51,7 +51,7 @@ test('faker basic seeder creates valid team data', function () {
 });
 
 test('faker basic seeder creates valid driver data', function () {
-    $seeder = new FakerBasicSeeder();
+    $seeder = new FakerBasicSeeder;
     $seeder->run();
 
     $drivers = Drivers::all();
@@ -65,8 +65,8 @@ test('faker basic seeder creates valid driver data', function () {
 });
 
 test('faker basic seeder can be run multiple times without errors', function () {
-    $seeder = new FakerBasicSeeder();
-    
+    $seeder = new FakerBasicSeeder;
+
     // Run twice
     $seeder->run();
     $seeder->run();

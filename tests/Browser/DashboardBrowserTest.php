@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Support\Facades\Notification;
 
 it('can visit dashboard and see predictions', function () {
     $user = User::factory()->create();

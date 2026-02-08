@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Circuits;
 use App\Http\Requests\StoreCircuitsRequest;
 use App\Http\Requests\UpdateCircuitsRequest;
+use App\Models\Circuits;
 
 class CircuitsController extends Controller
 {

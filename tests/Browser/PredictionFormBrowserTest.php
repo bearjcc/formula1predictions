@@ -1,7 +1,9 @@
 <?php
 
-use App\Models\{User, Races, Drivers, Teams};
-use Illuminate\Support\Facades\Notification;
+use App\Models\Drivers;
+use App\Models\Races;
+use App\Models\Teams;
+use App\Models\User;
 
 it('can create a prediction through the form', function () {
     $user = User::factory()->create();

@@ -22,6 +22,3 @@ class FakerBasicSeeder extends Seeder
         Drivers::factory()->count(10)->create();
     }
 }
-
-
-

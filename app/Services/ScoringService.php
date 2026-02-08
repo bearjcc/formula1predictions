@@ -26,6 +26,7 @@ class ScoringService
         }
 
         $predictions = $race->predictions()
+            ->with('user')
             ->whereIn('status', ['submitted', 'locked'])
             ->get();
 
@@ -70,6 +71,7 @@ class ScoringService
         }
 
         $predictions = $race->sprintPredictions()
+            ->with('user')
             ->whereIn('status', ['submitted', 'locked'])
             ->get();
 

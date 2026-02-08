@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Countries;
 use App\Http\Requests\StoreCountriesRequest;
 use App\Http\Requests\UpdateCountriesRequest;
+use App\Models\Countries;
 
 class CountriesController extends Controller
 {

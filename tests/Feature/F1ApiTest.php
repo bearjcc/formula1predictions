@@ -3,9 +3,12 @@
 use App\Exceptions\F1ApiException;
 use App\Models\Races;
 use App\Services\F1ApiService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\mock;
+
+uses(RefreshDatabase::class);
 
 test('f1 api service can be instantiated', function () {
     $service = app(F1ApiService::class);
@@ -218,7 +221,7 @@ test('f1 api service handles api errors gracefully', function () {
 
 test('f1 api service throws F1ApiException when API returns 500', function () {
     Http::fake([
-        'f1api.dev/api/*' => Http::response(null, 500),
+        'https://f1api.dev/api/*' => Http::response(null, 500),
     ]);
 
     $service = new F1ApiService;
@@ -250,7 +253,7 @@ test('F1ApiException carries log context for debugging', function () {
 test('getRacesForYear and getRaceResults use DB first when races exist', function () {
     $season = 2035;
     $round = 1;
-    Races::create([
+    Races::factory()->create([
         'season' => $season,
         'round' => $round,
         'race_name' => 'Bahrain Grand Prix',

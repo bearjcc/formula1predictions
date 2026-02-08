@@ -17,6 +17,7 @@ class ScoreRacePredictionsJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 300; // 5 minutes
 
     /**
@@ -33,13 +34,14 @@ class ScoreRacePredictionsJob implements ShouldQueue
     public function handle(F1ApiService $f1ApiService, ScoringService $scoringService): void
     {
         $race = Races::find($this->raceId);
-        
-        if (!$race) {
-            Log::error("Race not found for scoring job", ['race_id' => $this->raceId]);
+
+        if (! $race) {
+            Log::error('Race not found for scoring job', ['race_id' => $this->raceId]);
+
             return;
         }
 
-        Log::info("Starting background scoring for race", [
+        Log::info('Starting background scoring for race', [
             'race_id' => $race->id,
             'race_name' => $race->race_name,
             'season' => $race->season,
@@ -48,15 +50,15 @@ class ScoreRacePredictionsJob implements ShouldQueue
 
         try {
             // Update race results from API if needed
-            if ($this->forceUpdate || !$race->isCompleted()) {
+            if ($this->forceUpdate || ! $race->isCompleted()) {
                 $this->updateRaceResults($race, $f1ApiService);
             }
 
             // Score predictions
             if ($race->isCompleted()) {
                 $results = $scoringService->scoreRacePredictions($race);
-                
-                Log::info("Background scoring completed", [
+
+                Log::info('Background scoring completed', [
                     'race_id' => $race->id,
                     'total_predictions' => $results['total_predictions'],
                     'scored_predictions' => $results['scored_predictions'],
@@ -64,26 +66,26 @@ class ScoreRacePredictionsJob implements ShouldQueue
                     'total_score' => $results['total_score'],
                 ]);
 
-                if (!empty($results['errors'])) {
-                    Log::warning("Scoring errors encountered", [
+                if (! empty($results['errors'])) {
+                    Log::warning('Scoring errors encountered', [
                         'race_id' => $race->id,
                         'errors' => $results['errors'],
                     ]);
                 }
             } else {
-                Log::warning("Race not completed, skipping scoring", [
+                Log::warning('Race not completed, skipping scoring', [
                     'race_id' => $race->id,
                     'status' => $race->status,
                 ]);
             }
 
         } catch (\Exception $e) {
-            Log::error("Background scoring failed", [
+            Log::error('Background scoring failed', [
                 'race_id' => $race->id,
                 'error' => $e->getMessage(),
                 'exception' => $e,
             ]);
-            
+
             throw $e; // Re-throw to trigger retry
         }
     }
@@ -95,26 +97,26 @@ class ScoreRacePredictionsJob implements ShouldQueue
     {
         try {
             $apiResults = $f1ApiService->getRaceResults($race->season, $race->round);
-            
-            if (isset($apiResults['races']['results']) && !empty($apiResults['races']['results'])) {
+
+            if (isset($apiResults['races']['results']) && ! empty($apiResults['races']['results'])) {
                 $race->update([
                     'results' => $apiResults['races']['results'],
                     'status' => 'completed',
                 ]);
-                
-                Log::info("Race results updated from API", [
+
+                Log::info('Race results updated from API', [
                     'race_id' => $race->id,
                     'results_count' => count($apiResults['races']['results']),
                 ]);
             } else {
-                Log::warning("No results found in API response", [
+                Log::warning('No results found in API response', [
                     'race_id' => $race->id,
                     'api_response' => $apiResults,
                 ]);
             }
 
         } catch (\Exception $e) {
-            Log::error("Failed to update race results from API", [
+            Log::error('Failed to update race results from API', [
                 'race_id' => $race->id,
                 'error' => $e->getMessage(),
             ]);
@@ -127,7 +129,7 @@ class ScoreRacePredictionsJob implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("Scoring job failed permanently", [
+        Log::error('Scoring job failed permanently', [
             'race_id' => $this->raceId,
             'error' => $exception->getMessage(),
             'exception' => $exception,

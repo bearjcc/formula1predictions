@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Prediction;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class PredictionPolicy
 {
@@ -45,6 +44,7 @@ class PredictionPolicy
         if ($user->hasRole('admin') || $user->hasRole('moderator')) {
             return true;
         }
+
         return $user->id === $prediction->user_id && $prediction->status === 'draft';
     }
 
@@ -58,6 +58,7 @@ class PredictionPolicy
         if ($user->hasRole('admin') || $user->hasRole('moderator')) {
             return true;
         }
+
         return $user->id === $prediction->user_id && $prediction->status === 'draft';
     }
 

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Drivers;
 use App\Http\Requests\StoreDriversRequest;
 use App\Http\Requests\UpdateDriversRequest;
+use App\Models\Drivers;
 
 class DriversController extends Controller
 {

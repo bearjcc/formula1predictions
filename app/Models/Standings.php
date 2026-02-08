@@ -98,13 +98,13 @@ class Standings extends Model
     public static function getDriverStandings(int $season, ?int $round = null): \Illuminate\Database\Eloquent\Collection
     {
         $query = static::forSeason($season)->byType('drivers');
-        
+
         if ($round) {
             $query->byRound($round);
         } else {
             $query->current();
         }
-        
+
         return $query->orderBy('position')->get();
     }
 
@@ -114,13 +114,13 @@ class Standings extends Model
     public static function getConstructorStandings(int $season, ?int $round = null): \Illuminate\Database\Eloquent\Collection
     {
         $query = static::forSeason($season)->byType('constructors');
-        
+
         if ($round) {
             $query->byRound($round);
         } else {
             $query->current();
         }
-        
+
         return $query->orderBy('position')->get();
     }
 
@@ -184,11 +184,11 @@ class Standings extends Model
 
         foreach ($current as $entityId => $currentStanding) {
             $previousStanding = $previous->get($entityId);
-            
+
             if ($previousStanding) {
                 $positionChange = $previousStanding->position - $currentStanding->position;
                 $pointsChange = $currentStanding->points - $previousStanding->points;
-                
+
                 $changes[$entityId] = [
                     'entity_name' => $currentStanding->entity_name,
                     'current_position' => $currentStanding->position,

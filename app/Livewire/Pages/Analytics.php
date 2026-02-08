@@ -15,12 +15,12 @@ class Analytics extends Component
     public function render()
     {
         $chartService = app(ChartDataService::class);
-        
+
         $data = [
             'selectedSeason' => $this->selectedSeason,
             'totalPredictions' => Prediction::where('season', $this->selectedSeason)->count(),
-            'activeUsers' => User::whereHas('predictions', function($q) { 
-                $q->where('season', $this->selectedSeason); 
+            'activeUsers' => User::whereHas('predictions', function ($q) {
+                $q->where('season', $this->selectedSeason);
             })->count(),
             'racesCompleted' => Races::where('season', $this->selectedSeason)->whereNotNull('results')->count(),
             'avgAccuracy' => number_format(Prediction::where('season', $this->selectedSeason)->whereNotNull('accuracy')->avg('accuracy') ?? 0, 1),

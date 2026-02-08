@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierWebhookController;
 
@@ -14,7 +13,7 @@ class StripeWebhookController extends CashierWebhookController
     public function handlePaymentIntentSucceeded($payload): void
     {
         $paymentIntent = $payload['data']['object'];
-        
+
         // This is already handled by the checkout success flow,
         // but we can use this for additional processing
         Log::info('Payment succeeded', [
@@ -33,7 +32,7 @@ class StripeWebhookController extends CashierWebhookController
     public function handleCheckoutSessionCompleted($payload): void
     {
         $session = $payload['data']['object'];
-        
+
         Log::info('Checkout session completed', [
             'session_id' => $session['id'],
             'payment_status' => $session['payment_status'],
@@ -51,7 +50,7 @@ class StripeWebhookController extends CashierWebhookController
     public function handlePaymentIntentPaymentFailed($payload): void
     {
         $paymentIntent = $payload['data']['object'];
-        
+
         Log::warning('Payment failed', [
             'payment_intent_id' => $paymentIntent['id'],
             'error' => $paymentIntent['last_payment_error'] ?? null,

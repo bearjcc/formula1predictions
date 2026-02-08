@@ -32,7 +32,7 @@ return new class extends Migration
             $table->integer('lap_record_year')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['circuit_id']);
             $table->index(['circuit_name']);
             $table->index(['country']);

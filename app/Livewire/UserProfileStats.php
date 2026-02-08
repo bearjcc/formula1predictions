@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use App\Models\User;
 
 class UserProfileStats extends Component
 {
@@ -12,10 +12,15 @@ class UserProfileStats extends Component
     public User $user;
 
     public int $season;
+
     public array $stats = [];
+
     public array $pointsChartData = [];
+
     public array $accuracyChartData = [];
+
     public array $heatmapData = [];
+
     public array $accuracyTrends = [];
 
     public function mount(User $user, ?int $season = null): void
@@ -42,7 +47,7 @@ class UserProfileStats extends Component
     private function preparePointsChartData(): array
     {
         $data = $this->stats['points_over_time'] ?? [];
-        
+
         return [
             'labels' => array_column($data, 'race'),
             'datasets' => [
@@ -69,13 +74,13 @@ class UserProfileStats extends Component
     private function prepareAccuracyChartData(): array
     {
         $data = $this->stats['accuracy_over_time'] ?? [];
-        
+
         return [
             'labels' => array_column($data, 'race'),
             'datasets' => [
                 [
                     'label' => 'Accuracy (%)',
-                    'data' => array_map(fn($a) => round($a, 2), array_column($data, 'accuracy')),
+                    'data' => array_map(fn ($a) => round($a, 2), array_column($data, 'accuracy')),
                     'borderColor' => '#8B5CF6',
                     'backgroundColor' => 'rgba(139, 92, 246, 0.1)',
                     'fill' => true,

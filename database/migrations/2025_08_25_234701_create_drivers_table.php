@@ -34,12 +34,12 @@ return new class extends Migration
             $table->integer('points')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['driver_id']);
             $table->index(['name', 'surname']);
             $table->index(['driver_number']);
             $table->index(['is_active']);
-            
+
             // Add foreign key relationship to teams table
             $table->foreignId('team_id')->nullable()->constrained('teams', 'id')->onDelete('set null');
         });

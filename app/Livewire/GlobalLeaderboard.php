@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Prediction;
+use App\Models\User;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use App\Models\User;
-use App\Models\Prediction;
 
 class GlobalLeaderboard extends Component
 {
@@ -19,8 +19,11 @@ class GlobalLeaderboard extends Component
     public string $sortBy = 'total_score'; // total_score, avg_score, accuracy, predictions
 
     public array $leaderboard = [];
+
     public array $proStats = [];
+
     public array $availableSeasons = [];
+
     public string $chartId = 'leaderboard-chart';
 
     public function mount(): void
@@ -62,38 +65,38 @@ class GlobalLeaderboard extends Component
                 $query->where('type', $this->type);
             }
         }])
-        ->withSum(['predictions as total_score' => function ($query) {
-            $query->where('season', $this->season)
-                ->where('status', 'scored');
-            if ($this->type !== 'all') {
-                $query->where('type', $this->type);
-            }
-        }], 'score')
-        ->withAvg(['predictions as avg_score' => function ($query) {
-            $query->where('season', $this->season)
-                ->where('status', 'scored');
-            if ($this->type !== 'all') {
-                $query->where('type', $this->type);
-            }
-        }], 'score')
-        ->withAvg(['predictions as avg_accuracy' => function ($query) {
-            $query->where('season', $this->season)
-                ->where('status', 'scored');
-            if ($this->type !== 'all') {
-                $query->where('type', $this->type);
-            }
-        }], 'accuracy')
-        ->whereHas('predictions', function ($query) {
-            $query->where('season', $this->season);
-            if ($this->type !== 'all') {
-                $query->where('type', $this->type);
-            }
-        })
-        ->get();
+            ->withSum(['predictions as total_score' => function ($query) {
+                $query->where('season', $this->season)
+                    ->where('status', 'scored');
+                if ($this->type !== 'all') {
+                    $query->where('type', $this->type);
+                }
+            }], 'score')
+            ->withAvg(['predictions as avg_score' => function ($query) {
+                $query->where('season', $this->season)
+                    ->where('status', 'scored');
+                if ($this->type !== 'all') {
+                    $query->where('type', $this->type);
+                }
+            }], 'score')
+            ->withAvg(['predictions as avg_accuracy' => function ($query) {
+                $query->where('season', $this->season)
+                    ->where('status', 'scored');
+                if ($this->type !== 'all') {
+                    $query->where('type', $this->type);
+                }
+            }], 'accuracy')
+            ->whereHas('predictions', function ($query) {
+                $query->where('season', $this->season);
+                if ($this->type !== 'all') {
+                    $query->where('type', $this->type);
+                }
+            })
+            ->get();
 
         $this->leaderboard = $query->map(function ($user, $index) {
             $stats = $user->getDetailedStats($this->season);
-            
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -118,6 +121,7 @@ class GlobalLeaderboard extends Component
         usort($this->leaderboard, function ($a, $b) {
             $fieldA = $a[$this->sortBy] ?? 0;
             $fieldB = $b[$this->sortBy] ?? 0;
+
             return $fieldB <=> $fieldA; // Descending
         });
 
@@ -133,6 +137,7 @@ class GlobalLeaderboard extends Component
         $totalUsers = count($this->leaderboard);
         if ($totalUsers === 0) {
             $this->proStats = [];
+
             return;
         }
 
@@ -147,7 +152,7 @@ class GlobalLeaderboard extends Component
             'median_score' => $this->calculateMedian($totalScores),
             'avg_accuracy' => round(array_sum($accuracies) / $totalUsers, 2),
             'perfect_predictions' => array_sum(array_column($this->leaderboard, 'perfect_predictions')),
-            'supporters' => array_sum(array_column($this->leaderboard, fn($u) => $u['is_supporter'] ? 1 : 0)),
+            'supporters' => array_sum(array_column($this->leaderboard, fn ($u) => $u['is_supporter'] ? 1 : 0)),
         ];
     }
 

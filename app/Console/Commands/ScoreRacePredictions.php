@@ -6,7 +6,6 @@ use App\Models\Races;
 use App\Services\F1ApiService;
 use App\Services\ScoringService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class ScoreRacePredictions extends Command
 {
@@ -29,7 +28,7 @@ class ScoreRacePredictions extends Command
     public function handle(): int
     {
         $raceId = $this->option('race');
-        $season = (int)($this->option('season') ?? date('Y'));
+        $season = (int) ($this->option('season') ?? date('Y'));
         $round = $this->option('round');
         $dryRun = $this->option('dry-run');
 
@@ -39,19 +38,23 @@ class ScoreRacePredictions extends Command
 
         if ($raceId) {
             $race = Races::findOrFail($raceId);
+
             return $this->processRace($race, $dryRun);
         }
 
         if ($round) {
             $race = Races::where('season', $season)->where('round', $round)->first();
-            if (!$race) {
+            if (! $race) {
                 $this->error("Race not found for season $season round $round");
+
                 return 1;
             }
+
             return $this->processRace($race, $dryRun);
         }
 
-        $this->warn("Please specify --race, --round, or --all.");
+        $this->warn('Please specify --race, --round, or --all.');
+
         return 1;
     }
 
@@ -62,33 +65,35 @@ class ScoreRacePredictions extends Command
         // Try to fetch newest results from API first
         try {
             $apiData = $this->f1ApiService->getRaceResults($race->season, $race->round);
-            if (!empty($apiData['races']['results'] ?? [])) {
-                $this->info("Updating race results from official API...");
-                if (!$dryRun) {
+            if (! empty($apiData['races']['results'] ?? [])) {
+                $this->info('Updating race results from official API...');
+                if (! $dryRun) {
                     $race->update([
                         'results' => $apiData['races']['results'],
-                        'status' => 'completed'
+                        'status' => 'completed',
                     ]);
                 }
             }
         } catch (\Exception $e) {
-            $this->warn("Could not sync latest result from API: " . $e->getMessage());
+            $this->warn('Could not sync latest result from API: '.$e->getMessage());
         }
 
-        if (!$race->isCompleted()) {
+        if (! $race->isCompleted()) {
             $this->error("Race {$race->id} marked as incomplete. Cannot score.");
+
             return 1;
         }
 
         if ($dryRun) {
             $count = $race->predictions()->whereIn('status', ['submitted', 'locked'])->count();
             $this->info("[DRY RUN] Would score $count predictions.");
+
             return 0;
         }
 
         $results = $this->scoringService->scoreRacePredictions($race);
-        
-        $this->info("Scoring complete:");
+
+        $this->info('Scoring complete:');
         $this->line(" - Total: {$results['total_predictions']}");
         $this->line(" - Success: {$results['scored_predictions']}");
         $this->line(" - Failed: {$results['failed_predictions']}");

@@ -8,14 +8,17 @@ use Livewire\Component;
 class DriverConsistencyChart extends Component
 {
     public int $season = 2024;
+
     public string $chartId;
+
     public array $chartData = [];
+
     public array $chartConfig = [];
 
     public function mount(int $season = 2024)
     {
         $this->season = $season;
-        $this->chartId = 'driver-consistency-chart-' . uniqid();
+        $this->chartId = 'driver-consistency-chart-'.uniqid();
         $this->loadChartData();
     }
 

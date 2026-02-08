@@ -15,10 +15,10 @@ return new class extends Migration
             // Season Supporter badge
             $table->boolean('is_season_supporter')->default(false);
             $table->timestamp('supporter_since')->nullable();
-            
+
             // Badge system - store as JSON for flexibility
             $table->json('badges')->nullable();
-            
+
             // Profile statistics cache (optional, for performance)
             $table->json('stats_cache')->nullable();
             $table->timestamp('stats_cache_updated_at')->nullable();
@@ -36,7 +36,7 @@ return new class extends Migration
                 'supporter_since',
                 'badges',
                 'stats_cache',
-                'stats_cache_updated_at'
+                'stats_cache_updated_at',
             ]);
         });
     }

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'validate.year' => \App\Http\Middleware\ValidateYear::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
+        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\User;
-use App\Models\Prediction;
-use App\Models\Drivers;
-use App\Models\Teams;
 use App\Http\Requests\StorePredictionRequest;
+use App\Models\Drivers;
+use App\Models\Prediction;
+use App\Models\Teams;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -15,10 +15,10 @@ test('database migrations work correctly', function () {
     // Test that we can create basic models
     $user = User::factory()->create();
     expect($user)->toBeInstanceOf(User::class);
-    
+
     $driver = Drivers::factory()->create();
     expect($driver)->toBeInstanceOf(Drivers::class);
-    
+
     $team = Teams::factory()->create();
     expect($team)->toBeInstanceOf(Teams::class);
 });
@@ -29,9 +29,9 @@ test('form validation works correctly', function () {
     for ($i = 1; $i <= 20; $i++) {
         $drivers->push(Drivers::factory()->create(['driver_id' => $i]));
     }
-    
-    $request = new StorePredictionRequest();
-    
+
+    $request = new StorePredictionRequest;
+
     // Test valid data
     $validData = [
         'type' => 'race',
@@ -43,16 +43,16 @@ test('form validation works correctly', function () {
         ],
         'notes' => 'Test prediction',
     ];
-    
+
     $validator = Validator::make($validData, $request->rules(), $request->messages());
     expect($validator->passes())->toBeTrue();
-    
+
     // Test invalid data
     $invalidData = [
         'type' => 'invalid_type',
         'season' => 1800,
     ];
-    
+
     $validator = Validator::make($invalidData, $request->rules(), $request->messages());
     expect($validator->fails())->toBeTrue();
 });
@@ -60,7 +60,7 @@ test('form validation works correctly', function () {
 test('prediction model can be created', function () {
     $user = User::factory()->create();
     $driver = Drivers::factory()->create();
-    
+
     $prediction = Prediction::create([
         'user_id' => $user->id,
         'type' => 'race',
@@ -73,7 +73,7 @@ test('prediction model can be created', function () {
         'status' => 'submitted',
         'submitted_at' => now(),
     ]);
-    
+
     expect($prediction)->toBeInstanceOf(Prediction::class);
     expect($prediction->user_id)->toBe($user->id);
     expect($prediction->type)->toBe('race');
@@ -83,7 +83,7 @@ test('model relationships work', function () {
     $user = User::factory()->create();
     $driver = Drivers::factory()->create();
     $team = Teams::factory()->create();
-    
+
     // Test user can have predictions
     $prediction = Prediction::create([
         'user_id' => $user->id,
@@ -93,20 +93,20 @@ test('model relationships work', function () {
         'prediction_data' => ['driver_order' => [$driver->id]],
         'status' => 'submitted',
     ]);
-    
+
     expect($user->predictions)->toHaveCount(1);
     expect($prediction->user)->toBeInstanceOf(User::class);
 });
 
 test('form request authorization works', function () {
-    $request = new StorePredictionRequest();
-    
+    $request = new StorePredictionRequest;
+
     // Should require authentication
     expect($request->authorize())->toBeFalse();
-    
+
     // Mock authenticated user
     $user = User::factory()->create();
     Auth::login($user);
-    
+
     expect($request->authorize())->toBeTrue();
 });

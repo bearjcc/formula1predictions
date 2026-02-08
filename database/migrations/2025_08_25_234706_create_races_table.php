@@ -32,13 +32,13 @@ return new class extends Migration
             $table->boolean('is_special_event')->default(false);
             $table->json('results')->nullable(); // Store race results as JSON
             $table->timestamps();
-            
+
             $table->index(['season', 'round']);
             $table->index(['season', 'race_name']);
             $table->index(['date']);
             $table->index(['status']);
             $table->index(['circuit_api_id']);
-            
+
             // Add foreign key relationship to circuits table
             $table->foreignId('circuit_id')->nullable()->constrained('circuits', 'id')->onDelete('set null');
         });

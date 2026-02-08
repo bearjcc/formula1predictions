@@ -2,6 +2,9 @@
 
 use App\Models\User;
 use App\Services\F1ApiService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 test('home page loads successfully', function () {
     $response = $this->get('/');

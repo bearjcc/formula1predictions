@@ -12,9 +12,7 @@ use Illuminate\Support\Arr;
 
 class BotPredictionsSeeder extends Seeder
 {
-    public function __construct(private F1ApiService $f1)
-    {
-    }
+    public function __construct(private F1ApiService $f1) {}
 
     /**
      * Create a simple bot that predicts the next race as the same order as the last race.
@@ -109,5 +107,3 @@ class BotPredictionsSeeder extends Seeder
         );
     }
 }
-
-

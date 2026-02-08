@@ -102,6 +102,7 @@ class Teams extends Model
     public function getSeasonPoints(int $season): float
     {
         $standing = $this->getCurrentStandings($season);
+
         return $standing ? $standing->points : 0.0;
     }
 
@@ -111,6 +112,7 @@ class Teams extends Model
     public function getSeasonPosition(int $season): ?int
     {
         $standing = $this->getCurrentStandings($season);
+
         return $standing ? $standing->position : null;
     }
 

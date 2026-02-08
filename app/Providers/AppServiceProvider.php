@@ -2,8 +2,21 @@
 
 namespace App\Providers;
 
-use App\Models\{Circuits, Countries, Drivers, Prediction, Races, Standings, Teams, User};
-use App\Policies\{CircuitsPolicy, CountriesPolicy, DriversPolicy, PredictionPolicy, RacesPolicy, StandingsPolicy, TeamsPolicy};
+use App\Models\Circuits;
+use App\Models\Countries;
+use App\Models\Drivers;
+use App\Models\Prediction;
+use App\Models\Races;
+use App\Models\Standings;
+use App\Models\Teams;
+use App\Models\User;
+use App\Policies\CircuitsPolicy;
+use App\Policies\CountriesPolicy;
+use App\Policies\DriversPolicy;
+use App\Policies\PredictionPolicy;
+use App\Policies\RacesPolicy;
+use App\Policies\StandingsPolicy;
+use App\Policies\TeamsPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 

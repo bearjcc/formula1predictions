@@ -69,9 +69,10 @@ class RacesList extends Component
     public function makePrediction(int $round): void
     {
         $race = Races::where('season', $this->year)->where('round', $round)->first();
-        
-        if (!$race) {
-            $this->error = "Race details not found in database. Please sync races first.";
+
+        if (! $race) {
+            $this->error = 'Race details not found in database. Please sync races first.';
+
             return;
         }
 

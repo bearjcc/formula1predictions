@@ -3,6 +3,25 @@
 ## Overview
 This deployment plan covers moving the F1 Prediction Game from development (Tailscale/Localhost) to production on a VPS (Hetzner/DigitalOcean).
 
+## Go-Live Audit (2026-02-08)
+
+**Verdict: Ready to publish after completing the pre-launch checklist below.**
+
+**Fixes applied during audit:**
+- Admin routes now use `admin` middleware so only admin/mod role can access `/admin/*` (was previously auth-only; some actions used Gates but GET dashboard/users/etc. did not).
+- Stripe webhook route moved outside the `auth` middleware group so Stripe can POST successfully; CSRF exclusion added for `stripe/webhook` in `bootstrap/app.php`.
+
+**Pre-launch (must-do):**
+1. Set production `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://your-domain.com`.
+2. Create at least one admin user with email listed in `User::hasRole('admin')` (see `app/Models/User.php`; default list is `admin@example.com`, `system@example.com`) or run `php artisan db:seed --class=TestUserSeeder` and change that user’s email to your admin email, then update the hardcoded list in `User.php` to match.
+3. Configure Stripe live keys and webhook endpoint URL in Stripe Dashboard; set `STRIPE_WEBHOOK_SECRET` in `.env`.
+4. Run `php artisan test` (or `.\scripts\test-batches.ps1` on Windows if full run times out); run `vendor/bin/pint --dirty`; run `composer audit`; run `npm run build`.
+5. Optional: Restrict or remove public `api/f1/*` routes in production if you do not want external callers (e.g. `/api/f1/test`, `/api/f1/cache/{year}`).
+
+**Already in good shape:** Config uses `config()` (no `env()` in app code); `.env` in `.gitignore`; policies and Gates for predictions/races/admin; `composer audit` clean; scoring and auth tests passing.
+
+---
+
 ## Phase 1: Pre-Deployment Checklist ✅
 
 ### Application Status

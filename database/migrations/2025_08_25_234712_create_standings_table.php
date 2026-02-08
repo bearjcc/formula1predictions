@@ -27,7 +27,7 @@ return new class extends Migration
             $table->integer('dnfs')->default(0);
             $table->json('additional_data')->nullable(); // Store any additional API data
             $table->timestamps();
-            
+
             $table->index(['season', 'type']);
             $table->index(['season', 'type', 'round']);
             $table->index(['entity_id']);

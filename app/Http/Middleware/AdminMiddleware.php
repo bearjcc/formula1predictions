@@ -15,7 +15,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->hasRole('admin')) {
+        if (! $request->user() || ! $request->user()->hasRole('admin')) {
             abort(403, 'Access denied. Admin privileges required.');
         }
 

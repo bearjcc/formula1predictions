@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Stripe\Stripe;
 use Stripe\Checkout\Session;
-use App\Models\User;
+use Stripe\Stripe;
 
 class StripeCheckoutController extends Controller
 {
@@ -16,7 +16,7 @@ class StripeCheckoutController extends Controller
     public function createCheckoutSession(Request $request)
     {
         $user = Auth::user();
-        
+
         // Prevent duplicate purchases
         if ($user->is_season_supporter) {
             return redirect()->route('settings.profile')
@@ -61,7 +61,7 @@ class StripeCheckoutController extends Controller
             return redirect()->away($session->url);
         } catch (\Exception $e) {
             return redirect()->route('settings.profile')
-                ->with('error', 'Payment failed: ' . $e->getMessage());
+                ->with('error', 'Payment failed: '.$e->getMessage());
         }
     }
 
@@ -71,8 +71,8 @@ class StripeCheckoutController extends Controller
     public function success(Request $request)
     {
         $sessionId = $request->query('session_id');
-        
-        if (!$sessionId) {
+
+        if (! $sessionId) {
             return redirect()->route('settings.profile')
                 ->with('error', 'Invalid session');
         }
@@ -81,7 +81,7 @@ class StripeCheckoutController extends Controller
 
         try {
             $session = Session::retrieve($sessionId);
-            
+
             // Verify the payment was successful
             if ($session->payment_status !== 'paid') {
                 return redirect()->route('settings.profile')
@@ -89,8 +89,8 @@ class StripeCheckoutController extends Controller
             }
 
             $user = User::find($session->metadata->user_id ?? Auth::id());
-            
-            if (!$user) {
+
+            if (! $user) {
                 return redirect()->route('settings.profile')
                     ->with('error', 'User not found');
             }
@@ -102,7 +102,7 @@ class StripeCheckoutController extends Controller
             ]);
 
             // Grant supporter status
-            if (!$user->is_season_supporter) {
+            if (! $user->is_season_supporter) {
                 $user->makeSeasonSupporter();
             }
 
@@ -110,7 +110,7 @@ class StripeCheckoutController extends Controller
                 ->with('success', '🎉 Thank you for supporting the game! You are now a Season Supporter.');
         } catch (\Exception $e) {
             return redirect()->route('settings.profile')
-                ->with('error', 'Error processing payment: ' . $e->getMessage());
+                ->with('error', 'Error processing payment: '.$e->getMessage());
         }
     }
 
@@ -129,8 +129,8 @@ class StripeCheckoutController extends Controller
     public function portal(Request $request)
     {
         $user = Auth::user();
-        
-        if (!$user->stripe_id) {
+
+        if (! $user->stripe_id) {
             return redirect()->route('settings.profile')
                 ->with('info', 'No payment history found');
         }
@@ -146,7 +146,7 @@ class StripeCheckoutController extends Controller
             return redirect()->away($session->url);
         } catch (\Exception $e) {
             return redirect()->route('settings.profile')
-                ->with('error', 'Error opening billing portal: ' . $e->getMessage());
+                ->with('error', 'Error opening billing portal: '.$e->getMessage());
         }
     }
 }

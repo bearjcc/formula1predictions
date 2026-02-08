@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Teams;
 use App\Http\Requests\StoreTeamsRequest;
 use App\Http\Requests\UpdateTeamsRequest;
+use App\Models\Teams;
 
 class TeamsController extends Controller
 {

@@ -35,6 +35,7 @@ class PreviousYearChampionshipBotSeeder extends Seeder
 
         if ($previousStandings->isEmpty()) {
             $this->command->warn("No standings found for {$previousYear}, skipping season {$season}");
+
             return;
         }
 
@@ -53,7 +54,7 @@ class PreviousYearChampionshipBotSeeder extends Seeder
         foreach ($previousStandings as $standing) {
             $driver = Drivers::where('driver_id', $standing->entity_id)->first();
 
-            if (!$driver) {
+            if (! $driver) {
                 // Create placeholder driver if not found
                 $driver = Drivers::create([
                     'driver_id' => (string) $standing->entity_id,
@@ -102,4 +103,3 @@ class PreviousYearChampionshipBotSeeder extends Seeder
         );
     }
 }
-

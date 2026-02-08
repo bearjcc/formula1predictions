@@ -81,6 +81,7 @@ class ScoreHistoricalPredictions extends Command
 
         // Get predictions that need scoring for this race
         $predictions = $race->predictions()
+            ->with('user')
             ->whereIn('status', ['submitted', 'locked'])
             ->whereNull('scored_at')
             ->get();

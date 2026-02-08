@@ -15,7 +15,7 @@ vendor/bin/pint --dirty     # run before finalizing
 npm run build               # after UI changes (or npm run dev / composer run dev)
 ```
 
-Use minimal test filters when validating changes. No verification scripts or tinker when tests cover the behavior.
+Use minimal test filters when validating changes. No verification scripts or tinker when tests cover the behavior. If full `php artisan test` times out (e.g. Windows), run `.\scripts\test-batches.ps1` or run in two batches: (1) `php artisan test tests/Unit tests/Feature/AccessibilityTest.php tests/Feature/AdminControllerTest.php tests/Feature/Auth tests/Feature/AutoLockPredictionsTest.php tests/Feature/BasicPhase1Test.php tests/Feature/BotPredictionsSeederTest.php tests/Feature/BotsSeedCommandTest.php tests/Feature/ChampionshipOrderBotSeederTest.php tests/Feature/ChartDataServiceTest.php tests/Feature/ConsoleCommandsTest.php tests/Feature/DashboardTest.php tests/Feature/DataVisualizationTest.php tests/Feature/DraggableDriverListTest.php tests/Feature/DraggableTeamListTest.php tests/Feature/F1ApiTest.php tests/Feature/FakerBasicSeederTest.php tests/Feature/FormValidationTest.php` (165 tests); (2) remaining tests in tests/Feature/.
 
 ---
 
@@ -90,13 +90,21 @@ F1-000 (MVP scope) through F1-018; F1-020 (race diffs 10–19 to spec); F1-021 (
 
 ## Current session handoff (2026-02-08)
 
-**Task:** F1-030 (bots) and F1-032 (preseason/midseason scoring) complete.
+**Task:** Fix failing tests; backlog hygiene.
 
-**Status:** F1-030 done. F1-032 done: ScoringService.calculateChampionshipPredictionScore, scoreChampionshipPredictions; `php artisan predictions:score-championship {season} --type=preseason|midseason`.
+**Status:** Test fixes and F1-033 verification complete. Unit 5 + Feature batch 1 (160) = 165 passed. Feature batch 2 (HistoricalDataImport through Settings) passes when run; full `php artisan test` may timeout on Windows—run in two batches (see Commands section).
 
 **Completed this session:**
-- bots:seed command; F1-032: preseason/midseason scoring (same position-diff table as race, +50 perfect bonus); Prediction getTeamOrder/getDriverChampionshipOrder; README scoring docs; ScoringServiceTest preseason tests; RefreshDatabase added to ScoringServiceTest.
+- User::getDetailedStats: implemented top_3_count and bottom_3_count (per-race leaderboard position tracking); removed stale PHPDoc TODOs.
+- N+1 fixes: ScoringService scoreRacePredictions/scoreSprintPredictions and ScoreHistoricalPredictions now eager load user on predictions.
+- test-batches.ps1: added missing TestUserSeederTest.php to batch 2.
+- AutoLockPredictionsTest, F1ApiTest, ModelRelationshipsTest, PredictionFormValidationTest, WebsiteNavigationTest: uses(RefreshDatabase::class); F1ApiTest Http::fake URL and factory fix.
+- ModelRelationshipsTest: $user->refresh() before relationship assert in "user can have many predictions" for robustness when run in batch.
+- TODO.md: removed done items from Later (F1-030, F1-032).
+- F1-033: Verified test suite; Unit 5 + Feature batch 1 (160) pass; documented two-batch run in AGENTS Commands.
+- Ran `vendor/bin/pint` (161 style fixes). README Testing section: added note about two-batch run when full suite times out.
+- Added `scripts/test-batches.ps1`: runs Unit + Feature in two batches; README and AGENTS reference it.
 
-**Focus next:** F1-031 (monetization, human-led).
+**Focus next:** F1-031 (monetization, human-led) or F1-019 when unblocked.
 
-**Key files:** `app/Services/ScoringService.php`, `app/Console/Commands/ScoreChampionshipPredictions.php`, `tests/Feature/ScoringServiceTest.php`.
+**Key files:** `tests/Feature/AutoLockPredictionsTest.php`, `tests/Feature/F1ApiTest.php`, `TODO.md`.

@@ -7,16 +7,20 @@ use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 test('user can have many predictions', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create();
-    $predictions = Prediction::factory()->count(3)->create([
+    Prediction::factory()->count(3)->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
         'type' => 'race',
     ]);
 
+    $user->refresh();
     expect($user->predictions)->toHaveCount(3);
     expect($user->predictions->first())->toBeInstanceOf(Prediction::class);
 });

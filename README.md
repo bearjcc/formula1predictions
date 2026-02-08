@@ -90,6 +90,8 @@ php artisan test tests/Feature/ScoringServiceTest.php
 php artisan test --filter=testName
 ```
 
+If `php artisan test` times out (e.g. on some Windows setups), run `.\scripts\test-batches.ps1` (PowerShell) or use the two-batch commands in [AGENTS.md](AGENTS.md) Commands.
+
 Coverage (optional): `composer run test:coverage` (requires pcov).
 
 ---

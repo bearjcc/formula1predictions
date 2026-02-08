@@ -46,8 +46,8 @@ Route::middleware(['auth'])->group(function () {
     // Prediction routes
     Route::resource('predictions', PredictionController::class);
 
-    // Admin routes
-    Route::prefix('admin')->name('admin.')->group(function () {
+    // Admin routes (admin middleware restricts to admin role)
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
@@ -97,10 +97,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/portal', [\App\Http\Controllers\StripeCheckoutController::class, 'portal'])->name('portal');
     });
 
-    // Stripe webhook (no auth middleware for Stripe callbacks)
-    Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
-        ->name('stripe.webhook');
 });
+
+// Stripe webhook (must be outside auth so Stripe can POST; verified by signature in controller)
+Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
+    ->name('stripe.webhook');
 
 // F1 API Test Routes
 Route::prefix('api/f1')->group(function () {

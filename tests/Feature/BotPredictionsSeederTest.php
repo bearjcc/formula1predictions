@@ -7,7 +7,6 @@ use App\Services\F1ApiService;
 use Database\Seeders\BotPredictionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-
 uses(RefreshDatabase::class);
 
 test('bot predictions seeder creates lastracebot user', function () {
@@ -15,7 +14,7 @@ test('bot predictions seeder creates lastracebot user', function () {
     $mockF1Service = Mockery::mock(F1ApiService::class);
     $mockF1Service->shouldReceive('getRacesForYear')
         ->andReturn([]);
-    
+
     app()->instance(F1ApiService::class, $mockF1Service);
 
     $seeder = new BotPredictionsSeeder($mockF1Service);
@@ -36,7 +35,7 @@ test('bot predictions seeder creates predictions for multiple seasons', function
                 ['driver' => ['id' => 'max_verstappen']],
                 ['driver' => ['id' => 'charles_leclerc']],
                 ['driver' => ['id' => 'carlos_sainz']],
-            ]
+            ],
         ],
         [
             'round' => 2,
@@ -44,8 +43,8 @@ test('bot predictions seeder creates predictions for multiple seasons', function
                 ['driver' => ['id' => 'lewis_hamilton']],
                 ['driver' => ['id' => 'george_russell']],
                 ['driver' => ['id' => 'lando_norris']],
-            ]
-        ]
+            ],
+        ],
     ];
 
     // Mock F1 API service
@@ -59,7 +58,7 @@ test('bot predictions seeder creates predictions for multiple seasons', function
     $mockF1Service->shouldReceive('getRacesForYear')
         ->with(2024)
         ->andReturn([]);
-    
+
     app()->instance(F1ApiService::class, $mockF1Service);
 
     $seeder = new BotPredictionsSeeder($mockF1Service);
@@ -70,7 +69,7 @@ test('bot predictions seeder creates predictions for multiple seasons', function
         ->where('race_round', 2)
         ->where('type', 'race')
         ->first();
-    
+
     expect($prediction)->not->toBeNull();
     expect($prediction->prediction_data['driver_order'])->toHaveCount(3);
 });
@@ -83,20 +82,20 @@ test('bot predictions seeder creates driver placeholders when needed', function 
             'results' => [
                 ['driver' => ['id' => 'unknown_driver_1']],
                 ['driver' => ['id' => 'unknown_driver_2']],
-            ]
+            ],
         ],
         [
             'round' => 2,
             'results' => [
                 ['driver' => ['id' => 'unknown_driver_3']],
-            ]
-        ]
+            ],
+        ],
     ];
 
     $mockF1Service = Mockery::mock(F1ApiService::class);
     $mockF1Service->shouldReceive('getRacesForYear')
         ->andReturn($mockRaceData);
-    
+
     app()->instance(F1ApiService::class, $mockF1Service);
 
     $seeder = new BotPredictionsSeeder($mockF1Service);
@@ -105,7 +104,7 @@ test('bot predictions seeder creates driver placeholders when needed', function 
     // Should create placeholder drivers for round 2 prediction (using round 1 results)
     $placeholderDrivers = Drivers::whereIn('driver_id', ['unknown_driver_1', 'unknown_driver_2'])->get();
     expect($placeholderDrivers)->toHaveCount(2);
-    
+
     foreach ($placeholderDrivers as $driver) {
         expect($driver->name)->toBe($driver->driver_id);
         expect($driver->nationality)->toBe('Unknown');
@@ -117,7 +116,7 @@ test('bot predictions seeder uses existing drivers when available', function () 
     $existingDriver = Drivers::factory()->create([
         'driver_id' => 'max_verstappen',
         'name' => 'Max',
-        'surname' => 'Verstappen'
+        'surname' => 'Verstappen',
     ]);
 
     // Mock race data
@@ -126,14 +125,14 @@ test('bot predictions seeder uses existing drivers when available', function () 
             'round' => 1,
             'results' => [
                 ['driver' => ['id' => 'max_verstappen']],
-            ]
-        ]
+            ],
+        ],
     ];
 
     $mockF1Service = Mockery::mock(F1ApiService::class);
     $mockF1Service->shouldReceive('getRacesForYear')
         ->andReturn($mockRaceData);
-    
+
     app()->instance(F1ApiService::class, $mockF1Service);
 
     $seeder = new BotPredictionsSeeder($mockF1Service);
@@ -150,20 +149,20 @@ test('bot predictions seeder handles empty race results gracefully', function ()
     $mockRaceData = [
         [
             'round' => 1,
-            'results' => []
+            'results' => [],
         ],
         [
             'round' => 2,
             'results' => [
                 ['driver' => ['id' => 'max_verstappen']],
-            ]
-        ]
+            ],
+        ],
     ];
 
     $mockF1Service = Mockery::mock(F1ApiService::class);
     $mockF1Service->shouldReceive('getRacesForYear')
         ->andReturn($mockRaceData);
-    
+
     app()->instance(F1ApiService::class, $mockF1Service);
 
     $seeder = new BotPredictionsSeeder($mockF1Service);
@@ -190,20 +189,20 @@ test('bot predictions seeder creates predictions with correct structure', functi
             'results' => [
                 ['driver' => ['id' => 'driver1']],
                 ['driver' => ['id' => 'driver2']],
-            ]
+            ],
         ],
         [
             'round' => 2,
             'results' => [
                 ['driver' => ['id' => 'driver3']],
-            ]
-        ]
+            ],
+        ],
     ];
 
     $mockF1Service = Mockery::mock(F1ApiService::class);
     $mockF1Service->shouldReceive('getRacesForYear')
         ->andReturn($mockRaceData);
-    
+
     app()->instance(F1ApiService::class, $mockF1Service);
 
     $seeder = new BotPredictionsSeeder($mockF1Service);
@@ -212,7 +211,7 @@ test('bot predictions seeder creates predictions with correct structure', functi
     $prediction = Prediction::where('season', 2022)
         ->where('race_round', 2)
         ->first();
-    
+
     expect($prediction)->not->toBeNull();
     expect($prediction->type)->toBe('race');
     expect($prediction->status)->toBe('submitted');
@@ -227,14 +226,14 @@ test('bot predictions seeder can be run multiple times safely', function () {
             'round' => 1,
             'results' => [
                 ['driver' => ['id' => 'driver1']],
-            ]
+            ],
         ],
         [
             'round' => 2,
             'results' => [
                 ['driver' => ['id' => 'driver2']],
-            ]
-        ]
+            ],
+        ],
     ];
 
     $mockF1Service = Mockery::mock(F1ApiService::class);
@@ -247,18 +246,18 @@ test('bot predictions seeder can be run multiple times safely', function () {
     $mockF1Service->shouldReceive('getRacesForYear')
         ->with(2024)
         ->andReturn([]);
-    
+
     app()->instance(F1ApiService::class, $mockF1Service);
 
     $seeder = new BotPredictionsSeeder($mockF1Service);
-    
+
     // Run twice
     $seeder->run();
     $seeder->run();
 
     // Should only have one bot user
     expect(User::where('email', 'lastracebot@example.com')->count())->toBe(1);
-    
+
     // Should only have one prediction (due to updateOrCreate) for 2022 season
     expect(Prediction::where('type', 'race')->where('season', 2022)->count())->toBe(1);
 });

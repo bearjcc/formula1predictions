@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamp('scored_at')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'season']);
             $table->index(['type', 'season']);
             $table->index(['race_round', 'season']);

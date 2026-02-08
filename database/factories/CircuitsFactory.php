@@ -18,7 +18,7 @@ class CircuitsFactory extends Factory
     {
         return [
             'circuit_id' => $this->faker->unique()->slug(),
-            'circuit_name' => $this->faker->city() . ' Circuit',
+            'circuit_name' => $this->faker->city().' Circuit',
             'url' => $this->faker->url(),
             'country' => $this->faker->country(),
             'locality' => $this->faker->city(),

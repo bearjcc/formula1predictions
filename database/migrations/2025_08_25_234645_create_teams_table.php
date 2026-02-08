@@ -33,7 +33,7 @@ return new class extends Migration
             $table->integer('fastest_laps')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index(['team_id']);
             $table->index(['team_name']);
             $table->index(['is_active']);

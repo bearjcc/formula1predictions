@@ -1,6 +1,13 @@
 <?php
 
-use App\Models\{Circuits, Countries, Drivers, Prediction, Races, Standings, Teams, User};
+use App\Models\Circuits;
+use App\Models\Countries;
+use App\Models\Drivers;
+use App\Models\Prediction;
+use App\Models\Races;
+use App\Models\Standings;
+use App\Models\Teams;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -12,7 +19,7 @@ test('admin users can perform all actions', function () {
     $prediction = Prediction::factory()->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
-        'type' => 'race'
+        'type' => 'race',
     ]);
     $driver = Drivers::factory()->create();
     $team = Teams::factory()->create();
@@ -88,7 +95,7 @@ test('regular users can view public data but cannot manage', function () {
     $prediction = Prediction::factory()->create([
         'user_id' => $otherUser->id,
         'race_id' => $race->id,
-        'type' => 'race'
+        'type' => 'race',
     ]);
     $driver = Drivers::factory()->create();
     $team = Teams::factory()->create();
@@ -161,13 +168,13 @@ test('users can manage their own predictions', function () {
         'user_id' => $user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'draft'
+        'status' => 'draft',
     ]);
     $submittedPrediction = Prediction::factory()->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted'
+        'status' => 'submitted',
     ]);
 
     // Users can view their own predictions
@@ -196,7 +203,7 @@ test('system users can score predictions', function () {
     $race = Races::factory()->create();
     $prediction = Prediction::factory()->create([
         'race_id' => $race->id,
-        'type' => 'race'
+        'type' => 'race',
     ]);
 
     expect($systemUser->can('score', $prediction))->toBeTrue();
@@ -207,7 +214,7 @@ test('moderators can manage predictions', function () {
     $race = Races::factory()->create();
     $prediction = Prediction::factory()->create([
         'race_id' => $race->id,
-        'type' => 'race'
+        'type' => 'race',
     ]);
 
     expect($moderator->can('manage-predictions'))->toBeTrue();

@@ -105,6 +105,7 @@ class Drivers extends Model
     public function getSeasonPoints(int $season): float
     {
         $standing = $this->getCurrentStandings($season);
+
         return $standing ? $standing->points : 0.0;
     }
 
@@ -114,6 +115,7 @@ class Drivers extends Model
     public function getSeasonPosition(int $season): ?int
     {
         $standing = $this->getCurrentStandings($season);
+
         return $standing ? $standing->position : null;
     }
 
@@ -149,7 +151,7 @@ class Drivers extends Model
      */
     public function getAgeAttribute(): ?int
     {
-        if (!$this->date_of_birth) {
+        if (! $this->date_of_birth) {
             return null;
         }
 
@@ -161,6 +163,6 @@ class Drivers extends Model
      */
     public function getInitialsAttribute(): string
     {
-        return str($this->name)->substr(0, 1) . str($this->surname)->substr(0, 1);
+        return str($this->name)->substr(0, 1).str($this->surname)->substr(0, 1);
     }
 }

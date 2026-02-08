@@ -38,7 +38,7 @@ class RaceResultsAvailable extends Notification implements ShouldQueue
             ->subject("Race Results Available: {$this->race->race_name}")
             ->greeting("Hello {$notifiable->name}!")
             ->line("The results for {$this->race->race_name} are now available.")
-            ->line("Your predictions for this race have been scored and your points have been updated.")
+            ->line('Your predictions for this race have been scored and your points have been updated.')
             ->action('View Results', url("/{$this->race->season}/race/{$this->race->id}"))
             ->action('View Your Predictions', url('/predictions'))
             ->line('Thank you for participating in F1 Predictions!');

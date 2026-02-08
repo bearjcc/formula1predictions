@@ -106,7 +106,7 @@ class Circuits extends Model
         if ($this->locality && $this->country) {
             return "{$this->locality}, {$this->country}";
         }
-        
+
         return $this->country ?? $this->locality ?? 'Unknown';
     }
 

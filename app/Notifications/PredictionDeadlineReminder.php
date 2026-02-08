@@ -35,7 +35,7 @@ class PredictionDeadlineReminder extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $deadlineText = match($this->deadlineType) {
+        $deadlineText = match ($this->deadlineType) {
             'qualifying' => 'qualifying session',
             'race' => 'race start',
             'preseason' => 'season start',

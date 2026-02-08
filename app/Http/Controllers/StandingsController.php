@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Standings;
 use App\Http\Requests\StoreStandingsRequest;
 use App\Http\Requests\UpdateStandingsRequest;
+use App\Models\Standings;
 
 class StandingsController extends Controller
 {

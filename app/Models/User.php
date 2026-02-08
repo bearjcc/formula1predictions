@@ -73,12 +73,6 @@ class User extends Authenticatable
 
     /**
      * Get the predictions for the user.
-     *
-     * TODO: Create Prediction model and migration
-     * TODO: Add prediction statistics methods (accuracy, total predictions, etc.)
-     * TODO: Add prediction history with pagination
-     * TODO: Implement prediction scoring methods
-     * TODO: Add prediction comparison methods
      */
     public function predictions(): HasMany
     {
@@ -280,8 +274,32 @@ class User extends Authenticatable
             return $p->score >= 25; // e.g. 22 drivers, 25 pts each = 550 max; 25 is minimum for one correct
         })->count();
 
-        // Top 3 leaderboard appearances (for season stats)
-        // This is a simplified version - in production, you'd query the actual leaderboard
+        // Top 3 / bottom 3 leaderboard position counts (per-race, for scored race predictions)
+        $resolvedSeason = $season ?? $predictions->first()->season;
+        $allRankings = Prediction::where('season', $resolvedSeason)
+            ->where('type', 'race')
+            ->where('status', 'scored')
+            ->whereNotNull('race_round')
+            ->orderBy('race_round')
+            ->orderByDesc('score')
+            ->orderBy('id')
+            ->get(['user_id', 'race_round', 'score']);
+        $top3Count = 0;
+        $bottom3Count = 0;
+        foreach ($allRankings->groupBy('race_round') as $roundPredictions) {
+            $position = $roundPredictions->values()->search(fn ($p) => $p->user_id === $this->id);
+            if ($position === false) {
+                continue;
+            }
+            $rank = $position + 1;
+            $total = $roundPredictions->count();
+            if ($rank <= 3) {
+                $top3Count++;
+            }
+            if ($total >= 3 && $rank >= $total - 2) {
+                $bottom3Count++;
+            }
+        }
 
         // Points progression over time
         $pointsOverTime = $predictions
@@ -337,8 +355,8 @@ class User extends Authenticatable
             'accuracy' => round($accuracy, 2),
             'best_score' => $bestScore,
             'perfect_predictions' => $perfectPredictions,
-            'top_3_count' => 0, // TODO: Implement actual leaderboard position tracking
-            'bottom_3_count' => 0, // TODO: Implement actual leaderboard position tracking
+            'top_3_count' => $top3Count,
+            'bottom_3_count' => $bottom3Count,
             'points_over_time' => $pointsOverTime,
             'accuracy_over_time' => $accuracyOverTime,
             'race_performance' => $racePerformance,

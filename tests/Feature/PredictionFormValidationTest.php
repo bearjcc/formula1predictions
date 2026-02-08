@@ -9,6 +9,9 @@
 use App\Models\Drivers;
 use App\Models\Teams;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 test('prediction form validation requires authentication', function () {
     $response = $this->post('/predictions', []);

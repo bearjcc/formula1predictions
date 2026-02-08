@@ -19,11 +19,11 @@ class RacesFactory extends Factory
         return [
             'season' => $this->faker->numberBetween(2020, 2025),
             'round' => $this->faker->numberBetween(1, 24),
-            'race_name' => $this->faker->city() . ' Grand Prix',
+            'race_name' => $this->faker->city().' Grand Prix',
             'date' => $this->faker->dateTimeBetween('now', '+1 year'),
             'time' => $this->faker->time(),
             'circuit_api_id' => null,
-            'circuit_name' => $this->faker->city() . ' Circuit',
+            'circuit_name' => $this->faker->city().' Circuit',
             'circuit_url' => $this->faker->url(),
             'country' => $this->faker->country(),
             'locality' => $this->faker->city(),
