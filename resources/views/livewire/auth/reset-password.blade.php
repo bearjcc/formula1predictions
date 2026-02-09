@@ -76,33 +76,51 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form method="POST" wire:submit="resetPassword" class="flex flex-col gap-6">
         <!-- Email Address -->
-        <x-mary-input
-            wire:model="email"
-            :label="__('Email')"
-            type="email"
-            required
-            autocomplete="email"
-        />
+        <div class="space-y-2">
+            <label for="email" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Email address') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="email"
+                wire:model="email"
+                type="email"
+                required
+                autocomplete="email"
+            />
+        </div>
 
         <!-- Password -->
-        <x-mary-input
-            wire:model="password"
-            :label="__('Password')"
-            type="password"
-            required
-            autocomplete="new-password"
-            placeholder="Password"
-        />
+        <div class="space-y-2">
+            <label for="password" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Password') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="password"
+                wire:model="password"
+                type="password"
+                required
+                autocomplete="new-password"
+                placeholder="Password"
+            />
+        </div>
 
         <!-- Confirm Password -->
-        <x-mary-input
-            wire:model="password_confirmation"
-            :label="__('Confirm password')"
-            type="password"
-            required
-            autocomplete="new-password"
-            placeholder="Confirm password"
-        />
+        <div class="space-y-2">
+            <label for="password_confirmation" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Confirm password') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="password_confirmation"
+                wire:model="password_confirmation"
+                type="password"
+                required
+                autocomplete="new-password"
+                placeholder="Confirm password"
+            />
+        </div>
 
         <x-mary-button type="submit" class="w-full justify-center">
             {{ __('Reset password') }}

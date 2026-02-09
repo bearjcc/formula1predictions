@@ -7,13 +7,14 @@ uses(RefreshDatabase::class);
 // Test that views load correctly and return expected content
 it('can load the home page view', function () {
     $response = $this->get('/');
-    $response->assertStatus(200);
+    $response->assertOk();
     $response->assertViewIs('home');
 });
 
 // Test year-specific views
 describe('Year-specific views load correctly', function () {
-    $validYears = ['2022', '2023'];
+    // Use explicit years here; keep in sync with config('f1.current_season')
+    $validYears = ['2022', '2023', '2026'];
     $yearRoutes = [
         '/{year}/races' => 'races',
         '/{year}/standings' => 'standings',
@@ -28,7 +29,7 @@ describe('Year-specific views load correctly', function () {
 
             it("loads {$view} view for {$testRoute}", function () use ($testRoute, $view, $year) {
                 $response = $this->get($testRoute);
-                $response->assertStatus(200);
+                $response->assertOk();
                 $response->assertViewIs($view);
                 $response->assertViewHas('year', $year);
             });
@@ -38,7 +39,7 @@ describe('Year-specific views load correctly', function () {
     // Test year-specific routes with additional parameters
     it('loads standings.predictions view for /2023/standings/predictions/bearjcc', function () {
         $response = $this->get('/2023/standings/predictions/bearjcc');
-        $response->assertStatus(200);
+        $response->assertOk();
         $response->assertViewIs('standings.predictions');
         $response->assertViewHas('year', '2023');
         $response->assertViewHas('username', 'bearjcc');
@@ -46,7 +47,7 @@ describe('Year-specific views load correctly', function () {
 
     it('loads race view for /2023/race/123', function () {
         $response = $this->get('/2023/race/123');
-        $response->assertStatus(200);
+        $response->assertOk();
         $response->assertViewIs('race');
         $response->assertViewHas('year', '2023');
         $response->assertViewHas('id', '123');
@@ -67,7 +68,7 @@ describe('Non-year-specific views load correctly', function () {
     foreach ($routes as $route => $view) {
         it("loads {$view} view for {$route}", function () use ($route, $view) {
             $response = $this->get($route);
-            $response->assertStatus(200);
+            $response->assertOk();
             $response->assertViewIs($view);
         });
     }
@@ -122,9 +123,11 @@ describe('Views have basic structure', function () {
 // Test view errors are handled gracefully
 describe('View errors are handled gracefully', function () {
     it('returns 500 for missing views', function () {
-        // This test will help identify if views are missing
-        $response = $this->get('/2023/races');
-        $response->assertStatus(200); // Should not be 500 if view exists
+        // This test is intended to catch missing views. For the current season (2026)
+        // races page, we expect a 200 when the view exists and Livewire/F1 API
+        // dependencies are satisfied by other tests.
+        $response = $this->get('/2026/races');
+        $response->assertOk();
     });
 });
 

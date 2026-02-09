@@ -1,6 +1,7 @@
 <?php
 
 test('home page loads successfully', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/');
 
     $response->assertOk();
@@ -8,6 +9,7 @@ test('home page loads successfully', function () {
 });
 
 test('home page hero start predicting link points to login or predict create', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/');
 
     $response->assertOk();
@@ -16,7 +18,10 @@ test('home page hero start predicting link points to login or predict create', f
 });
 
 test('home page card links resolve to valid routes', function () {
-    $year = config('f1.current_season');
+    // Keep this in sync with config('f1.current_season')
+    $year = 2026;
+
+    /** @var \Tests\TestCase $this */
 
     $response = $this->get('/');
 
@@ -30,7 +35,10 @@ test('home page card links resolve to valid routes', function () {
 });
 
 test('home page standings link returns 200', function () {
-    $year = config('f1.current_season');
+    // Keep this in sync with config('f1.current_season')
+    $year = 2026;
+
+    /** @var \Tests\TestCase $this */
 
     $response = $this->get(route('standings', ['year' => $year]));
 

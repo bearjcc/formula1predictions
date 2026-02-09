@@ -7,9 +7,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('admin seeder creates admin user from env variables', function () {
-    config(['admin.promotable_admin_email' => 'admin@example.com']);
-    putenv('ADMIN_NAME=Test Admin');
-    putenv('ADMIN_PASSWORD=secure-password');
+    config([
+        'admin.promotable_admin_email' => 'admin@example.com',
+        'admin.admin_name' => 'Test Admin',
+        'admin.admin_password' => 'secure-password',
+    ]);
 
     $this->seed(AdminSeeder::class);
 
@@ -18,16 +20,14 @@ test('admin seeder creates admin user from env variables', function () {
         ->and($admin->name)->toBe('Test Admin')
         ->and($admin->is_admin)->toBeTrue()
         ->and($admin->email_verified_at)->not->toBeNull();
-
-    // Clean up env
-    putenv('ADMIN_NAME');
-    putenv('ADMIN_PASSWORD');
 });
 
 test('admin seeder updates existing user', function () {
-    config(['admin.promotable_admin_email' => 'admin@example.com']);
-    putenv('ADMIN_NAME=Updated Name');
-    putenv('ADMIN_PASSWORD=new-password');
+    config([
+        'admin.promotable_admin_email' => 'admin@example.com',
+        'admin.admin_name' => 'Updated Name',
+        'admin.admin_password' => 'new-password',
+    ]);
 
     // Create user first
     User::factory()->create([
@@ -41,14 +41,14 @@ test('admin seeder updates existing user', function () {
     $admin = User::where('email', 'admin@example.com')->first();
     expect($admin->name)->toBe('Updated Name')
         ->and($admin->is_admin)->toBeTrue();
-
-    // Clean up env
-    putenv('ADMIN_NAME');
-    putenv('ADMIN_PASSWORD');
 });
 
 test('admin seeder uses defaults when env not set', function () {
-    config(['admin.promotable_admin_email' => 'admin@example.com']);
+    config([
+        'admin.promotable_admin_email' => 'admin@example.com',
+        'admin.admin_name' => null,
+        'admin.admin_password' => null,
+    ]);
 
     $this->seed(AdminSeeder::class);
 

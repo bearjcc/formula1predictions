@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Prediction;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -7,14 +8,13 @@ use function Pest\Laravel\mock;
 
 uses(RefreshDatabase::class);
 
-// Test that routes exist and return 200 (even if views don't exist yet)
-it('can access the home page', function () {
+it('can access the home page with 200', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/');
-    $response->assertStatus(200);
+    $response->assertOk();
 });
 
-// Test year-specific routes exist
-describe('Year-specific routes exist', function () {
+describe('year-specific routes return 200 for valid years', function () {
     $validYears = ['2022', '2023', '2024', '2025', '2026'];
     $yearRoutes = [
         '/{year}/races',
@@ -28,51 +28,52 @@ describe('Year-specific routes exist', function () {
         foreach ($yearRoutes as $route) {
             $testRoute = str_replace('{year}', $year, $route);
 
-            it("route {$testRoute} exists", function () use ($testRoute) {
+            it("route {$testRoute} responds with 200", function () use ($testRoute) {
+                /** @var \Tests\TestCase $this */
                 $response = $this->get($testRoute);
-                // Just check the route exists, don't care about view errors
-                expect($response->status())->toBeIn([200, 500]);
+                $response->assertOk();
             });
         }
     }
 
-    // Test year-specific routes with additional parameters
-    it('route /2023/standings/predictions/bearjcc exists', function () {
+    it('prediction standings user route responds with 200', function () {
+        /** @var \Tests\TestCase $this */
         $response = $this->get('/2023/standings/predictions/bearjcc');
-        expect($response->status())->toBeIn([200, 500]);
+        $response->assertOk();
     });
 
-    it('route /2023/race/123 exists', function () {
+    it('race detail route responds with 200', function () {
+        /** @var \Tests\TestCase $this */
         $response = $this->get('/2023/race/123');
-        expect($response->status())->toBeIn([200, 500]);
+        $response->assertOk();
     });
 });
 
-// Test invalid years return 404
-describe('Invalid years return 404', function () {
+describe('invalid years return 404', function () {
     $invalidYears = ['1920', '1900', '2030', 'abc'];
 
     foreach ($invalidYears as $year) {
         it("returns 404 for /{$year}/races", function () use ($year) {
+            /** @var \Tests\TestCase $this */
             $response = $this->get("/{$year}/races");
-            $response->assertStatus(404);
+            $response->assertNotFound();
         });
     }
 
-    // Test invalid years with additional parameters
     it('returns 404 for /1920/standings/predictions/bearjcc', function () {
+        /** @var \Tests\TestCase $this */
         $response = $this->get('/1920/standings/predictions/bearjcc');
-        $response->assertStatus(404);
+        $response->assertNotFound();
     });
 
     it('returns 404 for /1920/race/123', function () {
+        /** @var \Tests\TestCase $this */
         $response = $this->get('/1920/race/123');
-        $response->assertStatus(404);
+        $response->assertNotFound();
     });
 });
 
-// Test non-year-specific routes exist
-describe('Non-year-specific routes exist', function () {
+describe('non-year-specific routes return 200', function () {
     $routes = [
         '/countries',
         '/team/mercedes',
@@ -83,49 +84,29 @@ describe('Non-year-specific routes exist', function () {
     ];
 
     foreach ($routes as $route) {
-        it("route {$route} exists", function () use ($route) {
+        it("route {$route} responds with 200", function () use ($route) {
+            /** @var \Tests\TestCase $this */
             $response = $this->get($route);
-            expect($response->status())->toBeIn([200, 500]);
+            $response->assertOk();
         });
     }
 });
 
-// Test authentication required routes
-describe('Authentication required routes', function () {
-    it('redirects to login for dashboard when not authenticated', function () {
-        $response = $this->get('/dashboard');
-        $response->assertRedirect('/login');
-    });
+describe('authentication required routes', function () {
+    it('redirects to login when not authenticated', function () {
+        /** @var \Tests\TestCase $this */
+        $this->get('/dashboard')->assertRedirect('/login');
+        $this->get('/settings/profile')->assertRedirect('/login');
+        $this->get('/settings/password')->assertRedirect('/login');
+        $this->get('/settings/appearance')->assertRedirect('/login');
+        $this->get('/predictions/create')->assertRedirect('/login');
 
-    it('redirects to login for settings profile when not authenticated', function () {
-        $response = $this->get('/settings/profile');
-        $response->assertRedirect('/login');
-    });
-
-    it('redirects to login for settings password when not authenticated', function () {
-        $response = $this->get('/settings/password');
-        $response->assertRedirect('/login');
-    });
-
-    it('redirects to login for settings appearance when not authenticated', function () {
-        $response = $this->get('/settings/appearance');
-        $response->assertRedirect('/login');
-    });
-
-    it('redirects to login for predict create when not authenticated', function () {
-        $response = $this->get('/predictions/create');
-        $response->assertRedirect('/login');
-    });
-
-    it('redirects to login for predict edit when not authenticated', function () {
-        $prediction = \App\Models\Prediction::factory()->create();
-        $response = $this->get("/predictions/{$prediction->id}/edit");
-        $response->assertRedirect('/login');
+        $prediction = Prediction::factory()->create();
+        $this->get("/predictions/{$prediction->id}/edit")->assertRedirect('/login');
     });
 });
 
-// Test route naming (optional - ensures route names work correctly)
-describe('Route naming works correctly', function () {
+describe('route naming works correctly', function () {
     it('can generate correct URLs for year-specific routes', function () {
         expect(route('races', ['year' => '2023']))->toContain('/2023/races');
         expect(route('standings', ['year' => '2023']))->toContain('/2023/standings');
@@ -146,8 +127,11 @@ describe('Route naming works correctly', function () {
     });
 });
 
-test('races page loads successfully', function () {
-    $year = (int) config('f1.current_season');
+test('current season races page loads successfully with mocked data', function () {
+    /** @var \Tests\TestCase $this */
+    // Keep this in sync with config('f1.current_season')
+    $year = 2026;
+
     mock(F1ApiService::class, function ($mock) use ($year) {
         $mock->shouldReceive('getRacesForYear')
             ->with($year)
@@ -156,7 +140,7 @@ test('races page loads successfully', function () {
                     'round' => 1,
                     'raceName' => 'Test Race',
                     'circuit' => ['circuitName' => 'Test Circuit', 'country' => 'Test Country'],
-                    'date' => '2026-03-15',
+                    'date' => "{$year}-03-15",
                     'time' => '14:00:00Z',
                     'status' => 'upcoming',
                     'results' => [],
@@ -166,13 +150,16 @@ test('races page loads successfully', function () {
 
     $response = $this->get("/{$year}/races");
 
-    $response->assertSuccessful();
+    $response->assertOk();
     $response->assertSee("{$year} Races");
     $response->assertSeeLivewire('races.races-list');
 });
 
-test('races page shows loading state', function () {
-    $year = (int) config('f1.current_season');
+test('current season races page shows loading state with no races', function () {
+    /** @var \Tests\TestCase $this */
+    // Keep this in sync with config('f1.current_season')
+    $year = 2026;
+
     mock(F1ApiService::class, function ($mock) use ($year) {
         $mock->shouldReceive('getRacesForYear')
             ->with($year)
@@ -181,7 +168,7 @@ test('races page shows loading state', function () {
 
     $response = $this->get("/{$year}/races");
 
-    $response->assertSuccessful();
+    $response->assertOk();
     $response->assertSee("{$year} Races");
     $response->assertSeeLivewire('races.races-list');
 });

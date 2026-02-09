@@ -43,45 +43,69 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form method="POST" wire:submit="register" class="flex flex-col gap-6">
         <!-- Name -->
-        <x-mary-input
-            wire:model="name"
-            :label="__('Name')"
-            type="text"
-            required
-            autofocus
-            autocomplete="name"
-            placeholder="Full name"
-        />
+        <div class="space-y-2">
+            <label for="name" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Name') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="name"
+                wire:model="name"
+                type="text"
+                required
+                autofocus
+                autocomplete="name"
+                placeholder="Full name"
+            />
+        </div>
 
         <!-- Email Address -->
-        <x-mary-input
-            wire:model="email"
-            :label="__('Email address')"
-            type="email"
-            required
-            autocomplete="email"
-            placeholder="email@example.com"
-        />
+        <div class="space-y-2">
+            <label for="email" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Email address') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="email"
+                wire:model="email"
+                type="email"
+                required
+                autocomplete="email"
+                placeholder="email@example.com"
+            />
+        </div>
 
         <!-- Password -->
-        <x-mary-input
-            wire:model="password"
-            :label="__('Password')"
-            type="password"
-            required
-            autocomplete="new-password"
-            placeholder="Password"
-        />
+        <div class="space-y-2">
+            <label for="password" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Password') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="password"
+                wire:model="password"
+                type="password"
+                required
+                autocomplete="new-password"
+                placeholder="Password"
+            />
+        </div>
 
         <!-- Confirm Password -->
-        <x-mary-input
-            wire:model="password_confirmation"
-            :label="__('Confirm password')"
-            type="password"
-            required
-            autocomplete="new-password"
-            placeholder="Confirm password"
-        />
+        <div class="space-y-2">
+            <label for="password_confirmation" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Confirm password') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="password_confirmation"
+                wire:model="password_confirmation"
+                type="password"
+                required
+                autocomplete="new-password"
+                placeholder="Confirm password"
+            />
+        </div>
 
         <x-mary-button type="submit" class="w-full justify-center">
             {{ __('Create account') }}

@@ -8,14 +8,6 @@
                     Current constructor championship standings for the {{ $year }} Formula 1 season
                 </p>
             </div>
-            <div class="flex items-center space-x-3">
-                <x-mary-button variant="outline" size="sm" icon="o-chart-bar">
-                    Export
-                </x-mary-button>
-                <x-mary-button variant="primary" size="sm" icon="o-plus">
-                    Compare Teams
-                </x-mary-button>
-            </div>
         </div>
     </div>
 
@@ -267,23 +259,8 @@
         </div>
     </x-mary-card>
 
-    <!-- Pagination -->
-    <div class="mt-8 flex items-center justify-between">
-        <p class="text-zinc-600 dark:text-zinc-400">
-            Showing 1-3 of {{ config('f1.max_teams', 11) }} teams
-        </p>
-
-        <div class="flex items-center space-x-2">
-            <x-mary-button variant="outline" size="sm" icon="o-chevron-left">
-                Previous
-            </x-mary-button>
-            <x-mary-button variant="outline" size="sm">1</x-mary-button>
-            <x-mary-button variant="primary" size="sm">2</x-mary-button>
-            <x-mary-button variant="outline" size="sm">3</x-mary-button>
-            <x-mary-button variant="outline" size="sm">4</x-mary-button>
-            <x-mary-button variant="outline" size="sm" icon="o-chevron-right">
-                Next
-            </x-mary-button>
-        </div>
-    </div>
+    <!-- Placeholder note -->
+    <p class="mt-6 text-sm text-zinc-600 dark:text-zinc-400">
+        {{ __('This is a static example table for now; live team standings will be wired to real data in a later iteration.') }}
+    </p>
 </x-layouts.layout>

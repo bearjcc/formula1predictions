@@ -37,7 +37,7 @@ class LivewirePredictionFormTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(PredictionForm::class)
-            ->assertSet('season', 2024)
+            ->assertSet('season', (int) config('f1.current_season'))
             ->assertSet('type', 'race');
     }
 

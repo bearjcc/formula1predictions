@@ -2,6 +2,7 @@
 
 use App\Exceptions\F1ApiException;
 use App\Models\Races;
+use App\Models\User;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -55,6 +56,9 @@ beforeEach(function () {
 });
 
 test('f1 api test endpoint returns success', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
     $response = $this->get('/api/f1/test');
 
     $response->assertSuccessful();
@@ -62,6 +66,9 @@ test('f1 api test endpoint returns success', function () {
 });
 
 test('f1 api can fetch race data for 2024', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
     $response = $this->get('/api/f1/races/2024');
 
     $response->assertSuccessful();
@@ -76,6 +83,9 @@ test('f1 api can fetch race data for 2024', function () {
 });
 
 test('f1 api can fetch specific race result', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
     $response = $this->get('/api/f1/races/2024/1');
 
     $response->assertSuccessful();

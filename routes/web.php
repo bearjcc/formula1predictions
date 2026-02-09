@@ -11,8 +11,8 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-// Dev-only demo routes
-if (app()->environment('local')) {
+// Dev and testing demo routes
+if (app()->environment(['local', 'testing'])) {
     Route::get('/components', function () {
         return view('components');
     })->name('components');
@@ -113,8 +113,8 @@ Route::prefix('api/f1')->middleware(['auth', 'throttle:api'])->group(function ()
     Route::delete('/cache/{year}', [RacesController::class, 'clearCache'])->name('f1.clear-cache')->middleware('admin');
 });
 
-// F1 API test route (local environment only)
-if (app()->environment('local')) {
+// F1 API test route (local and testing environments only)
+if (app()->environment(['local', 'testing'])) {
     Route::get('/api/f1/test', [RacesController::class, 'testApi'])->name('f1.test');
 }
 

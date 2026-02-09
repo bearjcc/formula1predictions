@@ -15,7 +15,24 @@
 
 Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-20.**
 
-_(None; pick from Next or Later.)_
+- [ ] **F1-081: Tighten route and auth feature tests**
+  - Type: bug | Priority: P1 | Risk: medium | Owner: agent
+  - Affected: tests/Feature/RoutesTest.php, tests/Feature/ViewsTest.php, tests/Feature/WebsiteNavigationTest.php
+  - Current route tests intentionally allow 500 responses (status in [200, 500]) and don’t consistently exercise authenticated-only pages. Add smoke tests that:
+    - Assert 200 for all key public routes (home, current-season races/standings, country/driver/team/circuit detail) using F1ApiService mocks where needed.
+    - Log in as a normal user and as an admin (is_admin=true) and hit dashboard, analytics, settings pages, prediction CRUD, and admin routes, asserting 200 and correct redirects when unauthenticated.
+    - Avoid hitting the real F1 API in tests.
+
+- [ ] **F1-082: Fix 2026 standings and prediction standings pages**
+  - Type: bug | Priority: P1 | Risk: high | Owner: mixed
+  - Affected: routes/web.php, resources/views/standings.blade.php, resources/views/standings/*.blade.php, leaderboard/GlobalLeaderboard
+  - `/2026/standings` shows 2026 in the heading but surfaces legacy 2023/2025-style demo content; `/2026/standings/predictions` renders hard-coded fake users and pagination (“F1Expert”, “RacingFan2023”, “PredictorPro”) and only three example rows.
+  - Replace mock/demo data with real standings backed by existing leaderboard logic (either LeaderboardController views or the GlobalLeaderboard Livewire component) so that:
+    - The selected URL year controls which season is queried.
+    - Only real users from the database are displayed.
+    - Filters and pagination operate on actual data instead of being static UI.
+
+---
 
 ---
 
@@ -65,6 +82,46 @@ Longer-horizon ideas and exploratory improvements.
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
   - Affected: DriversController.php, TeamsController.php, etc.
   - 6 empty scaffold controllers (dead code). Remove or implement.
+
+- [ ] **F1-083: Fix races page theming and 500s for current season**
+  - Type: bug | Priority: P1 | Risk: medium | Owner: agent
+  - Affected: resources/views/races.blade.php, app/Livewire/Races/RacesList.php, layout/theme config
+  - `/2026/races` currently renders with black-on-black text and sometimes throws a 500 for the main content. Audit the RacesList Livewire component and races view to:
+    - Prevent unhandled exceptions (wrap F1ApiService failures in user-friendly error states).
+    - Ensure text/background colors respect the global light/dark theme tokens (no black text on dark backgrounds).
+    - Add feature tests that hit `/{current_season}/races` and assert 200 plus the presence of a user-facing error state instead of a 500 when the API/data layer fails.
+
+- [ ] **F1-084: Replace prediction standings mock table with real leaderboard**
+  - Type: feature | Priority: P2 | Risk: medium | Owner: mixed
+  - Affected: resources/views/standings/predictions.blade.php, app/Livewire/GlobalLeaderboard.php, related views
+  - The prediction standings page currently shows three hard-coded demo users and non-functional filter dropdowns. Integrate it with the existing GlobalLeaderboard data so the page:
+    - Shows the full leaderboard for the selected year/season.
+    - Uses functional filters (season, type, sort) wired to Livewire, not static `<select>`s.
+    - Has tests to verify that created users/predictions appear in the table and filters affect the result set.
+
+- [ ] **F1-085: Lock components demo route to dev and prevent prod exposure**
+  - Type: cleanup | Priority: P2 | Risk: low | Owner: agent
+  - Affected: routes/web.php, resources/views/components.blade.php, components/layouts/layout.blade.php
+  - `/components` is a Mary UI demo page that can 500 in development and should never appear in production navigation. Ensure:
+    - The route is registered only in `local`/`testing` environments.
+    - The sidebar link is wrapped in `Route::has('components')` (already present) and is hidden in production.
+    - The components view is resilient enough not to 500 on missing assets; add a minimal smoke test in `testing` env to catch regressions.
+
+- [ ] **F1-086: Align auth pages with main site layout and theme**
+  - Type: UI | Priority: P2 | Risk: medium | Owner: mixed
+  - Affected: resources/views/livewire/auth/*.blade.php, components/layouts/auth*.blade.php, components/layouts/layout.blade.php
+  - Login/register/forgot/reset pages currently use a different layout and feel disconnected from the main app. Update them to:
+    - Share visual language (colors, typography, spacing) with the primary layout.
+    - Respect the same dark-mode behavior (no half-light/half-dark flash).
+    - Have feature tests that visit `/login` and `/register` and assert the presence of shared branding/layout elements.
+
+- [ ] **F1-087: Stabilize dark mode and appearance handling**
+  - Type: UI | Priority: P2 | Risk: medium | Owner: agent
+  - Affected: components/layouts/layout.blade.php, components/layouts/auth*.blade.php, resources/views/partials/head.blade.php, appearance settings
+  - Many pages render with mixed light/dark styles or flash between modes before settling. Standardize the theme initialization so:
+    - The `<html>`/`<body>` classes and `data-appearance` are set once, early, based on system or user preference.
+    - All layouts (main, auth, settings) use the same color tokens and background/text utilities.
+    - Add a small feature test (or Dusk/browser test later) to ensure dark-mode pages render without obvious conflicting background/text colors.
 
 - [ ] **F1-062: Remove hardcoded mockup data from edit prediction view**
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent

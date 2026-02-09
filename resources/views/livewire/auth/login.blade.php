@@ -81,26 +81,38 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form method="POST" wire:submit="login" class="flex flex-col gap-6">
         <!-- Email Address -->
-        <x-mary-input
-            wire:model="email"
-            :label="__('Email address')"
-            type="email"
-            required
-            autofocus
-            autocomplete="email"
-            placeholder="email@example.com"
-        />
+        <div class="space-y-2">
+            <label for="email" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Email address') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="email"
+                wire:model="email"
+                type="email"
+                required
+                autofocus
+                autocomplete="email"
+                placeholder="email@example.com"
+            />
+        </div>
 
         <!-- Password -->
-        <div class="relative">
-            <x-mary-input
-                wire:model="password"
-                :label="__('Password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                placeholder="••••••••"
-            />
+        <div class="space-y-2">
+            <label for="password" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Password') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+                <x-mary-input
+                    id="password"
+                    wire:model="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    placeholder="••••••••"
+                />
+            </div>
         </div>
 
         <!-- Remember Me -->

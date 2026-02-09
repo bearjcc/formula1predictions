@@ -7,47 +7,71 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('home page loads successfully', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/');
-    $response->assertStatus(200);
+    $response->assertOk();
 });
 
 test('analytics page requires authentication', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/analytics');
-    $response->assertRedirect(); // Should redirect to login since auth is required
+    $response->assertRedirect('/login');
 });
 
 test('analytics page loads for authenticated user', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get('/analytics');
-    $response->assertStatus(200);
+    $response->assertOk();
 });
 
-test('admin pages require authentication', function () {
+test('admin dashboard requires authentication and admin role', function () {
+    /** @var \Tests\TestCase $this */
+    // Guest redirected to login
+    $this->get('/admin/dashboard')->assertRedirect('/login');
+
+    // Regular user should be forbidden or redirected away (admin middleware)
+    /** @var User $user */
+    $user = User::factory()->create(['is_admin' => false]);
+    $this->actingAs($user);
     $response = $this->get('/admin/dashboard');
-    $response->assertRedirect(); // Should redirect to login
+    $response->assertForbidden();
 });
 
-test('admin dashboard loads for authenticated user', function () {
+test('admin dashboard loads for admin user', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $admin */
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response->assertOk();
+});
+
+test('predictions landing is reachable for authenticated users', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->get('/admin/dashboard');
-    $response->assertStatus(200);
+    $response = $this->actingAs($user)->get('/predictions');
+    $response->assertOk();
 });
 
-test('predictions page components work', function () {
-    $response = $this->get('/');
-    $response->assertStatus(200);
-
-    // Check if Livewire components are present
-    $response->assertSee('livewire');
-});
-
-test('api endpoints are accessible', function () {
+test('api race endpoints are accessible with mocked F1 API', function () {
+    /** @var \Tests\TestCase $this */
     $this->mock(F1ApiService::class, function ($mock) {
         $mock->shouldReceive('getRacesForYear')->andReturn([]);
     });
 
-    $response = $this->get('/api/f1/races/2024');
-    $response->assertSuccessful();
+    /** @var User $user */
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $response2024 = $this->get('/api/f1/races/2024');
+    $response2024->assertOk();
+
+    // Keep this in sync with config('f1.current_season')
+    $responseCurrent = $this->get('/api/f1/races/2026');
+    $responseCurrent->assertOk();
 });

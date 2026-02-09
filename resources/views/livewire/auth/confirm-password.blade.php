@@ -43,14 +43,20 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form method="POST" wire:submit="confirmPassword" class="flex flex-col gap-6">
         <!-- Password -->
-        <x-mary-input
-            wire:model="password"
-            :label="__('Password')"
-            type="password"
-            required
-            autocomplete="new-password"
-            placeholder="Password"
-        />
+        <div class="space-y-2">
+            <label for="password" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {{ __('Password') }}
+                <span class="text-red-500">*</span>
+            </label>
+            <x-mary-input
+                id="password"
+                wire:model="password"
+                type="password"
+                required
+                autocomplete="new-password"
+                placeholder="Password"
+            />
+        </div>
 
         <x-mary-button type="submit" class="w-full justify-center">{{ __('Confirm') }}</x-mary-button>
     </form>

@@ -23,8 +23,8 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         $email = config('admin.promotable_admin_email');
-        $password = env('ADMIN_PASSWORD', 'password');
-        $name = env('ADMIN_NAME', 'Admin');
+        $password = config('admin.admin_password') ?? 'password';
+        $name = config('admin.admin_name') ?? 'Admin';
 
         if (empty($email)) {
             if ($this->command) {
