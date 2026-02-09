@@ -1,0 +1,8 @@
+# Railway deployment configuration
+# Railpack auto-detects Laravel; this adds MySQL extension + migration on deploy
+
+[phases.extensions]
+cmds = ["install-php-extensions pdo_mysql bcmath"]
+
+[start]
+cmd = "php artisan migrate --force && /start-container.sh"
