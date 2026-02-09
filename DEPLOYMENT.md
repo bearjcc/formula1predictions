@@ -11,9 +11,11 @@ This deployment plan covers moving the F1 Prediction Game from development (Tail
 - Admin routes now use `admin` middleware so only admin/mod role can access `/admin/*` (was previously auth-only; some actions used Gates but GET dashboard/users/etc. did not).
 - Stripe webhook route moved outside the `auth` middleware group so Stripe can POST successfully; CSRF exclusion added for `stripe/webhook` in `bootstrap/app.php`.
 
+**Railway Variables (dashboard Variables tab):** Set `APP_KEY` (`php artisan key:generate --show`), `APP_URL`, `APP_ENV=production`, `APP_DEBUG=false`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`, and DB_* (reference MySQL service vars; use `${{MySQL.MYSQLDATABASE}}` not `MYSQL_DATABASE`). Use `.env.production` as template.
+
 **Pre-launch (must-do):**
 1. Set production `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://your-domain.com`.
-2. Set admin credentials in environment variables: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`. Then run `php artisan db:seed --class=AdminSeeder` to create the admin user. (For Railway, add these as secrets and run the seeder in your deploy hook.)
+2. Set admin credentials in environment variables: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`. After first deploy, run once: `railway run php artisan db:seed --class=AdminSeeder`. Do not add the seeder to the start command—it would overwrite the admin password on every deploy.
 3. Configure Stripe live keys and webhook endpoint URL in Stripe Dashboard; set `STRIPE_WEBHOOK_SECRET` in `.env`.
 4. Run `php artisan test` (or `.\scripts\test-batches.ps1` on Windows if full run times out); run `vendor/bin/pint --dirty`; run `composer audit`; run `npm run build`.
 5. Optional: Restrict or remove public `api/f1/*` routes in production if you do not want external callers (e.g. `/api/f1/test`, `/api/f1/cache/{year}`).
