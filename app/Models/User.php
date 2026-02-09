@@ -24,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_admin',
         'is_season_supporter',
         'supporter_since',
         'badges',
@@ -39,6 +40,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'email',
     ];
 
     /**
@@ -51,6 +53,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
             'is_season_supporter' => 'boolean',
             'supporter_since' => 'datetime',
             'badges' => 'array',
@@ -105,15 +108,12 @@ class User extends Authenticatable
      */
     public function hasRole(string $role): bool
     {
-        // For now, implement a simple role system
-        // In a production app, you might want to use Spatie Laravel Permission package
-        $roles = [
-            'admin' => ['admin@example.com', 'system@example.com'],
-            'system' => ['system@example.com', 'bot@example.com'],
-            'moderator' => ['moderator@example.com'],
-        ];
-
-        return in_array($this->email, $roles[$role] ?? []);
+        return match ($role) {
+            'admin' => (bool) $this->is_admin,
+            'system' => $this->isBot(),
+            'moderator' => (bool) $this->is_admin,
+            default => false,
+        };
     }
 
     /**
@@ -376,7 +376,7 @@ class User extends Authenticatable
             $query->where('season', $season);
         }
 
-        $predictions = $query->get();
+        $predictions = $query->with('race')->get();
 
         $heatmap = [];
 
