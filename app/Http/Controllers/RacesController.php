@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateRacesRequest;
 use App\Models\Races;
 use App\Services\F1ApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RacesController extends Controller
 {
@@ -23,8 +24,10 @@ class RacesController extends Controller
             $races = $this->f1ApiService->getRacesForYear($year);
 
             return response()->json($races);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        } catch (\Throwable $e) {
+            Log::error('RacesController@index failed', ['year' => $year, 'exception' => $e]);
+
+            return response()->json(['error' => 'Unable to load race calendar. Please try again later.'], 500);
         }
     }
 
@@ -53,8 +56,10 @@ class RacesController extends Controller
             $race = $this->f1ApiService->getRaceResults($year, $round);
 
             return response()->json($race);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        } catch (\Throwable $e) {
+            Log::error('RacesController@show failed', ['year' => $year, 'round' => $round, 'exception' => $e]);
+
+            return response()->json(['error' => 'Unable to load race results. Please try again later.'], 500);
         }
     }
 
@@ -91,8 +96,10 @@ class RacesController extends Controller
             $isConnected = $this->f1ApiService->testConnection();
 
             return response()->json(['connected' => $isConnected]);
-        } catch (\Exception $e) {
-            return response()->json(['connected' => false, 'error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            Log::error('RacesController@testApi failed', ['exception' => $e]);
+
+            return response()->json(['connected' => false, 'error' => 'Unable to verify connection. Please try again.']);
         }
     }
 
@@ -105,8 +112,10 @@ class RacesController extends Controller
             $this->f1ApiService->clearCache($year);
 
             return response()->json(['message' => "Cache cleared for year {$year}"]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        } catch (\Throwable $e) {
+            Log::error('RacesController@clearCache failed', ['year' => $year, 'exception' => $e]);
+
+            return response()->json(['error' => 'Unable to clear cache. Please try again later.'], 500);
         }
     }
 }

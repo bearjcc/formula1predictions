@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
 
@@ -26,7 +27,6 @@ class StripeCheckoutController extends Controller
         // Stripe API key from config
         Stripe::setApiKey(config('cashier.secret'));
 
-        $priceId = config('services.stripe.season_supporter_price_id');
         $successUrl = route('checkout.success', ['session_id' => '{CHECKOUT_SESSION_ID}']);
         $cancelUrl = route('checkout.cancel');
 
@@ -42,11 +42,11 @@ class StripeCheckoutController extends Controller
                             'description' => 'Support the game and get exclusive benefits',
                             'images' => [asset('images/supporter-badge.png') ?: null],
                         ],
-                        'unit_amount' => config('services.stripe.season_supporter_amount', 1000), // $10.00 in cents
+                        'unit_amount' => config('services.stripe.season_supporter_amount', 1000),
                     ],
                     'quantity' => 1,
                 ]],
-                'mode' => 'payment', // One-time payment
+                'mode' => 'payment',
                 'success_url' => $successUrl,
                 'cancel_url' => $cancelUrl,
                 'metadata' => [
@@ -58,10 +58,20 @@ class StripeCheckoutController extends Controller
                 'customer_creation' => 'always',
             ]);
 
+            Log::info('Stripe checkout session created', [
+                'user_id' => $user->id,
+                'session_id' => $session->id,
+            ]);
+
             return redirect()->away($session->url);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('Stripe checkout session creation failed', [
+                'user_id' => $user->id,
+                'exception' => $e,
+            ]);
+
             return redirect()->route('settings.profile')
-                ->with('error', 'Payment failed: '.$e->getMessage());
+                ->with('error', 'Unable to start payment process. Please try again.');
         }
     }
 
@@ -85,15 +95,23 @@ class StripeCheckoutController extends Controller
             // Verify the payment was successful
             if ($session->payment_status !== 'paid') {
                 return redirect()->route('settings.profile')
-                    ->with('error', 'Payment was not completed');
+                    ->with('error', 'Payment was not completed.');
             }
 
-            $user = User::find($session->metadata->user_id ?? Auth::id());
+            // Verify the authenticated user matches the payer
+            $metadataUserId = $session->metadata->user_id ?? null;
+            if ($metadataUserId && (int) $metadataUserId !== Auth::id()) {
+                Log::warning('Checkout success user mismatch', [
+                    'auth_user_id' => Auth::id(),
+                    'metadata_user_id' => $metadataUserId,
+                    'session_id' => $sessionId,
+                ]);
 
-            if (! $user) {
                 return redirect()->route('settings.profile')
-                    ->with('error', 'User not found');
+                    ->with('error', 'Payment session does not match your account.');
             }
+
+            $user = Auth::user();
 
             // Create or update Stripe customer
             $user->createOrGetStripeCustomer([
@@ -101,16 +119,25 @@ class StripeCheckoutController extends Controller
                 'name' => $user->name,
             ]);
 
-            // Grant supporter status
-            if (! $user->is_season_supporter) {
-                $user->makeSeasonSupporter();
-            }
+            // Grant supporter status (idempotent - webhook may have already done this)
+            $user->makeSeasonSupporter();
+
+            Log::info('Season supporter granted via checkout success', [
+                'user_id' => $user->id,
+                'session_id' => $sessionId,
+            ]);
 
             return redirect()->route('settings.profile')
-                ->with('success', '🎉 Thank you for supporting the game! You are now a Season Supporter.');
-        } catch (\Exception $e) {
+                ->with('success', 'Thank you for supporting the game! You are now a Season Supporter.');
+        } catch (\Throwable $e) {
+            Log::error('Checkout success processing failed', [
+                'user_id' => Auth::id(),
+                'session_id' => $sessionId,
+                'exception' => $e,
+            ]);
+
             return redirect()->route('settings.profile')
-                ->with('error', 'Error processing payment: '.$e->getMessage());
+                ->with('error', 'There was an issue confirming your payment. If you were charged, your supporter status will be activated shortly.');
         }
     }
 
@@ -144,9 +171,14 @@ class StripeCheckoutController extends Controller
             ]);
 
             return redirect()->away($session->url);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('Billing portal session creation failed', [
+                'user_id' => $user->id,
+                'exception' => $e,
+            ]);
+
             return redirect()->route('settings.profile')
-                ->with('error', 'Error opening billing portal: '.$e->getMessage());
+                ->with('error', 'Unable to open billing portal. Please try again.');
         }
     }
 }

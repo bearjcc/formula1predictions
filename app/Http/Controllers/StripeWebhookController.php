@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierWebhookController;
 
@@ -14,33 +15,58 @@ class StripeWebhookController extends CashierWebhookController
     {
         $paymentIntent = $payload['data']['object'];
 
-        // This is already handled by the checkout success flow,
-        // but we can use this for additional processing
         Log::info('Payment succeeded', [
             'payment_intent_id' => $paymentIntent['id'],
             'amount' => $paymentIntent['amount'],
             'metadata' => $paymentIntent['metadata'] ?? [],
         ]);
 
-        // Call parent to handle Cashier's default behavior
         parent::handlePaymentIntentSucceeded($payload);
     }
 
     /**
-     * Handle checkout session completed.
+     * Handle checkout session completed - this is the primary fulfillment path.
+     * Grants supporter status when Stripe confirms payment was successful.
      */
     public function handleCheckoutSessionCompleted($payload): void
     {
         $session = $payload['data']['object'];
+        $metadata = $session['metadata'] ?? [];
 
         Log::info('Checkout session completed', [
             'session_id' => $session['id'],
-            'payment_status' => $session['payment_status'],
-            'metadata' => $session['metadata'] ?? [],
+            'payment_status' => $session['payment_status'] ?? null,
+            'metadata' => $metadata,
         ]);
 
-        // The actual supporter granting is handled in the success flow,
-        // but this webhook confirms the payment was processed
+        // Grant supporter status if this was a season supporter purchase
+        if (($metadata['type'] ?? null) === 'season_supporter' && ($session['payment_status'] ?? null) === 'paid') {
+            $userId = $metadata['user_id'] ?? null;
+
+            if ($userId) {
+                $user = User::find($userId);
+
+                if ($user) {
+                    $user->makeSeasonSupporter();
+
+                    Log::info('Season supporter status granted via webhook', [
+                        'user_id' => $user->id,
+                        'session_id' => $session['id'],
+                    ]);
+                } else {
+                    Log::error('Webhook fulfillment failed: user not found', [
+                        'user_id' => $userId,
+                        'session_id' => $session['id'],
+                    ]);
+                }
+            } else {
+                Log::error('Webhook fulfillment failed: no user_id in metadata', [
+                    'session_id' => $session['id'],
+                    'metadata' => $metadata,
+                ]);
+            }
+        }
+
         parent::handleCheckoutSessionCompleted($payload);
     }
 
@@ -60,7 +86,7 @@ class StripeWebhookController extends CashierWebhookController
     }
 
     /**
-     * Handle customer subscription created (not used for one-time payments, but good to have).
+     * Handle customer subscription created.
      */
     public function handleCustomerSubscriptionCreated($payload): void
     {

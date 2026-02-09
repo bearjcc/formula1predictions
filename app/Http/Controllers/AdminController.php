@@ -31,56 +31,80 @@ class AdminController extends Controller
     /**
      * Show the admin dashboard.
      */
-    public function dashboard(): View
+    public function dashboard(): View|RedirectResponse
     {
-        $stats = [
-            'total_users' => User::count(),
-            'total_predictions' => Prediction::count(),
-            'total_races' => Races::count(),
-            'total_drivers' => Drivers::count(),
-            'total_teams' => Teams::count(),
-            'recent_predictions' => Prediction::with('user')->latest()->take(10)->get(),
-            'pending_predictions' => Prediction::where('status', 'submitted')->count(),
-            'scored_predictions' => Prediction::where('status', 'scored')->count(),
-        ];
+        try {
+            $stats = [
+                'total_users' => User::count(),
+                'total_predictions' => Prediction::count(),
+                'total_races' => Races::count(),
+                'total_drivers' => Drivers::count(),
+                'total_teams' => Teams::count(),
+                'recent_predictions' => Prediction::with('user')->latest()->take(10)->get(),
+                'pending_predictions' => Prediction::where('status', 'submitted')->count(),
+                'scored_predictions' => Prediction::where('status', 'scored')->count(),
+            ];
 
-        return view('admin.dashboard', compact('stats'));
+            return view('admin.dashboard', compact('stats'));
+        } catch (\Throwable $e) {
+            Log::error('AdminController@dashboard failed', ['exception' => $e]);
+
+            return redirect()->back()->with('error', 'Unable to load dashboard. Please try again.');
+        }
     }
 
     /**
      * Show user management page.
      */
-    public function users(): View
+    public function users(): View|RedirectResponse
     {
-        $users = User::withCount('predictions')
-            ->withSum('predictions', 'score')
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        try {
+            $users = User::withCount('predictions')
+                ->withSum('predictions', 'score')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
 
-        return view('admin.users', compact('users'));
+            return view('admin.users', compact('users'));
+        } catch (\Throwable $e) {
+            Log::error('AdminController@users failed', ['exception' => $e]);
+
+            return redirect()->route('admin.dashboard')->with('error', 'Unable to load users. Please try again.');
+        }
     }
 
     /**
      * Show prediction management page.
      */
-    public function predictions(): View
+    public function predictions(): View|RedirectResponse
     {
-        $predictions = Prediction::with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        try {
+            $predictions = Prediction::with('user')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
 
-        return view('admin.predictions', compact('predictions'));
+            return view('admin.predictions', compact('predictions'));
+        } catch (\Throwable $e) {
+            Log::error('AdminController@predictions failed', ['exception' => $e]);
+
+            return redirect()->route('admin.dashboard')->with('error', 'Unable to load predictions. Please try again.');
+        }
     }
 
     /**
      * Show race management page.
      */
-    public function races(): View
+    public function races(): View|RedirectResponse
     {
-        $races = Races::orderBy('date', 'desc')
-            ->paginate(20);
+        try {
+            $races = Races::orderBy('date', 'desc')
+                ->paginate(20);
 
-        return view('admin.races', compact('races'));
+            return view('admin.races', compact('races'));
+        } catch (\Throwable $e) {
+            Log::error('AdminController@races failed', ['exception' => $e]);
+
+            return redirect()->route('admin.dashboard')->with('error', 'Unable to load races. Please try again.');
+        }
     }
 
     /**
@@ -147,23 +171,35 @@ class AdminController extends Controller
     /**
      * Show system settings page.
      */
-    public function settings(): View
+    public function settings(): View|RedirectResponse
     {
-        return view('admin.settings');
+        try {
+            return view('admin.settings');
+        } catch (\Throwable $e) {
+            Log::error('AdminController@settings failed', ['exception' => $e]);
+
+            return redirect()->route('admin.dashboard')->with('error', 'Unable to load settings. Please try again.');
+        }
     }
 
     /**
      * Show scoring management page.
      */
-    public function scoring(): View
+    public function scoring(): View|RedirectResponse
     {
-        $races = Races::withCount(['predictions' => function ($query) {
-            $query->whereIn('status', ['submitted', 'locked']);
-        }])
-            ->orderBy('date', 'desc')
-            ->paginate(20);
+        try {
+            $races = Races::withCount(['predictions' => function ($query) {
+                $query->whereIn('status', ['submitted', 'locked']);
+            }])
+                ->orderBy('date', 'desc')
+                ->paginate(20);
 
-        return view('admin.scoring', compact('races'));
+            return view('admin.scoring', compact('races'));
+        } catch (\Throwable $e) {
+            Log::error('AdminController@scoring failed', ['exception' => $e]);
+
+            return redirect()->route('admin.dashboard')->with('error', 'Unable to load scoring page. Please try again.');
+        }
     }
 
     /**
@@ -184,8 +220,10 @@ class AdminController extends Controller
 
             return redirect()->back()->with('success', $message);
 
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', "Failed to score race: {$e->getMessage()}");
+        } catch (\Throwable $e) {
+            Log::error('AdminController@scoreRace failed', ['race_id' => $race->id, 'exception' => $e]);
+
+            return redirect()->back()->with('error', 'Failed to score race. Please try again or check the logs.');
         }
     }
 
@@ -201,8 +239,10 @@ class AdminController extends Controller
 
             return redirect()->back()->with('success', "Scoring job queued for {$race->race_name}");
 
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', "Failed to queue scoring: {$e->getMessage()}");
+        } catch (\Throwable $e) {
+            Log::error('AdminController@queueRaceScoring failed', ['race_id' => $race->id, 'exception' => $e]);
+
+            return redirect()->back()->with('error', 'Failed to queue scoring. Please try again.');
         }
     }
 
@@ -227,8 +267,10 @@ class AdminController extends Controller
 
             return redirect()->back()->with('success', "Prediction score overridden to {$request->score} points");
 
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', "Failed to override score: {$e->getMessage()}");
+        } catch (\Throwable $e) {
+            Log::error('AdminController@overridePredictionScore failed', ['prediction_id' => $prediction->id, 'exception' => $e]);
+
+            return redirect()->back()->with('error', 'Failed to override score. Please try again.');
         }
     }
 
@@ -255,8 +297,10 @@ class AdminController extends Controller
 
             return redirect()->back()->with('success', 'Driver substitutions applied successfully');
 
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', "Failed to apply substitutions: {$e->getMessage()}");
+        } catch (\Throwable $e) {
+            Log::error('AdminController@handleDriverSubstitutions failed', ['race_id' => $race->id, 'exception' => $e]);
+
+            return redirect()->back()->with('error', 'Failed to apply driver substitutions. Please try again.');
         }
     }
 
@@ -276,8 +320,10 @@ class AdminController extends Controller
 
             return redirect()->back()->with('success', 'Race cancelled and predictions marked accordingly');
 
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', "Failed to cancel race: {$e->getMessage()}");
+        } catch (\Throwable $e) {
+            Log::error('AdminController@handleRaceCancellation failed', ['race_id' => $race->id, 'exception' => $e]);
+
+            return redirect()->back()->with('error', 'Failed to cancel race. Please try again.');
         }
     }
 
@@ -307,8 +353,10 @@ class AdminController extends Controller
 
             return response()->json($stats);
 
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        } catch (\Throwable $e) {
+            Log::error('AdminController@getRaceScoringStats failed', ['race_id' => $race->id, 'exception' => $e]);
+
+            return response()->json(['error' => 'Unable to load scoring statistics. Please try again.'], 500);
         }
     }
 
@@ -332,9 +380,9 @@ class AdminController extends Controller
                 $race = Races::find($raceId);
                 $results = $this->scoringService->scoreRacePredictions($race);
                 $successCount++;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $failureCount++;
-                Log::error("Bulk scoring failed for race {$raceId}: {$e->getMessage()}");
+                Log::error('AdminController@bulkScoreRaces failed for race', ['race_id' => $raceId, 'exception' => $e]);
             }
         }
 
