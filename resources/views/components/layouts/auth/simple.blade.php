@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-appearance="{{ session('appearance', config('f1.default_appearance', 'system')) }}">
+@php $appearance = session('appearance', config('f1.default_appearance', 'system')); @endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}">
     <head>
         @include('partials.head')
     </head>
