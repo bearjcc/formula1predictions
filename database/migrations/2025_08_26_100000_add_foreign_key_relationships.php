@@ -11,10 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add foreign key for predictions.race_id to races.id
-        Schema::table('predictions', function (Blueprint $table) {
-            $table->foreign('race_id')->references('id')->on('races')->onDelete('cascade');
-        });
+        // Foreign key for predictions.race_id to races.id was originally
+        // introduced here, but existing production data uses a string
+        // column for race_id, which is incompatible with the bigint
+        // primary key on races.id in MySQL.
+        //
+        // To keep deploy-time migrations idempotent and avoid crashes on
+        // long-lived databases (e.g. Railway), this migration is now a
+        // no-op. New schema changes that introduce a proper foreign key
+        // should be handled in dedicated, backward-compatible migrations.
     }
 
     /**
@@ -22,8 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('predictions', function (Blueprint $table) {
-            $table->dropForeign(['race_id']);
-        });
+        // No-op: we no longer create the foreign key constraint here.
     }
 };
