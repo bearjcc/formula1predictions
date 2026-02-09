@@ -17,7 +17,10 @@ use App\Policies\PredictionPolicy;
 use App\Policies\RacesPolicy;
 use App\Policies\StandingsPolicy;
 use App\Policies\TeamsPolicy;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,6 +38,28 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Rate limiters
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        // Checkout rate limiter (monetization) — re-enable with F1-031
+        // RateLimiter::for('checkout', function (Request $request) {
+        //     return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
+        // });
+
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('predictions', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('admin', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
         // Register policies
         Gate::policy(User::class, \App\Policies\UserPolicy::class);
         Gate::policy(Prediction::class, PredictionPolicy::class);

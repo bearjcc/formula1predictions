@@ -227,16 +227,20 @@ class ScoringService
             return 0;
         }
 
+        // Pre-load lookup maps to avoid N+1 queries inside scoreChampionshipOrder
+        $driverLookup = Drivers::pluck('driver_id', 'id');
+        $teamLookup = Teams::pluck('team_id', 'id');
+
         $driverScore = $this->scoreChampionshipOrder(
             $prediction->getDriverChampionshipOrder(),
             $driverStandings,
-            fn (int $localId) => Drivers::find($localId)?->driver_id
+            fn (int $localId) => $driverLookup[$localId] ?? null
         );
 
         $teamScore = $this->scoreChampionshipOrder(
             $prediction->getTeamOrder(),
             $constructorStandings,
-            fn (int $localId) => Teams::find($localId)?->team_id
+            fn (int $localId) => $teamLookup[$localId] ?? null
         );
 
         $score = $driverScore['score'] + $teamScore['score'];

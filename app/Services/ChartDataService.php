@@ -29,7 +29,7 @@ class ChartDataService
             ->orderBy('round')
             ->get();
 
-        $drivers = Drivers::all()->keyBy('id');
+        $drivers = Drivers::select('id', 'name', 'surname')->get()->keyBy('id');
         $chartData = [];
 
         foreach ($races as $race) {
@@ -169,22 +169,24 @@ class ChartDataService
             ->orderBy('round')
             ->get();
 
+        // Batch load all predictions for these races in one query
+        $raceIds = $races->pluck('id')->all();
+        $predictionsByRace = Prediction::whereIn('race_id', $raceIds)
+            ->where('type', 'race')
+            ->whereNotNull('accuracy')
+            ->get()
+            ->groupBy('race_id');
+
         $chartData = [];
         foreach ($races as $race) {
-            $predictions = Prediction::where('race_id', $race->id)
-                ->where('type', 'race')
-                ->whereNotNull('accuracy')
-                ->get();
+            $predictions = $predictionsByRace->get($race->id);
 
-            if ($predictions->isNotEmpty()) {
-                $avgAccuracy = $predictions->avg('accuracy');
-                $totalPredictions = $predictions->count();
-
+            if ($predictions && $predictions->isNotEmpty()) {
                 $chartData[] = [
                     'race' => $race->race_name,
                     'round' => $race->round,
-                    'avg_accuracy' => round($avgAccuracy, 1),
-                    'total_predictions' => $totalPredictions,
+                    'avg_accuracy' => round($predictions->avg('accuracy'), 1),
+                    'total_predictions' => $predictions->count(),
                     'date' => $race->date->format('M j'),
                 ];
             }
@@ -287,7 +289,7 @@ class ChartDataService
             ->orderBy('round')
             ->get();
 
-        $drivers = Drivers::all()->keyBy('id');
+        $drivers = Drivers::select('id', 'name', 'surname')->get()->keyBy('id');
         $driverPoints = [];
         $chartData = [];
 
@@ -637,7 +639,7 @@ class ChartDataService
             ->orderBy('round')
             ->get();
 
-        $drivers = Drivers::all()->keyBy('id');
+        $drivers = Drivers::select('id', 'name', 'surname')->get()->keyBy('id');
         $driverPositions = [];
 
         // Collect all positions for each driver

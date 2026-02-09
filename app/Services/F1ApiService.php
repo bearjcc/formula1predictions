@@ -241,10 +241,14 @@ class F1ApiService
     {
         $url = self::BASE_URL.$endpoint;
 
-        return Http::timeout(30)
-            ->retry(3, 1000)
-            ->withoutVerifying() // Disable SSL verification for development
-            ->get($url);
+        $request = Http::timeout(30)
+            ->retry(3, 1000);
+
+        if (app()->environment('local')) {
+            $request = $request->withoutVerifying();
+        }
+
+        return $request->get($url);
     }
 
     /**
@@ -717,7 +721,7 @@ class F1ApiService
     public function clearAllCache(): void
     {
         // Clear year-specific caches
-        for ($year = 2020; $year <= 2025; $year++) {
+        for ($year = 2020; $year <= config('f1.current_season'); $year++) {
             $this->clearCache($year);
         }
 
