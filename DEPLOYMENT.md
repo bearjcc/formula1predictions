@@ -13,7 +13,7 @@ This deployment plan covers moving the F1 Prediction Game from development (Tail
 
 **Pre-launch (must-do):**
 1. Set production `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://your-domain.com`.
-2. Create at least one admin user with email listed in `User::hasRole('admin')` (see `app/Models/User.php`; default list is `admin@example.com`, `system@example.com`) or run `php artisan db:seed --class=TestUserSeeder` and change that user’s email to your admin email, then update the hardcoded list in `User.php` to match.
+2. Set admin credentials in environment variables: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`. Then run `php artisan db:seed --class=AdminSeeder` to create the admin user. (For Railway, add these as secrets and run the seeder in your deploy hook.)
 3. Configure Stripe live keys and webhook endpoint URL in Stripe Dashboard; set `STRIPE_WEBHOOK_SECRET` in `.env`.
 4. Run `php artisan test` (or `.\scripts\test-batches.ps1` on Windows if full run times out); run `vendor/bin/pint --dirty`; run `composer audit`; run `npm run build`.
 5. Optional: Restrict or remove public `api/f1/*` routes in production if you do not want external callers (e.g. `/api/f1/test`, `/api/f1/cache/{year}`).

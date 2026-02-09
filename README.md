@@ -30,6 +30,38 @@ With Herd, the site is available at `https://formula1predictions.test`. Otherwis
 
 ---
 
+## Admin Setup
+
+### Local Development
+
+Register a user account at `/register`, then promote to admin:
+```bash
+php artisan app:promote-admin you@example.com
+```
+
+Or set `ADMIN_EMAIL` in `.env` and run:
+```bash
+php artisan app:promote-admin
+```
+
+### Railway / Production Deployment
+
+Set these environment variables in Railway secrets:
+```
+ADMIN_EMAIL=your-admin@example.com
+ADMIN_PASSWORD=your-secure-password-here
+ADMIN_NAME=Your Name
+```
+
+Then run the seeder (this can be done in Railway's deploy hooks):
+```bash
+php artisan db:seed --class=AdminSeeder
+```
+
+The seeder will create or update the admin user automatically. **Important:** Change your password after first login.
+
+---
+
 ## Scoring
 
 Canonical scoring rules (implement in `ScoringService`; tests in `tests/Feature/ScoringServiceTest.php`).

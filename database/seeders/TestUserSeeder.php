@@ -31,6 +31,7 @@ class TestUserSeeder extends Seeder
                 'name' => 'Admin User',
                 'password' => $password,
                 'email_verified_at' => now(),
+                'is_admin' => true,
             ]
         );
 

@@ -11,6 +11,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create admin user from environment variables (if ADMIN_EMAIL is set)
+        $this->call(AdminSeeder::class);
+
         $this->call(TestUserSeeder::class);
 
         // Call other seeders
