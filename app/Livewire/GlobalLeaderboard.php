@@ -10,7 +10,7 @@ use Livewire\Component;
 class GlobalLeaderboard extends Component
 {
     #[Url]
-    public int $season = 2025;
+    public int $season;
 
     #[Url]
     public string $type = 'all'; // all, race, preseason
@@ -28,6 +28,7 @@ class GlobalLeaderboard extends Component
 
     public function mount(): void
     {
+        $this->season = $this->season ?: config('f1.current_season');
         $this->loadAvailableSeasons();
         $this->loadLeaderboard();
     }
@@ -86,6 +87,14 @@ class GlobalLeaderboard extends Component
                     $query->where('type', $this->type);
                 }
             }], 'accuracy')
+            ->withCount(['predictions as perfect_predictions_count' => function ($query) {
+                $query->where('season', $this->season)
+                    ->where('status', 'scored')
+                    ->where('score', '>=', 25);
+                if ($this->type !== 'all') {
+                    $query->where('type', $this->type);
+                }
+            }])
             ->whereHas('predictions', function ($query) {
                 $query->where('season', $this->season);
                 if ($this->type !== 'all') {
@@ -95,18 +104,15 @@ class GlobalLeaderboard extends Component
             ->get();
 
         $this->leaderboard = $query->map(function ($user, $index) {
-            $stats = $user->getDetailedStats($this->season);
-
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                'email' => $user->email,
                 'initials' => strtoupper(substr($user->name, 0, 2)),
                 'total_score' => $user->total_score ?? 0,
                 'avg_score' => round($user->avg_score ?? 0, 2),
                 'avg_accuracy' => round($user->avg_accuracy ?? 0, 2),
                 'predictions_count' => $user->predictions_count,
-                'perfect_predictions' => $stats['perfect_predictions'],
+                'perfect_predictions' => $user->perfect_predictions_count ?? 0,
                 'is_supporter' => $user->is_season_supporter,
                 'badges' => $user->getBadges(),
             ];

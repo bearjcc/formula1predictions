@@ -10,7 +10,12 @@ use Livewire\Component;
 
 class Analytics extends Component
 {
-    public int $selectedSeason = 2024;
+    public int $selectedSeason;
+
+    public function mount(): void
+    {
+        $this->selectedSeason = config('f1.current_season');
+    }
 
     public function render()
     {

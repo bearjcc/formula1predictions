@@ -7,7 +7,7 @@ use Livewire\Component;
 
 class PointsProgressionChart extends Component
 {
-    public int $season = 2024;
+    public int $season;
 
     public string $chartType = 'driver'; // 'driver' or 'team'
 
@@ -17,9 +17,9 @@ class PointsProgressionChart extends Component
 
     public array $chartConfig = [];
 
-    public function mount(int $season = 2024, string $chartType = 'driver')
+    public function mount(?int $season = null, string $chartType = 'driver')
     {
-        $this->season = $season;
+        $this->season = $season ?? config('f1.current_season');
         $this->chartType = $chartType;
         $this->chartId = 'points-progression-chart-'.uniqid();
         $this->loadChartData();

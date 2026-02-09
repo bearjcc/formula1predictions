@@ -14,15 +14,15 @@ class DraggableDriverList extends Component
 
     public ?string $raceName = '';
 
-    public int $season = 2024;
+    public int $season;
 
     public ?int $raceRound = 1;
 
-    public function mount(array $drivers = [], ?string $raceName = null, int $season = 2024, ?int $raceRound = 1, array $driverOrder = [], ?string $fastestLapDriverId = null)
+    public function mount(array $drivers = [], ?string $raceName = null, ?int $season = null, ?int $raceRound = 1, array $driverOrder = [], ?string $fastestLapDriverId = null)
     {
         $this->drivers = $drivers;
         $this->raceName = $raceName ?? '';
-        $this->season = $season;
+        $this->season = $season ?? config('f1.current_season');
         $this->raceRound = $raceRound;
         $this->driverOrder = $driverOrder;
         $this->fastestLapDriverId = $fastestLapDriverId;

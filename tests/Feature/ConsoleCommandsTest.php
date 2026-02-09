@@ -124,3 +124,39 @@ test('sync season data command respects races-only option', function () {
         ->expectsOutputToContain('Races: 0 created, 24 updated.')
         ->assertExitCode(0);
 });
+
+test('promote admin command requires email when ADMIN_EMAIL not set', function () {
+    config(['admin.promotable_admin_email' => null]);
+
+    $this->artisan('app:promote-admin')
+        ->expectsOutputToContain('Provide an email')
+        ->assertExitCode(1);
+});
+
+test('promote admin command fails for unknown email', function () {
+    $this->artisan('app:promote-admin', ['email' => 'nobody@example.com'])
+        ->expectsOutputToContain('No user found')
+        ->assertExitCode(1);
+});
+
+test('promote admin command promotes user by email', function () {
+    $user = User::factory()->create(['email' => 'deploy-admin@example.com', 'is_admin' => false]);
+
+    $this->artisan('app:promote-admin', ['email' => 'deploy-admin@example.com'])
+        ->expectsOutputToContain('Promoted deploy-admin@example.com to admin.')
+        ->assertExitCode(0);
+
+    $user->refresh();
+    expect($user->is_admin)->toBeTrue();
+});
+
+test('promote admin command is idempotent when user already admin', function () {
+    $user = User::factory()->create(['email' => 'already-admin@example.com', 'is_admin' => true]);
+
+    $this->artisan('app:promote-admin', ['email' => 'already-admin@example.com'])
+        ->expectsOutputToContain('already an admin')
+        ->assertExitCode(0);
+
+    $user->refresh();
+    expect($user->is_admin)->toBeTrue();
+});

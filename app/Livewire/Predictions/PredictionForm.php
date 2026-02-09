@@ -20,7 +20,7 @@ class PredictionForm extends Component
     public string $type = 'race';
 
     #[Rule('required|integer|min:2020|max:2030')]
-    public int $season = 2024;
+    public int $season;
 
     #[Rule('required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25')]
     public ?int $raceRound = null;
@@ -56,6 +56,7 @@ class PredictionForm extends Component
 
     public function mount(?Races $race = null, ?Prediction $existingPrediction = null): void
     {
+        $this->season = config('f1.current_season');
         $this->editingPrediction = null;
         $this->race = $race;
         $this->isLocked = false;
@@ -72,7 +73,7 @@ class PredictionForm extends Component
 
             $this->editingPrediction = $existingPrediction;
             $this->type = $existingPrediction->type ?? 'race';
-            $this->season = $existingPrediction->season ?? 2024;
+            $this->season = $existingPrediction->season ?? config('f1.current_season');
             $this->raceRound = $existingPrediction->race_round;
             $this->notes = $existingPrediction->notes;
 
@@ -96,7 +97,7 @@ class PredictionForm extends Component
                 $this->isLocked = ! $existingPrediction->isEditable();
             }
         } elseif ($race !== null) {
-            $this->season = $race->season ?? 2024;
+            $this->season = $race->season ?? config('f1.current_season');
             $this->raceRound = $race->round;
             $this->type = 'race';
             $this->isLocked = ! $race->allowsPredictions();

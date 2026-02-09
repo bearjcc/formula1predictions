@@ -101,7 +101,7 @@
                                             </div>
                                             <div>
                                                 <div class="font-bold">{{ $user->name }}</div>
-                                                <div class="text-sm opacity-50">{{ $user->email }}</div>
+                                                <div class="text-sm opacity-50">{{ $user->predictions_count }} predictions</div>
                                             </div>
                                         </div>
                                     </td>

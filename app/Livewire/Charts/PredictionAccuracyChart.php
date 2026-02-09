@@ -7,7 +7,7 @@ use Livewire\Component;
 
 class PredictionAccuracyChart extends Component
 {
-    public int $season = 2024;
+    public int $season;
 
     public string $chartType = 'user-trends';
 
@@ -17,9 +17,9 @@ class PredictionAccuracyChart extends Component
 
     public array $chartConfig = [];
 
-    public function mount(int $season = 2024, string $chartType = 'user-trends')
+    public function mount(?int $season = null, string $chartType = 'user-trends')
     {
-        $this->season = $season;
+        $this->season = $season ?? config('f1.current_season');
         $this->chartType = $chartType;
         $this->chartId = 'prediction-accuracy-chart-'.uniqid();
         $this->loadChartData();

@@ -30,11 +30,6 @@ class SeasonSupporter extends Component
                            config('services.stripe.key') !== 'pk_test_placeholder';
     }
 
-    public function initiateCheckout(): \Illuminate\Http\RedirectResponse
-    {
-        return redirect()->route('checkout.season-supporter');
-    }
-
     public function render()
     {
         return view('livewire.season-supporter');

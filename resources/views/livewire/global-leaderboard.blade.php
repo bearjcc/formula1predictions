@@ -151,7 +151,7 @@
                                                         <span class="badge badge-warning badge-sm">⭐ Supporter</span>
                                                     @endif
                                                 </div>
-                                                <div class="text-sm opacity-50">{{ $user['email'] }}</div>
+                                                <div class="text-sm opacity-50">{{ $user['predictions_count'] }} predictions</div>
                                                 @if(!empty($user['badges']))
                                                     <div class="flex gap-1 mt-1">
                                                         @foreach(array_slice($user['badges'], 0, 3) as $badge)

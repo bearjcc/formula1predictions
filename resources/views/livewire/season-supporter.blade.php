@@ -20,9 +20,12 @@
                 <div class="badge badge-success badge-lg">Active Supporter</div>
             @else
                 @if($stripeEnabled)
-                    <a href="{{ route('checkout.season-supporter') }}" class="btn btn-warning">
-                        Become a Supporter - {{ $price }}
-                    </a>
+                    <form method="POST" action="{{ route('checkout.season-supporter') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-warning">
+                            Become a Supporter - {{ $price }}
+                        </button>
+                    </form>
                 @else
                     <button disabled class="btn btn-disabled" title="Stripe not configured">
                         Payment Unavailable

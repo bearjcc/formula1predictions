@@ -13,7 +13,7 @@ use function Pest\Laravel\actingAs;
 uses(RefreshDatabase::class, HasAdminAndUser::class);
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['email' => 'admin@example.com']);
+    $this->admin = User::factory()->create(['email' => 'admin@example.com', 'is_admin' => true]);
     $this->user = User::factory()->create(['email' => 'user@example.com']);
 });
 
@@ -350,10 +350,18 @@ test('admin can toggle half-points', function () {
     expect($race->half_points)->toBeFalse();
 });
 
-test('authenticated user can get race scoring stats', function () {
+test('regular user cannot get race scoring stats', function () {
     $race = Races::factory()->create();
 
-    $response = actingAs($this->user)
+    actingAs($this->user)
+        ->getJson(route('admin.races.scoring-stats', $race))
+        ->assertForbidden();
+});
+
+test('admin can get race scoring stats', function () {
+    $race = Races::factory()->create();
+
+    $response = actingAs($this->admin)
         ->getJson(route('admin.races.scoring-stats', $race));
 
     $response->assertOk();

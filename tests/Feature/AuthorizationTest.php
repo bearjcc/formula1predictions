@@ -13,7 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('admin users can perform all actions', function () {
-    $admin = User::factory()->create(['email' => 'admin@example.com']);
+    $admin = User::factory()->create(['is_admin' => true]);
     $user = User::factory()->create();
     $race = Races::factory()->create();
     $prediction = Prediction::factory()->create([
@@ -199,7 +199,7 @@ test('users can manage their own predictions', function () {
 });
 
 test('system users can score predictions', function () {
-    $systemUser = User::factory()->create(['email' => 'system@example.com']);
+    $systemUser = User::factory()->create(['email' => 'smartbot@example.com']);
     $race = Races::factory()->create();
     $prediction = Prediction::factory()->create([
         'race_id' => $race->id,
@@ -210,7 +210,7 @@ test('system users can score predictions', function () {
 });
 
 test('moderators can manage predictions', function () {
-    $moderator = User::factory()->create(['email' => 'moderator@example.com']);
+    $moderator = User::factory()->create(['is_admin' => true]);
     $race = Races::factory()->create();
     $prediction = Prediction::factory()->create([
         'race_id' => $race->id,
@@ -224,24 +224,23 @@ test('moderators can manage predictions', function () {
 });
 
 test('role checking methods work correctly', function () {
-    $admin = User::factory()->create(['email' => 'admin@example.com']);
-    $moderator = User::factory()->create(['email' => 'moderator@example.com']);
-    $system = User::factory()->create(['email' => 'system@example.com']);
-    $user = User::factory()->create(['email' => 'user@example.com']);
+    $admin = User::factory()->create(['is_admin' => true]);
+    $bot = User::factory()->create(['email' => 'smartbot@example.com']);
+    $user = User::factory()->create();
 
     // Test hasRole method
     expect($admin->hasRole('admin'))->toBeTrue();
-    expect($moderator->hasRole('moderator'))->toBeTrue();
-    expect($system->hasRole('system'))->toBeTrue();
+    expect($admin->hasRole('moderator'))->toBeTrue(); // moderator maps to admin
+    expect($bot->hasRole('system'))->toBeTrue();
     expect($user->hasRole('admin'))->toBeFalse();
 
     // Test hasAnyRole method
     expect($admin->hasAnyRole(['admin', 'moderator']))->toBeTrue();
-    expect($moderator->hasAnyRole(['admin', 'moderator']))->toBeTrue();
+    expect($bot->hasAnyRole(['system']))->toBeTrue();
     expect($user->hasAnyRole(['admin', 'moderator']))->toBeFalse();
 
     // Test hasAllRoles method
     expect($admin->hasAllRoles(['admin']))->toBeTrue();
-    expect($admin->hasAllRoles(['admin', 'moderator']))->toBeFalse();
+    expect($admin->hasAllRoles(['admin', 'moderator']))->toBeTrue(); // both map to is_admin
     expect($user->hasAllRoles(['admin']))->toBeFalse();
 });

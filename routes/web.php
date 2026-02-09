@@ -11,13 +11,16 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-Route::get('/components', function () {
-    return view('components');
-})->name('components');
+// Dev-only demo routes
+if (app()->environment('local')) {
+    Route::get('/components', function () {
+        return view('components');
+    })->name('components');
 
-Route::get('/draggable-demo', function () {
-    return view('draggable-demo');
-})->name('draggable-demo');
+    Route::get('/draggable-demo', function () {
+        return view('draggable-demo');
+    })->name('draggable-demo');
+}
 
 Route::get('dashboard', App\Http\Controllers\DashboardController::class)
     ->middleware(['auth', 'verified'])
@@ -44,10 +47,10 @@ Route::middleware(['auth'])->group(function () {
     })->name('predictions.edit');
 
     // Prediction routes
-    Route::resource('predictions', PredictionController::class);
+    Route::resource('predictions', PredictionController::class)->middleware('throttle:predictions');
 
     // Admin routes (admin middleware restricts to admin role)
-    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware(['admin', 'throttle:admin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
@@ -89,27 +92,31 @@ Route::middleware(['auth'])->group(function () {
         })->name('user-stats-livewire');
     });
 
-    // Stripe checkout routes
-    Route::prefix('checkout')->name('checkout.')->group(function () {
-        Route::get('/season-supporter', [\App\Http\Controllers\StripeCheckoutController::class, 'createCheckoutSession'])->name('season-supporter');
-        Route::get('/success', [\App\Http\Controllers\StripeCheckoutController::class, 'success'])->name('success');
-        Route::get('/cancel', [\App\Http\Controllers\StripeCheckoutController::class, 'cancel'])->name('cancel');
-        Route::get('/portal', [\App\Http\Controllers\StripeCheckoutController::class, 'portal'])->name('portal');
-    });
+    // Monetization (Stripe/Season Supporter) — deferred to later release; re-enable with F1-031
+    // Route::prefix('checkout')->name('checkout.')->middleware('throttle:checkout')->group(function () {
+    //     Route::post('/season-supporter', [\App\Http\Controllers\StripeCheckoutController::class, 'createCheckoutSession'])->name('season-supporter');
+    //     Route::get('/success', [\App\Http\Controllers\StripeCheckoutController::class, 'success'])->name('success');
+    //     Route::get('/cancel', [\App\Http\Controllers\StripeCheckoutController::class, 'cancel'])->name('cancel');
+    //     Route::get('/portal', [\App\Http\Controllers\StripeCheckoutController::class, 'portal'])->name('portal');
+    // });
 
 });
 
-// Stripe webhook (must be outside auth so Stripe can POST; verified by signature in controller)
-Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
-    ->name('stripe.webhook');
+// Stripe webhook — deferred to later release (F1-031)
+// Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
+//     ->name('stripe.webhook');
 
-// F1 API Test Routes
-Route::prefix('api/f1')->group(function () {
-    Route::get('/test', [RacesController::class, 'testApi'])->name('f1.test');
+// F1 API Routes
+Route::prefix('api/f1')->middleware(['auth', 'throttle:api'])->group(function () {
     Route::get('/races/{year}', [RacesController::class, 'index'])->name('f1.races');
     Route::get('/races/{year}/{round}', [RacesController::class, 'show'])->name('f1.race');
-    Route::delete('/cache/{year}', [RacesController::class, 'clearCache'])->name('f1.clear-cache');
+    Route::delete('/cache/{year}', [RacesController::class, 'clearCache'])->name('f1.clear-cache')->middleware('admin');
 });
+
+// F1 API test route (local environment only)
+if (app()->environment('local')) {
+    Route::get('/api/f1/test', [RacesController::class, 'testApi'])->name('f1.test');
+}
 
 // Year specific routes
 Route::middleware(['validate.year'])->group(function () {
