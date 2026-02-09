@@ -510,11 +510,37 @@ class F1ApiService
     }
 
     /**
-     * Get available years (this could be enhanced with actual API data)
+     * Get available years from F1 API /seasons. Newest first. Falls back to default list on API failure.
+     *
+     * @return list<int>
      */
     public function getAvailableYears(): array
     {
-        return [2022, 2023, 2024, 2025, 2026];
+        $cacheKey = 'f1_available_years';
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () {
+            try {
+                $data = $this->getSeasons();
+                $championships = $data['championships'] ?? [];
+                $years = [];
+                foreach ($championships as $c) {
+                    $year = isset($c['year']) ? (int) $c['year'] : null;
+                    if ($year !== null && $year >= 2000) {
+                        $years[] = $year;
+                    }
+                }
+                $years = array_values(array_unique($years));
+                rsort($years, SORT_NUMERIC);
+
+                return $years;
+            } catch (Throwable $e) {
+                Log::warning('F1 API getSeasons failed, using default available years', [
+                    'message' => $e->getMessage(),
+                ]);
+
+                return [2022, 2023, 2024, 2025, 2026];
+            }
+        });
     }
 
     /**
@@ -727,6 +753,7 @@ class F1ApiService
 
         // Clear general caches
         Cache::forget('f1_seasons');
+        Cache::forget('f1_available_years');
         Cache::forget('f1_drivers_30_0');
         Cache::forget('f1_teams_30_0');
         Cache::forget('f1_circuits_30_0');

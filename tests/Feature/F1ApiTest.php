@@ -120,6 +120,37 @@ test('f1 api service returns available years', function () {
     expect($years)->toContain(2025);
 });
 
+test('getAvailableYears derives from API seasons when available', function () {
+    Http::fake([
+        'https://f1api.dev/api/seasons' => Http::response([
+            'championships' => [
+                ['championshipId' => 'f1_2026', 'year' => 2026],
+                ['championshipId' => 'f1_2025', 'year' => 2025],
+                ['championshipId' => 'f1_2024', 'year' => 2024],
+            ],
+        ], 200),
+    ]);
+
+    $service = new F1ApiService;
+    $years = $service->getAvailableYears();
+
+    expect($years)->toBe([2026, 2025, 2024]);
+});
+
+test('getAvailableYears falls back to default list when API fails', function () {
+    Http::fake([
+        'https://f1api.dev/api/seasons' => Http::response(null, 500),
+    ]);
+
+    $service = new F1ApiService;
+    $years = $service->getAvailableYears();
+
+    expect($years)->toBeArray();
+    expect($years)->toContain(2024);
+    expect($years)->toContain(2025);
+    expect($years)->toContain(2026);
+});
+
 test('f1 api service can fetch drivers', function () {
     $service = app(F1ApiService::class);
     $drivers = $service->getDrivers(5, 0);
