@@ -71,6 +71,7 @@
                     </div>
                 </div>
 
+                @if(Route::has('components'))
                 <div>
                     <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('Development') }}</h3>
                     <div class="space-y-1">
@@ -80,6 +81,7 @@
                         </a>
                     </div>
                 </div>
+                @endif
             </nav>
 
             <!-- User Menu -->

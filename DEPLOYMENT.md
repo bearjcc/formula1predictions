@@ -1,7 +1,7 @@
 # Deployment Plan - F1 Prediction Game
 
 ## Overview
-This deployment plan covers moving the F1 Prediction Game from development (Tailscale/Localhost) to production on a VPS (Hetzner/DigitalOcean).
+This deployment plan covers moving the F1 Prediction Game from development (Tailscale/Localhost) to production. **Primary hosting: Railway.** The app uses Railway for app hosting, MySQL, and (optionally) Redis; no AWS services (S3, SES, SQS, DynamoDB) are used.
 
 ## Go-Live Audit (2026-02-08)
 
@@ -555,7 +555,7 @@ supervisorctl start f1-worker:*
 
 ## Next Steps
 
-1. Choose hosting provider (Hetzner recommended)
+1. Deploy to Railway (primary hosting; add MySQL and optionally Redis plugins)
 2. Set up test environment first
 3. Configure Stripe in test mode
 4. Run full integration tests

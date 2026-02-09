@@ -386,6 +386,33 @@ class F1ApiService
     }
 
     /**
+     * Fetch drivers for a season from the year-specific drivers endpoint (/{year}/drivers).
+     * Use for future seasons (e.g. 2026) when drivers-championship may not be populated yet.
+     *
+     * @return array{drivers: array<int, array<string, mixed>>, total: int}
+     */
+    public function fetchDriversForYear(int $year): array
+    {
+        $limit = 30;
+        $offset = 0;
+        $allDrivers = [];
+        $total = 0;
+        do {
+            $response = $this->makeApiCall("/{$year}/drivers?limit={$limit}&offset={$offset}");
+            if (! $response->successful()) {
+                throw new F1ApiException("Failed to fetch drivers for {$year}", $response->status(), "/{$year}/drivers", $year);
+            }
+            $data = $response->json();
+            $chunk = $data['drivers'] ?? [];
+            $allDrivers = array_merge($allDrivers, $chunk);
+            $total = (int) ($data['total'] ?? 0);
+            $offset += $limit;
+        } while (count($chunk) === $limit && $offset < $total);
+
+        return ['drivers' => $allDrivers, 'total' => count($allDrivers)];
+    }
+
+    /**
      * Fetch constructors championship data for a season (uses constructors-championship endpoint).
      *
      * @return array<string, mixed>
@@ -443,21 +470,42 @@ class F1ApiService
     }
 
     /**
-     * Sync drivers for a season from drivers championship. Upserts by driver_id; links to team when present.
+     * Sync drivers for a season from drivers championship (or from /{year}/drivers when championship has no data).
+     * Upserts by driver_id; links to team when present.
      *
      * @return int Number of drivers created or updated
      */
     public function syncDriversForSeason(int $year): int
     {
+        $entries = [];
         try {
             $data = $this->fetchDriversChampionship($year);
+            $entries = $data['drivers_championship'] ?? [];
+        } catch (F1ApiException $e) {
+            Log::info('Drivers championship not available for year, trying year/drivers endpoint', ['year' => $year, 'message' => $e->getMessage()]);
+        }
+
+        if ($entries !== []) {
+            return $this->syncDriversFromChampionshipEntries($entries);
+        }
+
+        try {
+            $data = $this->fetchDriversForYear($year);
+            $drivers = $data['drivers'] ?? [];
         } catch (F1ApiException $e) {
             Log::warning('Could not sync drivers for season', ['year' => $year, 'message' => $e->getMessage()]);
 
             return 0;
         }
 
-        $entries = $data['drivers_championship'] ?? [];
+        return $this->syncDriversFromYearDriversList($drivers);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $entries  drivers_championship entries
+     */
+    private function syncDriversFromChampionshipEntries(array $entries): int
+    {
         $count = 0;
         foreach ($entries as $entry) {
             $driverId = $entry['driverId'] ?? null;
@@ -485,6 +533,50 @@ class F1ApiService
                     'nationality' => $driver['nationality'] ?? null,
                     'url' => $driver['url'] ?? null,
                     'driver_number' => isset($driver['number']) ? (string) $driver['number'] : null,
+                    'date_of_birth' => $birthday,
+                    'team_id' => $teamDbId,
+                    'is_active' => true,
+                ]
+            );
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Sync from /{year}/drivers response (flat driver list). Birthday format DD/MM/YYYY.
+     *
+     * @param  array<int, array<string, mixed>>  $drivers
+     */
+    private function syncDriversFromYearDriversList(array $drivers): int
+    {
+        $count = 0;
+        foreach ($drivers as $d) {
+            $driverId = $d['driverId'] ?? null;
+            if ($driverId === null) {
+                continue;
+            }
+            $teamId = $d['teamId'] ?? null;
+            $teamDbId = $teamId ? Teams::where('team_id', $teamId)->value('id') : null;
+
+            $birthday = null;
+            if (! empty($d['birthday'])) {
+                try {
+                    $birthday = Carbon::parse($d['birthday'])->format('Y-m-d');
+                } catch (Throwable) {
+                    // ignore invalid date
+                }
+            }
+
+            Drivers::updateOrCreate(
+                ['driver_id' => $driverId],
+                [
+                    'name' => $d['name'] ?? 'Unknown',
+                    'surname' => $d['surname'] ?? '',
+                    'nationality' => $d['nationality'] ?? null,
+                    'url' => $d['url'] ?? null,
+                    'driver_number' => isset($d['number']) ? (string) $d['number'] : null,
                     'date_of_birth' => $birthday,
                     'team_id' => $teamDbId,
                     'is_active' => true,

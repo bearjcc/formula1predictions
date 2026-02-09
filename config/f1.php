@@ -9,10 +9,11 @@ return [
     |
     | The current Formula 1 season year. Used for navigation links, year
     | validation, and default year selection throughout the application.
+    | Automatically uses the current year.
     |
     */
 
-    'current_season' => (int) env('F1_CURRENT_SEASON', 2026),
+    'current_season' => (int) date('Y'),
 
     /*
     |--------------------------------------------------------------------------
