@@ -160,3 +160,60 @@ test('promote admin command is idempotent when user already admin', function () 
     $user->refresh();
     expect($user->is_admin)->toBeTrue();
 });
+
+test('ensure admin user command fails when ADMIN_EMAIL not set', function () {
+    config(['admin.promotable_admin_email' => null]);
+
+    $this->artisan('app:ensure-admin-user')
+        ->expectsOutputToContain('ADMIN_EMAIL is not set')
+        ->assertExitCode(1);
+});
+
+test('ensure admin user command creates admin when user does not exist', function () {
+    config([
+        'admin.promotable_admin_email' => 'env-admin@example.com',
+        'admin.admin_name' => 'Env Admin',
+        'admin.admin_password' => 'super-secret',
+    ]);
+
+    $this->artisan('app:ensure-admin-user')
+        ->expectsOutputToContain('Created admin user env-admin@example.com.')
+        ->assertExitCode(0);
+
+    $user = User::where('email', 'env-admin@example.com')->first();
+    expect($user)->not->toBeNull()
+        ->and($user->is_admin)->toBeTrue();
+});
+
+test('ensure admin user command promotes existing non-admin user', function () {
+    config(['admin.promotable_admin_email' => 'existing@example.com']);
+
+    $user = User::factory()->create([
+        'email' => 'existing@example.com',
+        'is_admin' => false,
+    ]);
+
+    $this->artisan('app:ensure-admin-user')
+        ->expectsOutputToContain('already existed; promoted to admin')
+        ->assertExitCode(0);
+
+    $user->refresh();
+    expect($user->is_admin)->toBeTrue();
+});
+
+test('ensure admin user command is idempotent when admin already exists', function () {
+    config(['admin.promotable_admin_email' => 'already-admin@example.com']);
+
+    $user = User::factory()->create([
+        'email' => 'already-admin@example.com',
+        'is_admin' => true,
+    ]);
+
+    $this->artisan('app:ensure-admin-user')
+        ->expectsOutputToContain('already exists. No changes made.')
+        ->assertExitCode(0);
+
+    $user->refresh();
+    expect($user->is_admin)->toBeTrue();
+});
+
