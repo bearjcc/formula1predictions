@@ -39,11 +39,10 @@ Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-2
   - Affected: resources/views/team.blade.php, driver.blade.php, circuit.blade.php, country.blade.php, race.blade.php, routes/web.php
   - Done: Updated all 5 route closures to resolve models by computed slug and abort 404 for invalid slugs. Rewrote all 5 blade views to use real model data (attributes, relationships, accessors) instead of hardcoded stubs. Both `/{year}/race/{id}` and `/race/{slug}` now resolve the Race model. Added 16 tests in DetailPageTest.php covering real data display, 404 handling, and absence of hardcoded data. Updated RoutesTest.php to create models before asserting 200.
 
-- [ ] **F1-091: Implement countries index page with real data** _(found 2026-02-10 audit)_
+- [x] **F1-091: Implement countries index page with real data** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: medium | Owner: agent
-  - Affected: resources/views/countries.blade.php, routes/web.php
-  - `/countries` shows 6 hardcoded country cards (UK, Germany, Brazil, Italy, Netherlands, Australia) with fabricated stats. Claims "Showing 1-6 of 25 countries" but pagination buttons are non-functional. Filter controls (region, championships, status, search) are present in the UI but not wired to any logic.
-  - Replace with database-backed Countries query, real pagination, and functional Livewire filters.
+  - Affected: app/Livewire/Pages/CountriesIndex.php, resources/views/livewire/pages/countries-index.blade.php, routes/web.php
+  - Done: Replaced hardcoded view with Livewire full-page component. Database-backed Countries query, pagination (9 per page), functional filters: search (name/code), status (all/active/historic), championships (all/1-5/6-10/10+). Region dropdown left as "All Regions" (no DB column). Fixed Countries::getFlagUrlAttribute recursion. Added CountriesIndexTest (8 tests). Removed old countries.blade.php.
 
 - [x] **F1-092: Fix Prediction model mass assignment vulnerability** _(done 2026-02-10)_
   - Type: security | Priority: P1 | Risk: high | Owner: agent

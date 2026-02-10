@@ -227,9 +227,7 @@ Route::middleware(['validate.year'])->group(function () {
 });
 
 // non year specific routes
-Route::get('/countries', function () {
-    return view('countries');
-})->name('countries');
+Route::get('/countries', App\Livewire\Pages\CountriesIndex::class)->name('countries');
 
 Route::get('/team/{slug}', function ($slug) {
     $team = Teams::with('drivers')->get()->first(fn ($t) => $t->slug === $slug);

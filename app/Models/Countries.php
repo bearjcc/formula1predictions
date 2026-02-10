@@ -94,12 +94,15 @@ class Countries extends Model
      */
     public function getFlagUrlAttribute(): string
     {
-        if ($this->flag_url) {
-            return $this->flag_url;
+        $url = $this->attributes['flag_url'] ?? null;
+
+        if ($url) {
+            return $url;
         }
 
-        // Default flag URL based on country code
-        return "https://flagcdn.com/{$this->code}.svg";
+        $code = $this->attributes['code'] ?? '';
+
+        return $code ? 'https://flagcdn.com/'.strtolower($code).'.svg' : '';
     }
 
     /**

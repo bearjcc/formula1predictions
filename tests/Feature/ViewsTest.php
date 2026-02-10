@@ -66,13 +66,18 @@ describe('Year-specific views load correctly', function () {
 // Test non-year-specific views
 describe('Non-year-specific views load correctly', function () {
     $routes = [
-        '/countries' => 'countries',
         '/team/mercedes' => 'team',
         '/driver/lewis-hamilton' => 'driver',
         '/circuit/silverstone' => 'circuit',
         '/country/belgium' => 'country',
         '/race/british-grand-prix' => 'race',
     ];
+
+    it('loads countries index (Livewire full-page) for /countries', function () {
+        $response = $this->get('/countries');
+        $response->assertOk();
+        $response->assertSee('F1 Countries', false);
+    });
 
     foreach ($routes as $route => $view) {
         it("loads {$view} view for {$route}", function () use ($route, $view) {
