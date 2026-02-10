@@ -38,7 +38,7 @@ class PromoteAdminUser extends Command
             return Command::SUCCESS;
         }
 
-        $user->update(['is_admin' => true]);
+        $user->forceFill(['is_admin' => true])->save();
         $this->info("Promoted {$email} to admin.");
 
         return Command::SUCCESS;

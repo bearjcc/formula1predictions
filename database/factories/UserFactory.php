@@ -41,4 +41,12 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the user is an admin (uses forceFill; is_admin not in $fillable).
+     */
+    public function admin(): static
+    {
+        return $this->afterCreating(fn ($user) => $user->forceFill(['is_admin' => true])->save());
+    }
 }

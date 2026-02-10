@@ -52,7 +52,7 @@ test('authenticated user can access dashboard analytics settings and predictions
 test('admin can access admin dashboard', function () {
     /** @var \Tests\TestCase $this */
     /** @var User $admin */
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin);
     $this->get('/admin/dashboard')->assertOk();
@@ -89,7 +89,7 @@ test('admin dashboard requires authentication and admin role', function () {
 test('admin dashboard loads for admin user', function () {
     /** @var \Tests\TestCase $this */
     /** @var User $admin */
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
 
     $response = $this->actingAs($admin)->get('/admin/dashboard');
     $response->assertOk();

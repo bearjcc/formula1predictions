@@ -40,10 +40,10 @@ class AdminSeeder extends Seeder
             [
                 'name' => $name,
                 'password' => Hash::make($password),
-                'is_admin' => true,
                 'email_verified_at' => now(),
             ]
         );
+        $user->forceFill(['is_admin' => true])->save();
 
         if ($this->command) {
             if ($user->wasRecentlyCreated) {

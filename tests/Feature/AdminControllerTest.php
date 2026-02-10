@@ -13,7 +13,7 @@ use function Pest\Laravel\actingAs;
 uses(RefreshDatabase::class, HasAdminAndUser::class);
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['email' => 'admin@example.com', 'is_admin' => true]);
+    $this->admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
     $this->user = User::factory()->create(['email' => 'user@example.com']);
 });
 

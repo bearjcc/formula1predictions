@@ -25,15 +25,15 @@ class TestUserSeeder extends Seeder
             ]
         );
 
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Admin User',
                 'password' => $password,
                 'email_verified_at' => now(),
-                'is_admin' => true,
             ]
         );
+        $admin->forceFill(['is_admin' => true])->save();
 
         User::updateOrCreate(
             ['email' => 'unverified@example.com'],

@@ -33,9 +33,9 @@ class EnsureAdminUser extends Command
                 'email' => $email,
                 'name' => $name,
                 'password' => Hash::make($password),
-                'is_admin' => true,
                 'email_verified_at' => now(),
             ]);
+            $user->forceFill(['is_admin' => true])->save();
 
             $this->info("Created admin user {$email}.");
             $this->warn('Remember to change this password after first login.');
@@ -55,4 +55,3 @@ class EnsureAdminUser extends Command
         return Command::SUCCESS;
     }
 }
-

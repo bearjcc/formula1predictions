@@ -202,7 +202,7 @@ test('promote admin command fails for unknown email', function () {
 });
 
 test('promote admin command promotes user by email', function () {
-    $user = User::factory()->create(['email' => 'deploy-admin@example.com', 'is_admin' => false]);
+    $user = User::factory()->create(['email' => 'deploy-admin@example.com']);
 
     $this->artisan('app:promote-admin', ['email' => 'deploy-admin@example.com'])
         ->expectsOutputToContain('Promoted deploy-admin@example.com to admin.')
@@ -213,7 +213,7 @@ test('promote admin command promotes user by email', function () {
 });
 
 test('promote admin command is idempotent when user already admin', function () {
-    $user = User::factory()->create(['email' => 'already-admin@example.com', 'is_admin' => true]);
+    $user = User::factory()->admin()->create(['email' => 'already-admin@example.com']);
 
     $this->artisan('app:promote-admin', ['email' => 'already-admin@example.com'])
         ->expectsOutputToContain('already an admin')
@@ -250,10 +250,7 @@ test('ensure admin user command creates admin when user does not exist', functio
 test('ensure admin user command promotes existing non-admin user', function () {
     config(['admin.promotable_admin_email' => 'existing@example.com']);
 
-    $user = User::factory()->create([
-        'email' => 'existing@example.com',
-        'is_admin' => false,
-    ]);
+    $user = User::factory()->create(['email' => 'existing@example.com']);
 
     $this->artisan('app:ensure-admin-user')
         ->expectsOutputToContain('already existed; promoted to admin')
@@ -266,10 +263,7 @@ test('ensure admin user command promotes existing non-admin user', function () {
 test('ensure admin user command is idempotent when admin already exists', function () {
     config(['admin.promotable_admin_email' => 'already-admin@example.com']);
 
-    $user = User::factory()->create([
-        'email' => 'already-admin@example.com',
-        'is_admin' => true,
-    ]);
+    $user = User::factory()->admin()->create(['email' => 'already-admin@example.com']);
 
     $this->artisan('app:ensure-admin-user')
         ->expectsOutputToContain('already exists. No changes made.')

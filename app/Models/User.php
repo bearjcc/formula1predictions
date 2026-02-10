@@ -17,6 +17,8 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
+     * System fields (is_admin, is_season_supporter, badges, stats_cache, etc.)
+     * are set via forceFill() in app code; never mass-assign.
      *
      * @var list<string>
      */
@@ -24,12 +26,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'is_admin',
-        'is_season_supporter',
-        'supporter_since',
-        'badges',
-        'stats_cache',
-        'stats_cache_updated_at',
     ];
 
     /**
@@ -41,6 +37,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'email',
+        'is_admin',
     ];
 
     /**

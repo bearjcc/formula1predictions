@@ -13,7 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('admin users can perform all actions', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $user = User::factory()->create();
     $race = Races::factory()->create();
     $prediction = Prediction::factory()->create([
@@ -209,7 +209,7 @@ test('system users can score predictions', function () {
 });
 
 test('moderators can manage predictions', function () {
-    $moderator = User::factory()->create(['is_admin' => true]);
+    $moderator = User::factory()->admin()->create();
     $race = Races::factory()->create();
     $prediction = Prediction::factory()->create([
         'race_id' => $race->id,
@@ -223,7 +223,7 @@ test('moderators can manage predictions', function () {
 });
 
 test('role checking methods work correctly', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $bot = User::factory()->create(['email' => 'smartbot@example.com']);
     $user = User::factory()->create();
 

@@ -163,10 +163,9 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: app/Services/F1ApiService.php
   - Fixed: Loop now clears years 2020 through current_season + 1 (covers 2026 and next season). Added test.
 
-- [ ] **F1-065: Remove sensitive fields from User $fillable**
+- [x] **F1-065: Remove sensitive fields from User $fillable** _(done 2026-02-10)_
   - Type: security | Priority: P2 | Risk: low | Owner: agent
-  - Affected: app/Models/User.php
-  - Sensitive fields (`is_admin`, `is_season_supporter`, `badges`, `stats_cache`, `stats_cache_updated_at`) in User $fillable. `is_admin` is especially dangerous — a user could mass-assign admin privileges. Remove all non-user-editable fields from `$fillable`; use `forceFill()` or direct assignment in admin/system code.
+  - Done: Removed is_admin, is_season_supporter, supporter_since, badges, stats_cache, stats_cache_updated_at from $fillable. Added is_admin to $hidden. AdminSeeder, EnsureAdminUser, PromoteAdminUser, TestUserSeeder use forceFill(). UserFactory::admin() state for tests. Added UserModelTest (mass-assign create/update rejected).
 
 - [ ] **F1-066: Remove redundant indexes**
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
@@ -309,8 +308,6 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: app/Http/Requests/StorePredictionRequest.php, app/Http/Requests/UpdatePredictionRequest.php
   - `StorePredictionRequest` validates `prediction_data.superlatives.*` as `['nullable']` (accepts any type), while `UpdatePredictionRequest` validates as `['nullable', 'string']`. Rules should be consistent; both should validate as `['nullable', 'string']`.
 
-- [ ] **F1-105: Add is_admin to User model $hidden array** _(found 2026-02-10 audit)_
+- [x] **F1-105: Add is_admin to User model $hidden array** _(done 2026-02-10 with F1-065)_
   - Type: security | Priority: P2 | Risk: low | Owner: agent
-  - Affected: app/Models/User.php (lines 40-44)
-  - `is_admin` is not in `User::$hidden`. If the User model is ever serialized to JSON (API responses, Livewire component data), admin status is exposed. Add `is_admin` to `$hidden`.
-  - Related: F1-065 (User $fillable cleanup).
+  - Done: Added is_admin to User::$hidden so admin status is not exposed in JSON serialization.
