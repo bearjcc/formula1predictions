@@ -197,3 +197,14 @@ test('current season races page shows loading state with no races', function () 
     $response->assertSee("{$year} Races");
     $response->assertSeeLivewire('races.races-list');
 });
+
+// region Dev/demo routes (F1-085): only registered in local/testing; smoke test in testing env
+describe('components demo page', function () {
+    it('returns 200 in testing environment', function () {
+        /** @var \Tests\TestCase $this */
+        $response = $this->get('/components');
+        $response->assertOk();
+        $response->assertSee('Mary UI Components Demo');
+    });
+});
+// endregion

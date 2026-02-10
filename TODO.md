@@ -112,18 +112,13 @@ Longer-horizon ideas and exploratory improvements.
     - Uses functional filters (season, type, sort) wired to Livewire, not static `<select>`s.
     - Has tests to verify that created users/predictions appear in the table and filters affect the result set.
 
-- [ ] **F1-085: Lock components demo route to dev and prevent prod exposure**
+- [x] **F1-085: Lock components demo route to dev and prevent prod exposure** _(done 2026-02-11)_
   - Type: cleanup | Priority: P2 | Risk: low | Owner: agent
-  - Affected: routes/web.php, resources/views/components.blade.php, components/layouts/layout.blade.php
-  - `/components` is a Mary UI demo page that can 500 in development and should never appear in production navigation. Ensure:
-    - The route is registered only in `local`/`testing` environments.
-    - The sidebar link is wrapped in `Route::has('components')` (already present) and is hidden in production.
-    - The components view is resilient enough not to 500 on missing assets; add a minimal smoke test in `testing` env to catch regressions.
+  - Route already registered only in local/testing (web.php). Sidebar uses `Route::has('components')`. Added smoke test in RoutesTest: components page returns 200 in testing env.
 
-- [ ] **F1-088: Fix /components page 500 Server Error** _(found 2026-02-10 sidebar QA)_
+- [x] **F1-088: Fix /components page 500 Server Error** _(done 2026-02-11)_
   - Type: bug | Priority: P2 | Risk: low | Owner: agent
-  - Affected: routes/web.php (GET /components), resources/views/components.blade.php, layout/ Mary UI components
-  - Sidebar link "Components" (Mary UI demo) returns 500 when loaded. View uses `<x-layouts.layout>` and various `<x-mary-*>` components. Root cause not yet identified (check laravel.log with APP_DEBUG=true when hitting `/components`). Fix so the page renders in local/testing; can be done as part of F1-085.
+  - Fixed: Replaced missing `o-shield` icon with `o-shield-check` in components.blade.php (SvgNotFound from heroicons set).
 
 - [ ] **F1-086: Align auth pages with main site layout and theme**
   - Type: UI | Priority: P2 | Risk: medium | Owner: mixed

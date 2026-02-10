@@ -195,7 +195,7 @@
                                     <span>Preferences</span>
                                 </a>
                                 <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                                    <x-mary-icon name="o-shield" class="w-4 h-4" />
+                                    <x-mary-icon name="o-shield-check" class="w-4 h-4" />
                                     <span>Security</span>
                                 </a>
                             </div>
