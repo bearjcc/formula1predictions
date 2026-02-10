@@ -40,10 +40,10 @@ Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-2
 
 Medium-horizon improvements that should be tackled soon.
 
-- [ ] **F1-050: Configure production mail, session security, and logging**
+- [x] **F1-050: Configure production mail, session security, and logging** _(done 2026-02-10)_
   - Type: security | Priority: P1 | Risk: high | Owner: agent
-  - Affected: .env.example, config/session.php, config/logging.php
-  - Mail driver defaults to log - notifications will never reach users. Session secure cookie not configured - session cookie sent over plain HTTP. LOG_LEVEL=debug and single-file logging (no rotation).
+  - Affected: .env.example, config/session.php, config/logging.php, tests/Feature/ProductionConfigTest.php
+  - Implemented: session.secure defaults to true when APP_URL uses https; .env.example documents MAIL_MAILER (production: smtp), SESSION_SECURE_COOKIE, LOG_LEVEL (production: warning/error), LOG_STACK (production: daily for rotation). Added ProductionConfigTest for session secure, logging daily channel, and env example docs.
 
 - [x] **F1-055: Add proper exception handling for user-facing controllers** _(done 2026-02-09)_
   - Type: security | Priority: P1 | Risk: medium | Owner: agent
