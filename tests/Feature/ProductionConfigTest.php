@@ -35,7 +35,6 @@ test('stack channel resolves to a defined channel', function () {
 // endregion
 
 // region .env.example production documentation (F1-050)
-
 test('env example documents production mail session and logging', function () {
     $path = base_path('.env.example');
     expect($path)->toBeReadableFile();
@@ -44,6 +43,25 @@ test('env example documents production mail session and logging', function () {
     expect($content)->toContain('LOG_LEVEL');
     expect($content)->toContain('MAIL_MAILER');
     expect($content)->toContain('LOG_STACK');
+});
+
+// endregion
+
+// region .env.production.example template (F1-075)
+
+test('production env example exists with secure production defaults', function () {
+    $path = base_path('.env.production.example');
+    expect($path)->toBeReadableFile();
+
+    $content = file_get_contents($path);
+
+    expect($content)->toContain('APP_ENV=production');
+    expect($content)->toContain('APP_DEBUG=false');
+    expect($content)->toContain('SESSION_ENCRYPT=true');
+    expect($content)->toContain('SESSION_SECURE_COOKIE=true');
+    expect($content)->toContain('LOG_LEVEL=warning');
+    expect($content)->toContain('LOG_STACK=daily');
+    expect($content)->toContain('MAIL_MAILER=smtp');
 });
 
 // endregion
