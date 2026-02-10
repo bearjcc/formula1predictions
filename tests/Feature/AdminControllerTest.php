@@ -17,6 +17,27 @@ beforeEach(function () {
     $this->user = User::factory()->create(['email' => 'user@example.com']);
 });
 
+test('admin can load all admin view pages', function () {
+    actingAs($this->admin)
+        ->get(route('admin.dashboard'))
+        ->assertOk();
+    actingAs($this->admin)
+        ->get(route('admin.users'))
+        ->assertOk();
+    actingAs($this->admin)
+        ->get(route('admin.predictions'))
+        ->assertOk();
+    actingAs($this->admin)
+        ->get(route('admin.races'))
+        ->assertOk();
+    actingAs($this->admin)
+        ->get(route('admin.scoring'))
+        ->assertOk();
+    actingAs($this->admin)
+        ->get(route('admin.settings'))
+        ->assertOk();
+});
+
 test('regular user cannot score prediction', function () {
     $race = Races::factory()->create(['season' => 2024, 'round' => 1]);
     $prediction = Prediction::factory()->submitted()->create([

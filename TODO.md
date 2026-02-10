@@ -29,12 +29,10 @@ Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-2
   - Affected: routes/web.php, resources/views/standings.blade.php, resources/views/standings/*.blade.php, app/Livewire/GlobalLeaderboard.php
   - Done: Prediction standings already use GlobalLeaderboard (real users). GlobalLeaderboard now keeps URL season and current_season in availableSeasons so /2026/standings/predictions shows 2026 and real data. Added Standings2026Test (200 + year in heading, no fake usernames, real users with predictions appear).
 
-- [ ] **F1-089: Create missing admin views (5 pages return 500)** _(found 2026-02-10 audit)_
+- [x] **F1-089: Create missing admin views (5 pages return 500)** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: high | Owner: agent
   - Affected: resources/views/admin/users.blade.php, admin/predictions.blade.php, admin/races.blade.php, admin/scoring.blade.php, admin/settings.blade.php
-  - AdminController methods `users()`, `predictions()`, `races()`, `scoring()`, `settings()` are fully implemented and return `view('admin.xxx', ...)` but the 5 view files do not exist. Hitting `/admin/users`, `/admin/predictions`, `/admin/races`, `/admin/scoring`, `/admin/settings` crashes with a 500. Only `admin/dashboard.blade.php` exists.
-  - Create each view using the main layout, matching the admin dashboard styling, and displaying the data the controller already passes (paginated users, predictions, races, scoring stats).
-  - Related: F1-078 (admin panel features); this item is specifically about the missing view files that cause 500s.
+  - Done: Created all 5 views using main layout and dashboard styling; users (paginated with predictions count/sum), predictions (paginated with user, score/lock/unlock/delete actions), races (paginated list), scoring (races with pending count and score/queue/half-points actions), settings (placeholder). Added test "admin can load all admin view pages" in AdminControllerTest.
 
 - [ ] **F1-090: Implement detail pages with real data (team, driver, circuit, country, race)** _(found 2026-02-10 audit)_
   - Type: bug | Priority: P1 | Risk: high | Owner: mixed
