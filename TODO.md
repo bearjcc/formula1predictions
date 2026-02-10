@@ -24,14 +24,10 @@ Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-2
     - Avoid hitting the real F1 API in tests.
   - Done: F1ApiService mock (RoutesTest, ViewsTest); auth smoke tests (redirects, user pages, admin dashboard). Admin sub-routes (users, predictions, etc.) lack views—only dashboard tested.
 
-- [ ] **F1-082: Fix 2026 standings and prediction standings pages**
+- [x] **F1-082: Fix 2026 standings and prediction standings pages** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: high | Owner: mixed
-  - Affected: routes/web.php, resources/views/standings.blade.php, resources/views/standings/*.blade.php, leaderboard/GlobalLeaderboard
-  - `/2026/standings` shows 2026 in the heading but surfaces legacy 2023/2025-style demo content; `/2026/standings/predictions` renders hard-coded fake users and pagination (“F1Expert”, “RacingFan2023”, “PredictorPro”) and only three example rows.
-  - Replace mock/demo data with real standings backed by existing leaderboard logic (either LeaderboardController views or the GlobalLeaderboard Livewire component) so that:
-    - The selected URL year controls which season is queried.
-    - Only real users from the database are displayed.
-    - Filters and pagination operate on actual data instead of being static UI.
+  - Affected: routes/web.php, resources/views/standings.blade.php, resources/views/standings/*.blade.php, app/Livewire/GlobalLeaderboard.php
+  - Done: Prediction standings already use GlobalLeaderboard (real users). GlobalLeaderboard now keeps URL season and current_season in availableSeasons so /2026/standings/predictions shows 2026 and real data. Added Standings2026Test (200 + year in heading, no fake usernames, real users with predictions appear).
 
 ---
 

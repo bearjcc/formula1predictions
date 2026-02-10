@@ -65,12 +65,18 @@ class GlobalLeaderboard extends Component
 
     private function loadAvailableSeasons(): void
     {
-        $this->availableSeasons = Prediction::distinct()
+        $fromDb = Prediction::distinct()
             ->pluck('season')
             ->sort()
             ->reverse()
             ->values()
             ->toArray();
+        $extra = array_filter([
+            $this->season,
+            config('f1.current_season'),
+        ]);
+        $this->availableSeasons = array_values(array_unique(array_merge($fromDb, $extra)));
+        rsort($this->availableSeasons);
     }
 
     private function loadLeaderboard(): void
