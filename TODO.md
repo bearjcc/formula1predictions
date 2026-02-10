@@ -302,3 +302,8 @@ Longer-horizon ideas and exploratory improvements.
 - [x] **F1-105: Add is_admin to User model $hidden array** _(done 2026-02-10 with F1-065)_
   - Type: security | Priority: P2 | Risk: low | Owner: agent
   - Done: Added is_admin to User::$hidden so admin status is not exposed in JSON serialization.
+  
+- [ ] **F1-106: Revisit country detail page and sidebar link**
+  - Type: bug | Priority: P3 | Risk: low | Owner: agent
+  - Affected: resources/views/country.blade.php, components/layouts/layout.blade.php
+  - The country detail page is not yet set up correctly for production (data, layout, or navigation expectations). Temporarily hide the sidebar navigation entry until the page is finalized, then align the page with the rest of the site and restore the link.

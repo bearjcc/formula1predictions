@@ -1,8 +1,10 @@
 <?php
 
 use App\Livewire\Races\RacesList;
+use App\Models\User;
 use App\Services\F1ApiService;
 use Livewire\Livewire;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function Pest\Laravel\mock;
 
@@ -129,4 +131,33 @@ test('races list shows all races grouped as next, future, and past', function ()
         ->assertSee('Canadian Grand Prix')
         ->assertSee('Next race')
         ->assertSee('Past races');
+});
+
+test('non-admin users cannot refresh races data', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2024)
+            ->andReturn([]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2024])
+        ->call('refreshRaces');
+})->throws(HttpException::class, 'Access denied. Admin privileges required to refresh race data.');
+
+test('admins can refresh races data', function () {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2024)
+            ->twice()
+            ->andReturn([]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2024])
+        ->call('refreshRaces');
 });

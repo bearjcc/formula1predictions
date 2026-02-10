@@ -101,22 +101,5 @@
                 </x-mary-button>
             </div>
         </div>
-
-        <div class="flex flex-col items-end space-y-2">
-            <x-mary-button variant="ghost" size="sm" icon="o-star">
-                Favorite
-            </x-mary-button>
-            <div class="dropdown dropdown-end">
-                <div tabindex="0" role="button">
-                    <x-mary-button variant="ghost" size="sm" icon="o-ellipsis-vertical" />
-                </div>
-                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                    <li><a class="flex items-center space-x-2"><x-mary-icon name="o-pencil" class="w-4 h-4" /><span>Edit</span></a></li>
-                    <li><a class="flex items-center space-x-2"><x-mary-icon name="o-document-duplicate" class="w-4 h-4" /><span>Duplicate</span></a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="flex items-center space-x-2 text-red-600"><x-mary-icon name="o-trash" class="w-4 h-4" /><span>Delete</span></a></li>
-                </ul>
-            </div>
-        </div>
     </div>
 </div>

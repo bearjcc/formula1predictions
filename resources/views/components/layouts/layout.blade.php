@@ -67,10 +67,13 @@
                             <x-mary-icon name="o-user" class="w-4 h-4" />
                             <span>{{ __('Drivers') }}</span>
                         </a>
+                        {{-- F1-106: Temporarily hide Countries page from sidebar until detail page is finalized --}}
+                        {{--
                         <a href="{{ route('countries') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('countries') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-map-pin" class="w-4 h-4" />
                             <span>{{ __('Countries') }}</span>
                         </a>
+                        --}}
                     </div>
                 </div>
 

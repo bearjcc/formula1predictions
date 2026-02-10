@@ -151,6 +151,8 @@
                     </div>
                 </x-mary-card>
 
+                {{-- F1-106: Temporarily hide Countries card until country page is finalized --}}
+                {{--
                 <!-- Countries Card -->
                 <x-mary-card class="group relative hover:shadow-xl transition-all duration-300 overflow-hidden bg-card">
                     <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-indigo-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
@@ -173,6 +175,7 @@
                         </a>
                     </div>
                 </x-mary-card>
+                --}}
             </div>
         </div>
     </div>

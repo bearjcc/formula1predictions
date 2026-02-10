@@ -5,8 +5,10 @@ namespace App\Livewire\Races;
 use App\Exceptions\F1ApiException;
 use App\Models\Races;
 use App\Services\F1ApiService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RacesList extends Component
 {
@@ -51,6 +53,11 @@ class RacesList extends Component
 
     public function refreshRaces(): void
     {
+        $user = Auth::user();
+        if (! $user || ! $user->hasRole('admin')) {
+            throw new HttpException(403, 'Access denied. Admin privileges required to refresh race data.');
+        }
+
         $this->loadRaces();
     }
 

@@ -17,20 +17,28 @@
                     <p class="text-red-600 dark:text-red-300">{{ $error }}</p>
                 </div>
             </div>
-            <div class="mt-4">
-                <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path">
-                    Try Again
-                </x-mary-button>
-            </div>
+            @if(auth()->user()?->hasRole('admin'))
+                <div class="mt-4">
+                    <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path">
+                        Try Again
+                    </x-mary-button>
+                </div>
+            @else
+                <p class="mt-4 text-sm text-red-700 dark:text-red-300">
+                    Data is managed automatically. If this keeps happening, please contact an admin.
+                </p>
+            @endif
         </div>
     @else
         @php($grouped = $this->groupedRaces)
         @if(count($this->races) > 0)
-            <div class="flex justify-end mb-4">
-                <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path">
-                    Refresh Data
-                </x-mary-button>
-            </div>
+            @if(auth()->user()?->hasRole('admin'))
+                <div class="flex justify-end mb-4">
+                    <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path">
+                        Refresh Data
+                    </x-mary-button>
+                </div>
+            @endif
 
             <div class="space-y-4">
                 @if(!empty($grouped['next']))
@@ -84,9 +92,15 @@
                 <x-mary-icon name="o-calendar-days" class="w-12 h-12 text-zinc-400 mx-auto mb-4" />
                 <h3 class="text-lg font-semibold text-zinc-600 dark:text-zinc-400 mb-2">No races found</h3>
                 <p class="text-zinc-500 dark:text-zinc-500">No races available for {{ $year }}.</p>
-                <div class="mt-4">
-                    <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path">Try again</x-mary-button>
-                </div>
+                @if(auth()->user()?->hasRole('admin'))
+                    <div class="mt-4">
+                        <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path">Try again</x-mary-button>
+                    </div>
+                @else
+                    <p class="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+                        Race data will update automatically once it’s available.
+                    </p>
+                @endif
             </div>
         @endif
     @endif
