@@ -14,7 +14,7 @@ class AdminSeeder extends Seeder
      *
      * Environment variables:
      * - ADMIN_EMAIL: Email address for the admin user (required)
-     * - ADMIN_PASSWORD: Password for the admin user (optional, defaults to 'password')
+     * - ADMIN_PASSWORD: Password for the admin user (required for creation; no default in production)
      * - ADMIN_NAME: Display name for the admin user (optional, defaults to 'Admin')
      *
      * Usage:
@@ -23,13 +23,22 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         $email = config('admin.promotable_admin_email');
-        $password = config('admin.admin_password') ?? 'password';
+        $password = config('admin.admin_password');
         $name = config('admin.admin_name') ?? 'Admin';
 
         if (empty($email)) {
             if ($this->command) {
                 $this->command->warn('ADMIN_EMAIL not set in .env. Skipping admin seeder.');
                 $this->command->comment('Set ADMIN_EMAIL in .env and run: php artisan db:seed --class=AdminSeeder');
+            }
+
+            return;
+        }
+
+        if (empty($password)) {
+            if ($this->command) {
+                $this->command->warn('ADMIN_PASSWORD not set in .env. Skipping admin seeder.');
+                $this->command->comment('Set ADMIN_PASSWORD in production to avoid insecure default.');
             }
 
             return;

@@ -231,6 +231,19 @@ test('ensure admin user command fails when ADMIN_EMAIL not set', function () {
         ->assertExitCode(1);
 });
 
+test('ensure admin user command fails when ADMIN_PASSWORD not set and user must be created', function () {
+    config([
+        'admin.promotable_admin_email' => 'new-admin@example.com',
+        'admin.admin_password' => null,
+    ]);
+
+    $this->artisan('app:ensure-admin-user')
+        ->expectsOutputToContain('ADMIN_PASSWORD is not set')
+        ->assertExitCode(1);
+
+    expect(User::where('email', 'new-admin@example.com')->exists())->toBeFalse();
+});
+
 test('ensure admin user command creates admin when user does not exist', function () {
     config([
         'admin.promotable_admin_email' => 'env-admin@example.com',

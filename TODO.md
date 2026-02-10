@@ -293,11 +293,9 @@ Longer-horizon ideas and exploratory improvements.
   - `create()`, `store()`, `edit()`, `update()`, `destroy()` are empty stub methods (contain only `//` comment). No routes use them. Remove or implement.
   - Related: F1-061 (empty scaffold controllers).
 
-- [ ] **F1-103: Harden admin password default in config** _(found 2026-02-10 audit)_
+- [x] **F1-103: Harden admin password default in config** _(done 2026-02-10)_
   - Type: security | Priority: P2 | Risk: medium | Owner: agent
-  - Affected: config/admin.php (line 23), app/Console/Commands/EnsureAdminUser.php (line 19)
-  - `config('admin.admin_password')` defaults to `'password'` if `ADMIN_PASSWORD` env var is not set. The `EnsureAdminUser` command silently creates an admin with password "password" on deployment if the env var is missing.
-  - Change default to `null` and fail gracefully (skip creation or abort) when no password is explicitly provided.
+  - Done: Removed password default from config. EnsureAdminUser and AdminSeeder now require explicit ADMIN_PASSWORD when creating new admins; they skip/fail gracefully when unset.
 
 - [ ] **F1-104: Fix prediction request validation inconsistency** _(found 2026-02-10 audit)_
   - Type: bug | Priority: P2 | Risk: low | Owner: agent

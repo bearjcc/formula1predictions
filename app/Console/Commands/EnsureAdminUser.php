@@ -16,7 +16,7 @@ class EnsureAdminUser extends Command
     {
         $email = config('admin.promotable_admin_email');
         $name = config('admin.admin_name') ?? 'Admin';
-        $password = config('admin.admin_password') ?? 'password';
+        $password = config('admin.admin_password');
 
         if (empty($email)) {
             $this->error('ADMIN_EMAIL is not set. Skipping admin creation.');
@@ -29,6 +29,13 @@ class EnsureAdminUser extends Command
         $user = User::where('email', $email)->first();
 
         if (! $user) {
+            if (empty($password)) {
+                $this->error('ADMIN_PASSWORD is not set. Cannot create admin without an explicit password.');
+                $this->comment('Set ADMIN_PASSWORD in .env for production deployment, then re-run this command.');
+
+                return Command::FAILURE;
+            }
+
             $user = User::create([
                 'email' => $email,
                 'name' => $name,

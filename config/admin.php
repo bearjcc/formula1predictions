@@ -20,5 +20,5 @@ return [
     | be accessed via config() in application code.
     */
     'admin_name' => env('ADMIN_NAME', 'Admin'),
-    'admin_password' => env('ADMIN_PASSWORD', 'password'),
+    'admin_password' => env('ADMIN_PASSWORD'),
 ];

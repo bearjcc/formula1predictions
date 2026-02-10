@@ -43,17 +43,30 @@ test('admin seeder updates existing user', function () {
         ->and($admin->is_admin)->toBeTrue();
 });
 
-test('admin seeder uses defaults when env not set', function () {
+test('admin seeder skips when ADMIN_PASSWORD not set', function () {
     config([
         'admin.promotable_admin_email' => 'admin@example.com',
-        'admin.admin_name' => null,
+        'admin.admin_name' => 'Test Admin',
         'admin.admin_password' => null,
     ]);
 
     $this->seed(AdminSeeder::class);
 
+    expect(User::count())->toBe(0);
+});
+
+test('admin seeder uses default name when ADMIN_NAME not set', function () {
+    config([
+        'admin.promotable_admin_email' => 'admin@example.com',
+        'admin.admin_name' => null,
+        'admin.admin_password' => 'secure-password',
+    ]);
+
+    $this->seed(AdminSeeder::class);
+
     $admin = User::where('email', 'admin@example.com')->first();
-    expect($admin->name)->toBe('Admin')
+    expect($admin)->not->toBeNull()
+        ->and($admin->name)->toBe('Admin')
         ->and($admin->is_admin)->toBeTrue();
 });
 
