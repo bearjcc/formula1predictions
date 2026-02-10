@@ -107,6 +107,11 @@ Longer-horizon ideas and exploratory improvements.
     - The sidebar link is wrapped in `Route::has('components')` (already present) and is hidden in production.
     - The components view is resilient enough not to 500 on missing assets; add a minimal smoke test in `testing` env to catch regressions.
 
+- [ ] **F1-088: Fix /components page 500 Server Error** _(found 2026-02-10 sidebar QA)_
+  - Type: bug | Priority: P2 | Risk: low | Owner: agent
+  - Affected: routes/web.php (GET /components), resources/views/components.blade.php, layout/ Mary UI components
+  - Sidebar link "Components" (Mary UI demo) returns 500 when loaded. View uses `<x-layouts.layout>` and various `<x-mary-*>` components. Root cause not yet identified (check laravel.log with APP_DEBUG=true when hitting `/components`). Fix so the page renders in local/testing; can be done as part of F1-085.
+
 - [ ] **F1-086: Align auth pages with main site layout and theme**
   - Type: UI | Priority: P2 | Risk: medium | Owner: mixed
   - Affected: resources/views/livewire/auth/*.blade.php, components/layouts/auth*.blade.php, components/layouts/layout.blade.php

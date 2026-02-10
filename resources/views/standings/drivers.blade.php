@@ -16,7 +16,7 @@
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
             <h2 class="text-heading-3">Driver Championship Standings</h2>
         </div>
-        
+
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-zinc-50 dark:bg-zinc-700">
@@ -39,177 +39,67 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                             Podiums
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            Actions
-                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-zinc-800 divide-y divide-zinc-200 dark:divide-zinc-700">
-                    <!-- Driver 1 -->
-                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <x-mary-badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                    1
-                                </x-mary-badge>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                                        <x-mary-icon name="o-user" class="w-6 h-6 text-red-600 dark:text-red-400" />
+                    @forelse($driverRows as $row)
+                        <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    @if($row['position'] === 1)
+                                        <x-mary-badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                            {{ $row['position'] }}
+                                        </x-mary-badge>
+                                    @elseif($row['position'] === 2)
+                                        <x-mary-badge class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                                            {{ $row['position'] }}
+                                        </x-mary-badge>
+                                    @elseif($row['position'] === 3)
+                                        <x-mary-badge class="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                                            {{ $row['position'] }}
+                                        </x-mary-badge>
+                                    @else
+                                        <x-mary-badge variant="outline">{{ $row['position'] }}</x-mary-badge>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                                            <x-mary-icon name="o-user" class="w-6 h-6 text-red-600 dark:text-red-400" />
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
+                                        @if($row['nationality'] ?? null)
+                                            <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $row['nationality'] }}</p>
+                                        @endif
                                     </div>
                                 </div>
-                                <div class="ml-4">
-                                    <h3 class="font-semibold">Max Verstappen</h3>
-                                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Netherlands</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>Red Bull Racing</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <h3 class="font-semibold text-green-600 dark:text-green-400">454</h3>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>19</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>21</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex items-center space-x-2">
-                                <x-mary-button variant="outline" size="sm" icon="o-eye">
-                                    View
-                                </x-mary-button>
-                                <div class="dropdown dropdown-end">
-                                    <div tabindex="0" role="button">
-                                        <x-mary-button variant="ghost" size="sm" icon="o-ellipsis-vertical" />
-                                    </div>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-user" class="w-4 h-4" /><span>Profile</span></a></li>
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-chart-bar" class="w-4 h-4" /><span>Statistics</span></a></li>
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-star" class="w-4 h-4" /><span>Favorite</span></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Driver 2 -->
-                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <x-mary-badge class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                                    2
-                                </x-mary-badge>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-silver-100 dark:bg-silver-900 flex items-center justify-center">
-                                        <x-mary-icon name="o-user" class="w-6 h-6 text-silver-600 dark:text-silver-400" />
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <h3 class="font-semibold">Sergio Pérez</h3>
-                                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Mexico</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>Red Bull Racing</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <h3 class="font-semibold text-green-600 dark:text-green-400">285</h3>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>2</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>9</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex items-center space-x-2">
-                                <x-mary-button variant="outline" size="sm" icon="o-eye">
-                                    View
-                                </x-mary-button>
-                                <div class="dropdown dropdown-end">
-                                    <div tabindex="0" role="button">
-                                        <x-mary-button variant="ghost" size="sm" icon="o-ellipsis-vertical" />
-                                    </div>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-user" class="w-4 h-4" /><span>Profile</span></a></li>
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-chart-bar" class="w-4 h-4" /><span>Statistics</span></a></li>
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-star" class="w-4 h-4" /><span>Favorite</span></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Driver 3 -->
-                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <x-mary-badge class="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                                    3
-                                </x-mary-badge>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                                        <x-mary-icon name="o-user" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <h3 class="font-semibold">Lewis Hamilton</h3>
-                                    <p class="text-sm text-zinc-600 dark:text-zinc-400">United Kingdom</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>Mercedes</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <h3 class="font-semibold text-green-600 dark:text-green-400">234</h3>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>0</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <p>6</p>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex items-center space-x-2">
-                                <x-mary-button variant="outline" size="sm" icon="o-eye">
-                                    View
-                                </x-mary-button>
-                                <div class="dropdown dropdown-end">
-                                    <div tabindex="0" role="button">
-                                        <x-mary-button variant="ghost" size="sm" icon="o-ellipsis-vertical" />
-                                    </div>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-user" class="w-4 h-4" /><span>Profile</span></a></li>
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-chart-bar" class="w-4 h-4" /><span>Statistics</span></a></li>
-                                        <li><a class="flex items-center space-x-2"><x-mary-icon name="o-star" class="w-4 h-4" /><span>Favorite</span></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p>{{ $row['team_name'] ?? '—' }}</p>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="font-semibold text-green-600 dark:text-green-400">{{ number_format($row['points'], 0) }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p>{{ $row['wins'] }}</p>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p>{{ $row['podiums'] }}</p>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                                {{ __('No driver standings data for this season yet. Standings are updated from our database after each race.') }}
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </x-mary-card>
-
-    <!-- Placeholder note -->
-    <p class="mt-6 text-sm text-zinc-600 dark:text-zinc-400">
-        {{ __('This is a static example table for now; live driver standings will be wired to real data in a later iteration.') }}
-    </p>
 </x-layouts.layout>

@@ -51,7 +51,7 @@ Use minimal test filters when validating changes. No verification scripts or tin
 - **Analytics:** `ChartDataService`; Livewire chart components under `app/Livewire/Charts/*`.
 - **Notifications:** `NotificationService`; `app/Events/*`, `app/Notifications/*`; notification dropdown components.
 - **Admin/jobs:** Admin controllers/views; `ScoreRacePredictionsJob` and other jobs in `app/Jobs/*`.
-- **F1 API:** `F1ApiService` — cache, retries, timeouts; log errors; never crash user flows on API failure.
+- **F1 API:** `F1ApiService` — cache, retries, timeouts; log errors; never crash user flows on API failure. On deploy, `f1:ensure-season-data` runs at startup to preload current year (races, drivers, teams) if missing; no user interaction required.
 
 Preserve model relationships and existing patterns when changing schema or behavior.
 

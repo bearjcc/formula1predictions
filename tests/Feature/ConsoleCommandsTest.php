@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Models\Drivers;
 use App\Models\Prediction;
 use App\Models\Races;
+use App\Models\Teams;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -113,6 +115,66 @@ test('sync season data command runs and syncs races teams drivers', function () 
         ->assertExitCode(0);
 });
 
+test('ensure season data command skips sync when data exists', function () {
+    $year = 2025;
+    Races::factory()->create(['season' => $year]);
+    Drivers::factory()->create(['is_active' => true]);
+    Teams::factory()->create(['is_active' => true]);
+
+    $this->artisan('f1:ensure-season-data', ['year' => $year])
+        ->expectsOutputToContain('Season 2025 data already loaded. Skipping sync.')
+        ->assertExitCode(0);
+});
+
+test('ensure season data command runs sync when races missing', function () {
+    Drivers::factory()->create(['is_active' => true]);
+    Teams::factory()->create(['is_active' => true]);
+    // No races for 2025
+
+    $mock = \Mockery::mock(\App\Services\F1ApiService::class);
+    $mock->shouldReceive('syncSeasonRacesFromSchedule')->once()->with(2025)->andReturn(['created' => 24, 'updated' => 0]);
+    $mock->shouldReceive('syncTeamsForSeason')->once()->with(2025)->andReturn(10);
+    $mock->shouldReceive('syncDriversForSeason')->once()->with(2025)->andReturn(22);
+    $this->app->instance(\App\Services\F1ApiService::class, $mock);
+
+    $this->artisan('f1:ensure-season-data', ['year' => 2025])
+        ->expectsOutputToContain('Season 2025 data missing or --force')
+        ->expectsOutputToContain('Races: 24 created, 0 updated.')
+        ->assertExitCode(0);
+});
+
+test('ensure season data command runs sync when drivers missing', function () {
+    Races::factory()->create(['season' => 2025]);
+    Teams::factory()->create(['is_active' => true]);
+    // No drivers
+
+    $mock = \Mockery::mock(\App\Services\F1ApiService::class);
+    $mock->shouldReceive('syncSeasonRacesFromSchedule')->once()->with(2025)->andReturn(['created' => 0, 'updated' => 1]);
+    $mock->shouldReceive('syncTeamsForSeason')->once()->with(2025)->andReturn(10);
+    $mock->shouldReceive('syncDriversForSeason')->once()->with(2025)->andReturn(22);
+    $this->app->instance(\App\Services\F1ApiService::class, $mock);
+
+    $this->artisan('f1:ensure-season-data', ['year' => 2025])
+        ->expectsOutputToContain('Season 2025 data missing or --force')
+        ->assertExitCode(0);
+});
+
+test('ensure season data command respects --force', function () {
+    Races::factory()->create(['season' => 2025]);
+    Drivers::factory()->create(['is_active' => true]);
+    Teams::factory()->create(['is_active' => true]);
+
+    $mock = \Mockery::mock(\App\Services\F1ApiService::class);
+    $mock->shouldReceive('syncSeasonRacesFromSchedule')->once()->with(2025)->andReturn(['created' => 0, 'updated' => 24]);
+    $mock->shouldReceive('syncTeamsForSeason')->once()->with(2025)->andReturn(10);
+    $mock->shouldReceive('syncDriversForSeason')->once()->with(2025)->andReturn(22);
+    $this->app->instance(\App\Services\F1ApiService::class, $mock);
+
+    $this->artisan('f1:ensure-season-data', ['year' => 2025, '--force' => true])
+        ->expectsOutputToContain('Season 2025 data missing or --force')
+        ->assertExitCode(0);
+});
+
 test('sync season data command respects races-only option', function () {
     $mock = \Mockery::mock(\App\Services\F1ApiService::class);
     $mock->shouldReceive('syncSeasonRacesFromSchedule')->once()->with(2025)->andReturn(['created' => 0, 'updated' => 24]);
@@ -216,4 +278,3 @@ test('ensure admin user command is idempotent when admin already exists', functi
     $user->refresh();
     expect($user->is_admin)->toBeTrue();
 });
-

@@ -4,6 +4,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\RacesController;
+use App\Models\Drivers;
+use App\Models\Standings;
+use App\Models\Teams;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -129,12 +132,78 @@ Route::middleware(['validate.year'])->group(function () {
     })->name('standings');
 
     Route::get('/{year}/standings/drivers', function ($year) {
-        return view('standings.drivers', ['year' => $year]);
+        $driverStandings = Standings::getDriverStandings((int) $year, null);
+        $entityIds = $driverStandings->pluck('entity_id')->unique()->filter()->values();
+        $numericIds = $entityIds->filter(fn ($id) => is_numeric($id))->map(fn ($id) => (int) $id)->values();
+        $driversByEntityId = collect();
+        if ($numericIds->isNotEmpty()) {
+            Drivers::whereIn('id', $numericIds)->with('team')->get()->each(function ($d) use (&$driversByEntityId) {
+                $driversByEntityId[$d->id] = $d;
+            });
+        }
+        $stringIds = $entityIds->filter(fn ($id) => ! is_numeric($id))->values();
+        if ($stringIds->isNotEmpty()) {
+            Drivers::whereIn('driver_id', $stringIds)->with('team')->get()->each(function ($d) use (&$driversByEntityId) {
+                $driversByEntityId[$d->driver_id] = $d;
+            });
+        }
+        $driverRows = $driverStandings->map(function ($s) use ($driversByEntityId) {
+            $driver = $driversByEntityId[$s->entity_id] ?? null;
+
+            return [
+                'position' => $s->position,
+                'driver_name' => $s->entity_name,
+                'nationality' => $driver?->nationality ?? null,
+                'team_name' => $driver?->team?->team_name ?? null,
+                'points' => $s->points,
+                'wins' => (int) ($s->wins ?? 0),
+                'podiums' => (int) ($s->podiums ?? 0),
+            ];
+        })->all();
+
+        return view('standings.drivers', ['year' => (int) $year, 'driverRows' => $driverRows]);
     })->name('standings.drivers');
 
     // team standings
     Route::get('/{year}/standings/teams', function ($year) {
-        return view('standings.teams', ['year' => $year]);
+        $teamStandings = Standings::getConstructorStandings((int) $year, null);
+        $entityIds = $teamStandings->pluck('entity_id')->unique()->filter()->values();
+        $numericIds = $entityIds->filter(fn ($id) => is_numeric($id))->map(fn ($id) => (int) $id)->values();
+        $teamsByEntityId = collect();
+        if ($numericIds->isNotEmpty()) {
+            Teams::whereIn('id', $numericIds)->get()->each(function ($t) use (&$teamsByEntityId) {
+                $teamsByEntityId[$t->id] = $t;
+                $teamsByEntityId[$t->team_id] = $t;
+            });
+        }
+        $stringIds = $entityIds->filter(fn ($id) => ! is_numeric($id))->values();
+        if ($stringIds->isNotEmpty()) {
+            Teams::whereIn('team_id', $stringIds)->get()->each(function ($t) use (&$teamsByEntityId) {
+                $teamsByEntityId[$t->team_id] = $t;
+                $teamsByEntityId[$t->id] = $t;
+            });
+        }
+        $teamIds = collect($teamsByEntityId)->pluck('id')->unique()->filter()->values();
+        $driverNamesByTeamId = $teamIds->isNotEmpty()
+            ? Drivers::whereIn('team_id', $teamIds)->get()->groupBy('team_id')->map(fn ($drivers) => $drivers->map(fn ($d) => trim($d->name.' '.$d->surname))->values()->all())
+            : collect();
+        $teamRows = $teamStandings->map(function ($s) use ($teamsByEntityId, $driverNamesByTeamId) {
+            $team = $teamsByEntityId[$s->entity_id] ?? null;
+            $teamId = $team?->id;
+            $driverNames = $teamId ? ($driverNamesByTeamId[$teamId] ?? []) : [];
+
+            return [
+                'position' => $s->position,
+                'team_name' => $s->entity_name,
+                'nationality' => $team?->nationality ?? null,
+                'driver_names' => $driverNames,
+                'points' => $s->points,
+                'wins' => (int) ($s->wins ?? 0),
+                'podiums' => (int) ($s->podiums ?? 0),
+            ];
+        })->all();
+
+        return view('standings.teams', ['year' => (int) $year, 'teamRows' => $teamRows]);
     })->name('standings.teams');
 
     // prediction standings
