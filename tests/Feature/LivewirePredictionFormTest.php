@@ -199,11 +199,10 @@ class LivewirePredictionFormTest extends TestCase
         $team = Teams::factory()->create();
         $drivers = Drivers::factory()->count(3)->create(['team_id' => $team->id]);
 
-        $prediction = Prediction::factory()->create([
+        $prediction = Prediction::factory()->locked()->create([
             'user_id' => $user->id,
             'type' => 'race',
             'season' => 2024,
-            'status' => 'locked',
             'prediction_data' => [
                 'driver_order' => $drivers->pluck('id')->toArray(),
                 'fastest_lap' => $drivers->first()->id,
@@ -229,11 +228,10 @@ class LivewirePredictionFormTest extends TestCase
         $team = Teams::factory()->create();
         $drivers = Drivers::factory()->count(3)->create(['team_id' => $team->id]);
 
-        $prediction = Prediction::factory()->create([
+        $prediction = Prediction::factory()->scored()->create([
             'user_id' => $user->id,
             'type' => 'race',
             'season' => 2024,
-            'status' => 'scored',
             'prediction_data' => [
                 'driver_order' => $drivers->pluck('id')->toArray(),
                 'fastest_lap' => $drivers->first()->id,

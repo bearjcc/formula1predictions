@@ -116,7 +116,7 @@ class BotPredictionsSeeder extends Seeder
         // Ensure we have a race id if races exist locally
         $race = Races::where('season', $season)->where('round', $round)->first();
 
-        Prediction::updateOrCreate(
+        $prediction = Prediction::updateOrCreate(
             [
                 'user_id' => $userId,
                 'type' => 'race',
@@ -128,8 +128,8 @@ class BotPredictionsSeeder extends Seeder
                 'prediction_data' => [
                     'driver_order' => $localDriverIds,
                 ],
-                'status' => 'submitted',
             ]
         );
+        $prediction->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save();
     }
 }

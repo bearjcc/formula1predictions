@@ -224,7 +224,7 @@ class HistoricalPredictionsSeeder extends Seeder
         }
 
         // Upsert to avoid unique constraint collisions when re-running
-        Prediction::updateOrCreate(
+        $prediction = Prediction::updateOrCreate(
             [
                 'user_id' => $user->id,
                 'type' => 'race',
@@ -237,11 +237,10 @@ class HistoricalPredictionsSeeder extends Seeder
                     'driver_order' => $driverIds,
                     'fastest_lap' => $fastestLapId,
                 ],
-                'status' => 'submitted',
-                'submitted_at' => now(),
                 'notes' => "Imported from historical data - {$raceName}",
             ]
         );
+        $prediction->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save();
     }
 
     private function createPreseasonPrediction(User $user, int $year, array $teamOrder, array $driverChampionship, array $superlatives): void
@@ -270,7 +269,7 @@ class HistoricalPredictionsSeeder extends Seeder
         }
 
         // Upsert preseason prediction to avoid duplicates
-        Prediction::updateOrCreate(
+        $prediction = Prediction::updateOrCreate(
             [
                 'user_id' => $user->id,
                 'type' => 'preseason',
@@ -282,11 +281,10 @@ class HistoricalPredictionsSeeder extends Seeder
                     'driver_championship' => $driverIds,
                     'superlatives' => $superlatives,
                 ],
-                'status' => 'submitted',
-                'submitted_at' => now(),
                 'notes' => 'Imported from historical data - Preseason predictions',
             ]
         );
+        $prediction->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save();
     }
 
     private function normalizeDriverName(string $name): ?string

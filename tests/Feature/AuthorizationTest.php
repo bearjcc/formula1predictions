@@ -170,11 +170,10 @@ test('users can manage their own predictions', function () {
         'type' => 'race',
         'status' => 'draft',
     ]);
-    $submittedPrediction = Prediction::factory()->create([
+    $submittedPrediction = Prediction::factory()->submitted()->create([
         'user_id' => $user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted',
     ]);
 
     // Users can view their own predictions

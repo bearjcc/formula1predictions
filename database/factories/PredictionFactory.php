@@ -27,13 +27,27 @@ class PredictionFactory extends Factory
                 'driver_order' => $this->faker->shuffleArray(range(1, 20)),
                 'fastest_lap' => $this->faker->randomElement(['max_verstappen', 'lewis_hamilton', 'charles_leclerc']),
             ],
-            'score' => $this->faker->numberBetween(0, 500),
-            'accuracy' => $this->faker->randomFloat(2, 0, 100),
-            'status' => $this->faker->randomElement(['draft', 'submitted', 'locked', 'scored']),
-            'submitted_at' => $this->faker->optional()->dateTime(),
-            'locked_at' => $this->faker->optional()->dateTime(),
-            'scored_at' => $this->faker->optional()->dateTime(),
             'notes' => $this->faker->optional()->sentence(),
         ];
+    }
+
+    public function submitted(): static
+    {
+        return $this->afterCreating(fn ($p) => $p->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save());
+    }
+
+    public function locked(): static
+    {
+        return $this->afterCreating(fn ($p) => $p->forceFill(['status' => 'locked', 'locked_at' => now()])->save());
+    }
+
+    public function scored(int $score = 10, float $accuracy = 50.0): static
+    {
+        return $this->afterCreating(fn ($p) => $p->forceFill([
+            'status' => 'scored',
+            'score' => $score,
+            'accuracy' => $accuracy,
+            'scored_at' => now(),
+        ])->save());
     }
 }

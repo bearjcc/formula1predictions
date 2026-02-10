@@ -32,11 +32,9 @@ describe('2026 standings pages', function () {
 
     test('prediction standings for 2026 shows real users with predictions', function () {
         $user = User::factory()->create(['name' => 'RealPredictor2026']);
-        Prediction::factory()->create([
+        Prediction::factory()->scored(50)->create([
             'user_id' => $user->id,
             'season' => 2026,
-            'status' => 'scored',
-            'score' => 50,
         ]);
 
         $response = $this->get('/2026/standings/predictions');

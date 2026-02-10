@@ -132,10 +132,10 @@ class AdminController extends Controller
     {
         $this->authorize('update', $prediction);
 
-        $prediction->update([
+        $prediction->forceFill([
             'status' => 'locked',
             'locked_at' => now(),
-        ]);
+        ])->save();
 
         return redirect()->back()->with('success', 'Prediction locked successfully.');
     }
@@ -147,10 +147,10 @@ class AdminController extends Controller
     {
         $this->authorize('update', $prediction);
 
-        $prediction->update([
+        $prediction->forceFill([
             'status' => 'draft',
             'locked_at' => null,
-        ]);
+        ])->save();
 
         return redirect()->back()->with('success', 'Prediction unlocked successfully.');
     }

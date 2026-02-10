@@ -110,3 +110,30 @@ test('user cannot delete another users prediction', function () {
 
     expect(Prediction::find($prediction->id))->not->toBeNull();
 });
+
+test('mass-assigning score or status via create is rejected', function () {
+    $user = User::factory()->create();
+    $prediction = Prediction::create([
+        'user_id' => $user->id,
+        'type' => 'preseason',
+        'season' => 2024,
+        'race_round' => 1,
+        'race_id' => null,
+        'prediction_data' => ['team_order' => [1], 'driver_championship' => [1]],
+        'notes' => null,
+        'score' => 500,
+        'accuracy' => 99.9,
+        'status' => 'scored',
+        'submitted_at' => now(),
+        'locked_at' => now(),
+        'scored_at' => now(),
+    ]);
+
+    $prediction->refresh();
+    expect($prediction->score)->toBe(0)
+        ->and($prediction->status)->toBe('draft')
+        ->and($prediction->accuracy)->toBeNull()
+        ->and($prediction->submitted_at)->toBeNull()
+        ->and($prediction->locked_at)->toBeNull()
+        ->and($prediction->scored_at)->toBeNull();
+});

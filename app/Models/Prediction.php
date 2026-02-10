@@ -17,6 +17,10 @@ class Prediction extends Model
      *
      * @var list<string>
      */
+    /**
+     * User-editable only. System fields (score, accuracy, status, submitted_at, locked_at, scored_at)
+     * are set by ScoringService or model methods (submit/lock/score); use forceFill() in app code.
+     */
     protected $fillable = [
         'user_id',
         'type',
@@ -24,12 +28,6 @@ class Prediction extends Model
         'race_round',
         'race_id',
         'prediction_data',
-        'score',
-        'accuracy',
-        'status',
-        'submitted_at',
-        'locked_at',
-        'scored_at',
         'notes',
     ];
 

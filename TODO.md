@@ -29,6 +29,31 @@ Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-2
   - Affected: routes/web.php, resources/views/standings.blade.php, resources/views/standings/*.blade.php, app/Livewire/GlobalLeaderboard.php
   - Done: Prediction standings already use GlobalLeaderboard (real users). GlobalLeaderboard now keeps URL season and current_season in availableSeasons so /2026/standings/predictions shows 2026 and real data. Added Standings2026Test (200 + year in heading, no fake usernames, real users with predictions appear).
 
+- [ ] **F1-089: Create missing admin views (5 pages return 500)** _(found 2026-02-10 audit)_
+  - Type: bug | Priority: P1 | Risk: high | Owner: agent
+  - Affected: resources/views/admin/users.blade.php, admin/predictions.blade.php, admin/races.blade.php, admin/scoring.blade.php, admin/settings.blade.php
+  - AdminController methods `users()`, `predictions()`, `races()`, `scoring()`, `settings()` are fully implemented and return `view('admin.xxx', ...)` but the 5 view files do not exist. Hitting `/admin/users`, `/admin/predictions`, `/admin/races`, `/admin/scoring`, `/admin/settings` crashes with a 500. Only `admin/dashboard.blade.php` exists.
+  - Create each view using the main layout, matching the admin dashboard styling, and displaying the data the controller already passes (paginated users, predictions, races, scoring stats).
+  - Related: F1-078 (admin panel features); this item is specifically about the missing view files that cause 500s.
+
+- [ ] **F1-090: Implement detail pages with real data (team, driver, circuit, country, race)** _(found 2026-02-10 audit)_
+  - Type: bug | Priority: P1 | Risk: high | Owner: mixed
+  - Affected: resources/views/team.blade.php, driver.blade.php, circuit.blade.php, country.blade.php, race.blade.php, routes/web.php
+  - All 5 entity detail pages are hardcoded stubs. `/team/{slug}` shows Red Bull data regardless of slug. `/driver/{slug}` shows Max Verstappen stats for any driver. `/circuit/{slug}` shows Silverstone data and hardcodes "United Kingdom" for all circuits (geographic bug). `/country/{slug}` shows UK data for any country. `/race/{slug}` shows July 9 2023 Silverstone regardless of input.
+  - Route closures pass only `$slug` to the view with no database query and no 404 handling — invalid slugs render the template with fake data instead of a 404.
+  - For each page: query the corresponding model (Teams, Drivers, Circuits, Countries, Races) by slug using `firstOrFail()`, replace hardcoded content with model attributes and relationships, and return 404 for invalid slugs.
+  - Note: `/race/{slug}` and `/{year}/race/{id}` share the same stub view — consider splitting or adding conditional logic.
+
+- [ ] **F1-091: Implement countries index page with real data** _(found 2026-02-10 audit)_
+  - Type: bug | Priority: P1 | Risk: medium | Owner: agent
+  - Affected: resources/views/countries.blade.php, routes/web.php
+  - `/countries` shows 6 hardcoded country cards (UK, Germany, Brazil, Italy, Netherlands, Australia) with fabricated stats. Claims "Showing 1-6 of 25 countries" but pagination buttons are non-functional. Filter controls (region, championships, status, search) are present in the UI but not wired to any logic.
+  - Replace with database-backed Countries query, real pagination, and functional Livewire filters.
+
+- [x] **F1-092: Fix Prediction model mass assignment vulnerability** _(done 2026-02-10)_
+  - Type: security | Priority: P1 | Risk: high | Owner: agent
+  - Done: Removed score, accuracy, status, submitted_at, locked_at, scored_at from $fillable. ScoringService, AdminController, BotPredictionsSeeder, HistoricalPredictionsSeeder use forceFill() for system fields; PredictionForm uses submit() after create/update. PredictionFactory states submitted(), locked(), scored() for tests. Added test mass-assigning score or status via create is rejected.
+
 ---
 
 ---
@@ -143,7 +168,7 @@ Longer-horizon ideas and exploratory improvements.
 - [ ] **F1-065: Remove sensitive fields from User $fillable**
   - Type: security | Priority: P2 | Risk: low | Owner: agent
   - Affected: app/Models/User.php
-  - Sensitive fields (is_season_supporter, badges) in User $fillable. Consider removing or using guarded.
+  - Sensitive fields (`is_admin`, `is_season_supporter`, `badges`, `stats_cache`, `stats_cache_updated_at`) in User $fillable. `is_admin` is especially dangerous — a user could mass-assign admin privileges. Remove all non-user-editable fields from `$fillable`; use `forceFill()` or direct assignment in admin/system code.
 
 - [ ] **F1-066: Remove redundant indexes**
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
@@ -219,3 +244,75 @@ Longer-horizon ideas and exploratory improvements.
   - Type: feature | Priority: P2 | Risk: low | Owner: agent
   - Affected: routes, controller or Livewire component, feedback storage (table or mail), optional notifications
   - Form for users to send feedback/messages to site owner; store and/or email; no public display of messages.
+
+- [ ] **F1-093: Fix WCAG contrast failures on predictions and leaderboard pages** _(found 2026-02-10 audit)_
+  - Type: accessibility | Priority: P2 | Risk: low | Owner: agent
+  - Affected: resources/views/predictions/show.blade.php, resources/views/leaderboard/index.blade.php
+  - predictions/show.blade.php uses `text-zinc-500` on `bg-zinc-900` (~2:1 contrast ratio; WCAG AA requires 4.5:1). leaderboard/index.blade.php uses `text-gray-400` on white background (~2.5:1 ratio). Also `text-green-500` on dark backgrounds is borderline.
+  - Fix: Replace low-contrast text with `text-zinc-300 dark:text-zinc-200` on dark backgrounds; use `text-zinc-600 dark:text-zinc-400` on light backgrounds.
+
+- [ ] **F1-094: Migrate leaderboard views from daisyUI to Mary UI** _(found 2026-02-10 audit)_
+  - Type: UI | Priority: P2 | Risk: medium | Owner: agent
+  - Affected: resources/views/leaderboard/index.blade.php, resources/views/leaderboard/compare.blade.php
+  - Both files use old `@extends('components.layouts.layout')` pattern (should be `<x-layouts.layout>`) and 45+ daisyUI classes: `.btn`, `.btn-primary`, `.btn-outline`, `.card`, `.card-body`, `.form-control`, `.select`, `.select-bordered`, `.table`, `.table-zebra`, `.badge`, `.badge-outline`, `.bg-base-100`.
+  - Migrate to Mary UI components (`x-mary-button`, `x-mary-card`, `x-mary-table`, `x-mary-badge`, `x-mary-select`) and the new layout pattern.
+
+- [ ] **F1-095: Add mobile responsive wrappers to data tables** _(found 2026-02-10 audit)_
+  - Type: UI | Priority: P2 | Risk: low | Owner: agent
+  - Affected: resources/views/standings/drivers.blade.php, standings/teams.blade.php, leaderboard/index.blade.php, leaderboard/compare.blade.php
+  - All 4 files have `<table>` elements without an `overflow-x-auto` wrapper. Tables overflow horizontally on mobile screens (<640px), breaking the layout.
+  - Wrap each table in `<div class="overflow-x-auto">`.
+
+- [ ] **F1-096: Standardize color palette to zinc (remove gray usage)** _(found 2026-02-10 audit)_
+  - Type: UI | Priority: P2 | Risk: low | Owner: agent
+  - Affected: resources/views/standings/drivers.blade.php, standings/teams.blade.php, resources/views/leaderboard/index.blade.php
+  - DESIGN_SYSTEM.md specifies zinc as the neutral palette, but these files use `bg-gray-100`, `text-gray-800`, `dark:bg-gray-900`, `text-gray-400` etc. Replace all `gray-*` with corresponding `zinc-*` classes.
+
+- [ ] **F1-097: Fix predict/create dark mode visibility** _(found 2026-02-10 audit)_
+  - Type: bug | Priority: P2 | Risk: low | Owner: agent
+  - Affected: resources/views/predict/create.blade.php (lines 181-199)
+  - Three color-coded info boxes use `bg-zinc-50`, `bg-blue-50`, `bg-amber-50` with no `dark:` variants. In dark mode these are completely invisible (nearly white boxes on dark background). Add appropriate dark mode variants: e.g. `dark:bg-zinc-700`, `dark:bg-blue-900/30`, `dark:bg-amber-900/30`.
+
+- [ ] **F1-098: Replace daisyUI modal in delete-user-form** _(found 2026-02-10 audit)_
+  - Type: UI | Priority: P3 | Risk: low | Owner: agent
+  - Affected: resources/views/livewire/settings/delete-user-form.blade.php
+  - Uses HTML5 `<dialog>` with daisyUI `.modal`/`.modal-box` classes and inline `onclick="deleteModal.showModal()"` handlers. Should use `<x-mary-modal>` component with Alpine.js or Livewire event handling for consistency with the rest of the app.
+
+- [ ] **F1-099: Define or replace undefined CSS utility classes** _(found 2026-02-10 audit)_
+  - Type: UI | Priority: P2 | Risk: low | Owner: agent
+  - Affected: resources/views/home.blade.php, dashboard.blade.php, standings views, races.blade.php
+  - `.text-auto-muted` used in 5+ views, `.bg-card` used in 6 instances on home.blade.php, `.text-shadow` used in home.blade.php hero. None are defined in DESIGN_SYSTEM.md or the app CSS.
+  - Either define these classes in the design system CSS (resources/css/app.css) or replace with standard Tailwind utilities.
+
+- [ ] **F1-100: Update focus ring colors to F1 brand** _(found 2026-02-10 audit)_
+  - Type: UI | Priority: P3 | Risk: low | Owner: agent
+  - Affected: resources/views/livewire/auth/login.blade.php, resources/views/predict/create.blade.php, resources/views/components/prediction-form.blade.php
+  - Multiple files use `focus:ring-indigo-500` or `focus:ring-blue-500` for focus indicators. DESIGN_SYSTEM.md specifies F1 brand red as primary. Update to `focus:ring-red-600 dark:focus:ring-red-500`.
+
+- [ ] **F1-101: Remove dead duplicate leaderboard routes** _(found 2026-02-10 audit)_
+  - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
+  - Affected: routes/web.php (lines 87-95)
+  - `/leaderboard/livewire` and `/leaderboard/user/{user}/livewire` are duplicate routes with Livewire wrappers. The non-Livewire versions (`leaderboard.index`, `leaderboard.user-stats`) are the primary routes linked in navigation. Remove the dead duplicates.
+
+- [ ] **F1-102: Clean up RacesController empty CRUD methods** _(found 2026-02-10 audit)_
+  - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
+  - Affected: app/Http/Controllers/RacesController.php
+  - `create()`, `store()`, `edit()`, `update()`, `destroy()` are empty stub methods (contain only `//` comment). No routes use them. Remove or implement.
+  - Related: F1-061 (empty scaffold controllers).
+
+- [ ] **F1-103: Harden admin password default in config** _(found 2026-02-10 audit)_
+  - Type: security | Priority: P2 | Risk: medium | Owner: agent
+  - Affected: config/admin.php (line 23), app/Console/Commands/EnsureAdminUser.php (line 19)
+  - `config('admin.admin_password')` defaults to `'password'` if `ADMIN_PASSWORD` env var is not set. The `EnsureAdminUser` command silently creates an admin with password "password" on deployment if the env var is missing.
+  - Change default to `null` and fail gracefully (skip creation or abort) when no password is explicitly provided.
+
+- [ ] **F1-104: Fix prediction request validation inconsistency** _(found 2026-02-10 audit)_
+  - Type: bug | Priority: P2 | Risk: low | Owner: agent
+  - Affected: app/Http/Requests/StorePredictionRequest.php, app/Http/Requests/UpdatePredictionRequest.php
+  - `StorePredictionRequest` validates `prediction_data.superlatives.*` as `['nullable']` (accepts any type), while `UpdatePredictionRequest` validates as `['nullable', 'string']`. Rules should be consistent; both should validate as `['nullable', 'string']`.
+
+- [ ] **F1-105: Add is_admin to User model $hidden array** _(found 2026-02-10 audit)_
+  - Type: security | Priority: P2 | Risk: low | Owner: agent
+  - Affected: app/Models/User.php (lines 40-44)
+  - `is_admin` is not in `User::$hidden`. If the User model is ever serialized to JSON (API responses, Livewire component data), admin status is exposed. Add `is_admin` to `$hidden`.
+  - Related: F1-065 (User $fillable cleanup).

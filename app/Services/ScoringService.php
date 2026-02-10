@@ -525,12 +525,12 @@ class ScoringService
 
     public function savePredictionScore(Prediction $prediction, int $score): void
     {
-        $prediction->update([
+        $prediction->forceFill([
             'score' => $score,
             'accuracy' => $this->calculateAccuracyValue($prediction),
             'status' => 'scored',
             'scored_at' => now(),
-        ]);
+        ])->save();
     }
 
     public function calculateAccuracyValue(Prediction $prediction): float
@@ -565,13 +565,13 @@ class ScoringService
      */
     public function overridePredictionScore(Prediction $prediction, int $score, ?string $reason = null): void
     {
-        $prediction->update([
+        $prediction->forceFill([
             'score' => $score,
             'accuracy' => $this->calculateAccuracyValue($prediction),
             'status' => 'scored',
             'scored_at' => now(),
             'notes' => $reason ? "Admin override: {$reason}" : 'Admin override',
-        ]);
+        ])->save();
 
         // Send notification
         $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
@@ -621,12 +621,12 @@ class ScoringService
             ->get();
 
         foreach ($predictions as $prediction) {
-            $prediction->update([
+            $prediction->forceFill([
                 'status' => 'cancelled',
                 'score' => 0,
                 'accuracy' => 0,
                 'notes' => $reason ? "Race cancelled: {$reason}" : 'Race cancelled',
-            ]);
+            ])->save();
         }
     }
 

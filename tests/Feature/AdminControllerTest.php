@@ -19,11 +19,10 @@ beforeEach(function () {
 
 test('regular user cannot score prediction', function () {
     $race = Races::factory()->create(['season' => 2024, 'round' => 1]);
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->submitted()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted',
     ]);
 
     actingAs($this->user)
@@ -41,11 +40,10 @@ test('admin can score prediction', function () {
             ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
         ],
     ]);
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->submitted()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted',
         'prediction_data' => [
             'driver_order' => ['max_verstappen', 'lewis_hamilton'],
             'fastest_lap' => 'max_verstappen',
@@ -64,11 +62,10 @@ test('admin can score prediction', function () {
 });
 
 test('admin cannot score non-race prediction', function () {
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->submitted()->create([
         'user_id' => $this->user->id,
         'race_id' => null,
         'type' => 'preseason',
-        'status' => 'submitted',
     ]);
 
     actingAs($this->admin)
@@ -80,11 +77,10 @@ test('admin cannot score non-race prediction', function () {
 
 test('regular user cannot lock prediction', function () {
     $race = Races::factory()->create();
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->submitted()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted',
     ]);
 
     actingAs($this->user)
@@ -94,11 +90,10 @@ test('regular user cannot lock prediction', function () {
 
 test('admin can lock prediction', function () {
     $race = Races::factory()->create();
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->submitted()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted',
     ]);
 
     actingAs($this->admin)
@@ -114,12 +109,10 @@ test('admin can lock prediction', function () {
 
 test('admin can unlock prediction', function () {
     $race = Races::factory()->create();
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->locked()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'locked',
-        'locked_at' => now(),
     ]);
 
     actingAs($this->admin)
@@ -182,11 +175,10 @@ test('admin can score race', function () {
             ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
         ],
     ]);
-    Prediction::factory()->create([
+    Prediction::factory()->submitted()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted',
         'prediction_data' => [
             'driver_order' => ['max_verstappen'],
             'fastest_lap' => 'max_verstappen',
@@ -212,11 +204,10 @@ test('admin can queue race scoring', function () {
 
 test('regular user cannot override prediction score', function () {
     $race = Races::factory()->create();
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->scored()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'scored',
     ]);
 
     actingAs($this->user)
@@ -229,12 +220,10 @@ test('regular user cannot override prediction score', function () {
 
 test('admin can override prediction score', function () {
     $race = Races::factory()->create();
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->scored(50)->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'scored',
-        'score' => 50,
     ]);
 
     actingAs($this->admin)
@@ -252,11 +241,10 @@ test('admin can override prediction score', function () {
 
 test('override score validation rejects invalid score', function () {
     $race = Races::factory()->create();
-    $prediction = Prediction::factory()->create([
+    $prediction = Prediction::factory()->scored()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'scored',
     ]);
 
     actingAs($this->admin)
@@ -385,11 +373,10 @@ test('admin can bulk score races', function () {
             ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
         ],
     ]);
-    Prediction::factory()->create([
+    Prediction::factory()->submitted()->create([
         'user_id' => $this->user->id,
         'race_id' => $race->id,
         'type' => 'race',
-        'status' => 'submitted',
         'prediction_data' => [
             'driver_order' => ['max_verstappen'],
             'fastest_lap' => 'max_verstappen',

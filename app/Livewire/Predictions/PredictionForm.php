@@ -344,25 +344,23 @@ class PredictionForm extends Component
                 'race_id' => $this->race?->id ?? $this->editingPrediction->race_id,
                 'prediction_data' => $predictionData,
                 'notes' => $this->notes,
-                'status' => 'submitted',
-                'submitted_at' => now(),
             ]);
+            $this->editingPrediction->submit();
 
             session()->flash('success', 'Prediction updated successfully.');
         } else {
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
-            $user->predictions()->create([
+            $prediction = $user->predictions()->create([
                 'type' => $this->type,
                 'season' => $this->season,
                 'race_round' => $this->raceRound,
                 'race_id' => $this->race?->id,
                 'prediction_data' => $predictionData,
                 'notes' => $this->notes,
-                'status' => 'submitted',
-                'submitted_at' => now(),
             ]);
+            $prediction->submit();
 
             session()->flash('success', 'Prediction created successfully.');
         }
