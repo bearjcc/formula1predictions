@@ -78,6 +78,9 @@ class RacesList extends Component
         $future = [];
 
         foreach ($this->races as $race) {
+            if (! is_array($race)) {
+                continue;
+            }
             $status = $race['status'] ?? 'upcoming';
             if (in_array($status, ['completed', 'cancelled'], true)) {
                 $past[] = $race;

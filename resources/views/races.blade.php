@@ -3,12 +3,12 @@
 {{-- Integrated with F1 API for real-time race data --}}
 
 <x-layouts.layout>
-    <!-- Page Header -->
+    <!-- Page Header: theme-safe text for light/dark (F1-083) -->
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-heading-1 mb-2">{{ $year }} Races</h1>
-                <p class="text-auto-muted">
+                <h1 class="text-heading-1 mb-2 text-zinc-900 dark:text-zinc-100">{{ $year }} Races</h1>
+                <p class="text-auto-muted text-zinc-600 dark:text-zinc-400">
                     View the complete race schedule for the {{ $year }} Formula 1 season
                 </p>
             </div>

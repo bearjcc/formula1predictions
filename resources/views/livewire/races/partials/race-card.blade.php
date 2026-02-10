@@ -1,11 +1,12 @@
 @php
     $status = $race['status'] ?? 'upcoming';
+    $circuit = is_array($race['circuit'] ?? null) ? $race['circuit'] : [];
     $badgeClass = match ($status) {
         'completed' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
         'upcoming' => 'border-blue-200 text-blue-700 dark:border-blue-700 dark:text-blue-300',
         'ongoing' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
         'cancelled' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-        default => 'border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300',
+        default => 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300',
     };
 @endphp
 <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
@@ -15,49 +16,63 @@
                 <x-mary-badge variant="outline" class="{{ $badgeClass }}">
                     {{ ucfirst($status) }}
                 </x-mary-badge>
-                <h3 class="text-lg font-semibold">{{ $race['raceName'] }}</h3>
+                <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{{ $race['raceName'] ?? 'Race' }}</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div class="flex items-center space-x-2">
-                    <x-mary-icon name="o-map-pin" class="w-4 h-4 text-zinc-500" />
-                    <span>{{ $race['circuit']['circuitName'] ?? 'TBA circuit' }}</span>
+                    <x-mary-icon name="o-map-pin" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                    <span class="text-zinc-700 dark:text-zinc-300">{{ $circuit['circuitName'] ?? 'TBA circuit' }}</span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <x-mary-icon name="o-calendar" class="w-4 h-4 text-zinc-500" />
-                    <span>
+                    <x-mary-icon name="o-calendar" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                    <span class="text-zinc-700 dark:text-zinc-300">
                         @if(!empty($race['date']))
-                            {{ \Carbon\Carbon::parse($race['date'])->format('M j, Y') }}
+                            @php
+                                try {
+                                    $dateStr = \Carbon\Carbon::parse($race['date'])->format('M j, Y');
+                                } catch (\Throwable) {
+                                    $dateStr = 'TBA';
+                                }
+                            @endphp
+                            {{ $dateStr }}
                         @else
                             TBA
                         @endif
                     </span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <x-mary-icon name="o-flag" class="w-4 h-4 text-zinc-500" />
-                    <span>{{ $race['circuit']['country'] ?? 'TBA' }}</span>
+                    <x-mary-icon name="o-flag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                    <span class="text-zinc-700 dark:text-zinc-300">{{ $circuit['country'] ?? 'TBA' }}</span>
                 </div>
             </div>
 
-            @if(!empty($race['circuit']['circuitLength']))
+            @if(!empty($circuit['circuitLength']))
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div class="flex items-center space-x-2">
-                        <x-mary-icon name="o-map" class="w-4 h-4 text-zinc-500" />
-                        <span>Length: {{ $race['circuit']['circuitLength'] }}</span>
+                        <x-mary-icon name="o-map" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                        <span class="text-zinc-700 dark:text-zinc-300">Length: {{ $circuit['circuitLength'] }}</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <x-mary-icon name="o-clock" class="w-4 h-4 text-zinc-500" />
-                        <span>
+                        <x-mary-icon name="o-clock" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                        <span class="text-zinc-700 dark:text-zinc-300">
                             @if(!empty($race['time']))
-                                Time: {{ \Carbon\Carbon::parse($race['time'])->format('H:i') }}
+                                @php
+                                    try {
+                                        $timeStr = \Carbon\Carbon::parse($race['time'])->format('H:i');
+                                    } catch (\Throwable) {
+                                        $timeStr = 'TBA';
+                                    }
+                                @endphp
+                                Time: {{ $timeStr }}
                             @else
                                 Time: TBA
                             @endif
                         </span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <x-mary-icon name="o-trophy" class="w-4 h-4 text-zinc-500" />
-                        <span>Round {{ $race['round'] }}</span>
+                        <x-mary-icon name="o-trophy" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                        <span class="text-zinc-700 dark:text-zinc-300">Round {{ $race['round'] ?? '?' }}</span>
                     </div>
                 </div>
             @endif
@@ -76,7 +91,7 @@
                         variant="primary"
                         size="sm"
                         icon="o-plus"
-                        wire:click="makePrediction({{ $race['round'] }})"
+                        wire:click="makePrediction({{ (int) ($race['round'] ?? 0) }})"
                     >
                         Make Prediction
                     </x-mary-button>

@@ -99,13 +99,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: DriversController.php, TeamsController.php, etc.
   - 6 empty scaffold controllers (dead code). Remove or implement.
 
-- [ ] **F1-083: Fix races page theming and 500s for current season**
+- [x] **F1-083: Fix races page theming and 500s for current season** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: medium | Owner: agent
-  - Affected: resources/views/races.blade.php, app/Livewire/Races/RacesList.php, layout/theme config
-  - `/2026/races` currently renders with black-on-black text and sometimes throws a 500 for the main content. Audit the RacesList Livewire component and races view to:
-    - Prevent unhandled exceptions (wrap F1ApiService failures in user-friendly error states).
-    - Ensure text/background colors respect the global light/dark theme tokens (no black text on dark backgrounds).
-    - Add feature tests that hit `/{current_season}/races` and assert 200 plus the presence of a user-facing error state instead of a 500 when the API/data layer fails.
+  - Affected: resources/views/races.blade.php, app/Livewire/Races/RacesList.php, resources/views/livewire/races/partials/race-card.blade.php
+  - Done: Races page header uses theme-safe text (text-zinc-900 dark:text-zinc-100, text-zinc-600 dark:text-zinc-400). Race-card partial: safe circuit access ($circuit = is_array($race['circuit'] ?? null) ? $race['circuit'] : []), try/catch for Carbon date/time parse, zinc text classes; getGroupedRacesProperty skips non-array items. RacesList already had F1ApiService try/catch. Added test "current season races page returns 200 and shows error state when API fails" in RacesPageTest.
 
 - [ ] **F1-084: Replace prediction standings mock table with real leaderboard**
   - Type: feature | Priority: P2 | Risk: medium | Owner: mixed

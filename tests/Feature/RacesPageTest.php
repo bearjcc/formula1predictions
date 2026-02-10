@@ -73,6 +73,23 @@ test('races page does not expose technical error details to user', function () {
     $response->assertDontSee('Operation timed out');
 });
 
+test('current season races page returns 200 and shows error state when API fails', function () {
+    $year = (int) config('f1.current_season', 2026);
+
+    mock(F1ApiService::class, function ($mock) use ($year) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with($year)
+            ->andThrow(new \App\Exceptions\F1ApiException('Service unavailable', 503, "/{$year}/1/race", $year));
+    });
+
+    $response = $this->get("/{$year}/races");
+
+    $response->assertOk();
+    $response->assertSee((string) $year);
+    $response->assertSee('Error Loading Races');
+    $response->assertSee('We\'re having trouble loading race data right now');
+});
+
 test('races list shows all races grouped as next, future, and past', function () {
     mock(F1ApiService::class, function ($mock) {
         $mock->shouldReceive('getRacesForYear')
