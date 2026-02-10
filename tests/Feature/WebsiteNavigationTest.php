@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Prediction;
 use App\Models\User;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -10,6 +11,51 @@ test('home page loads successfully', function () {
     /** @var \Tests\TestCase $this */
     $response = $this->get('/');
     $response->assertOk();
+});
+
+test('unauthenticated users are redirected from auth-required routes', function () {
+    /** @var \Tests\TestCase $this */
+    $this->get('/dashboard')->assertRedirect('/login');
+    $this->get('/analytics')->assertRedirect('/login');
+    $this->get('/settings/profile')->assertRedirect('/login');
+    $this->get('/settings/password')->assertRedirect('/login');
+    $this->get('/settings/appearance')->assertRedirect('/login');
+    $this->get(route('predict.create'))->assertRedirect('/login');
+    $this->get('/predictions')->assertRedirect('/login');
+
+    $prediction = Prediction::factory()->create();
+    $this->get(route('predictions.edit', $prediction))->assertRedirect('/login');
+});
+
+test('authenticated user can access dashboard analytics settings and predictions', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $this->get('/dashboard')->assertOk();
+    $this->get('/analytics')->assertOk();
+    $this->get('/settings/profile')->assertOk();
+    $this->get('/settings/password')->assertOk();
+    $this->get('/settings/appearance')->assertOk();
+    $this->get(route('predict.create'))->assertOk();
+    $this->get('/predictions')->assertOk();
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'draft',
+    ]);
+    $this->get(route('predictions.edit', $prediction))->assertOk();
+});
+
+test('admin can access admin dashboard', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $admin */
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    $this->actingAs($admin);
+    $this->get('/admin/dashboard')->assertOk();
 });
 
 test('analytics page requires authentication', function () {

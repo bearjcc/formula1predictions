@@ -15,6 +15,12 @@ it('can access the home page with 200', function () {
 });
 
 describe('year-specific routes return 200 for valid years', function () {
+    beforeEach(function () {
+        mock(F1ApiService::class, function ($mock) {
+            $mock->shouldReceive('getRacesForYear')->zeroOrMoreTimes()->andReturn([]);
+        });
+    });
+
     $validYears = ['2022', '2023', '2024', '2025', '2026'];
     $yearRoutes = [
         '/{year}/races',

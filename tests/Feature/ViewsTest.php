@@ -1,8 +1,17 @@
 <?php
 
+use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use function Pest\Laravel\mock;
+
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')->zeroOrMoreTimes()->andReturn([]);
+    });
+});
 
 // Test that views load correctly and return expected content
 it('can load the home page view', function () {

@@ -15,13 +15,14 @@
 
 Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-20.**
 
-- [ ] **F1-081: Tighten route and auth feature tests**
+- [x] **F1-081: Tighten route and auth feature tests** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: medium | Owner: agent
   - Affected: tests/Feature/RoutesTest.php, tests/Feature/ViewsTest.php, tests/Feature/WebsiteNavigationTest.php
   - Current route tests intentionally allow 500 responses (status in [200, 500]) and don’t consistently exercise authenticated-only pages. Add smoke tests that:
     - Assert 200 for all key public routes (home, current-season races/standings, country/driver/team/circuit detail) using F1ApiService mocks where needed.
     - Log in as a normal user and as an admin (is_admin=true) and hit dashboard, analytics, settings pages, prediction CRUD, and admin routes, asserting 200 and correct redirects when unauthenticated.
     - Avoid hitting the real F1 API in tests.
+  - Done: F1ApiService mock (RoutesTest, ViewsTest); auth smoke tests (redirects, user pages, admin dashboard). Admin sub-routes (users, predictions, etc.) lack views—only dashboard tested.
 
 - [ ] **F1-082: Fix 2026 standings and prediction standings pages**
   - Type: bug | Priority: P1 | Risk: high | Owner: mixed
