@@ -50,7 +50,8 @@ describe('year-specific routes return 200 for valid years', function () {
 
     it('race detail route responds with 200', function () {
         /** @var \Tests\TestCase $this */
-        $response = $this->get('/2023/race/123');
+        $race = \App\Models\Races::factory()->create(['season' => 2023, 'round' => 5]);
+        $response = $this->get('/2023/race/5');
         $response->assertOk();
     });
 });
@@ -80,22 +81,40 @@ describe('invalid years return 404', function () {
 });
 
 describe('non-year-specific routes return 200', function () {
-    $routes = [
-        '/countries',
-        '/team/mercedes',
-        '/driver/lewis-hamilton',
-        '/circuit/silverstone',
-        '/country/belgium',
-        '/race/british-grand-prix',
-    ];
+    it('route /countries responds with 200', function () {
+        /** @var \Tests\TestCase $this */
+        $this->get('/countries')->assertOk();
+    });
 
-    foreach ($routes as $route) {
-        it("route {$route} responds with 200", function () use ($route) {
-            /** @var \Tests\TestCase $this */
-            $response = $this->get($route);
-            $response->assertOk();
-        });
-    }
+    it('route /team/{slug} responds with 200', function () {
+        /** @var \Tests\TestCase $this */
+        \App\Models\Teams::factory()->create(['team_name' => 'Mercedes']);
+        $this->get('/team/mercedes')->assertOk();
+    });
+
+    it('route /driver/{slug} responds with 200', function () {
+        /** @var \Tests\TestCase $this */
+        \App\Models\Drivers::factory()->create(['name' => 'Lewis', 'surname' => 'Hamilton']);
+        $this->get('/driver/lewis-hamilton')->assertOk();
+    });
+
+    it('route /circuit/{slug} responds with 200', function () {
+        /** @var \Tests\TestCase $this */
+        \App\Models\Circuits::factory()->create(['circuit_name' => 'Silverstone']);
+        $this->get('/circuit/silverstone')->assertOk();
+    });
+
+    it('route /country/{slug} responds with 200', function () {
+        /** @var \Tests\TestCase $this */
+        \App\Models\Countries::factory()->create(['name' => 'Belgium']);
+        $this->get('/country/belgium')->assertOk();
+    });
+
+    it('route /race/{slug} responds with 200', function () {
+        /** @var \Tests\TestCase $this */
+        \App\Models\Races::factory()->create(['race_name' => 'British Grand Prix']);
+        $this->get('/race/british-grand-prix')->assertOk();
+    });
 });
 
 describe('authentication required routes', function () {

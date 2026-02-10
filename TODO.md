@@ -34,13 +34,10 @@ Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-2
   - Affected: resources/views/admin/users.blade.php, admin/predictions.blade.php, admin/races.blade.php, admin/scoring.blade.php, admin/settings.blade.php
   - Done: Created all 5 views using main layout and dashboard styling; users (paginated with predictions count/sum), predictions (paginated with user, score/lock/unlock/delete actions), races (paginated list), scoring (races with pending count and score/queue/half-points actions), settings (placeholder). Added test "admin can load all admin view pages" in AdminControllerTest.
 
-- [ ] **F1-090: Implement detail pages with real data (team, driver, circuit, country, race)** _(found 2026-02-10 audit)_
+- [x] **F1-090: Implement detail pages with real data (team, driver, circuit, country, race)** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: high | Owner: mixed
   - Affected: resources/views/team.blade.php, driver.blade.php, circuit.blade.php, country.blade.php, race.blade.php, routes/web.php
-  - All 5 entity detail pages are hardcoded stubs. `/team/{slug}` shows Red Bull data regardless of slug. `/driver/{slug}` shows Max Verstappen stats for any driver. `/circuit/{slug}` shows Silverstone data and hardcodes "United Kingdom" for all circuits (geographic bug). `/country/{slug}` shows UK data for any country. `/race/{slug}` shows July 9 2023 Silverstone regardless of input.
-  - Route closures pass only `$slug` to the view with no database query and no 404 handling — invalid slugs render the template with fake data instead of a 404.
-  - For each page: query the corresponding model (Teams, Drivers, Circuits, Countries, Races) by slug using `firstOrFail()`, replace hardcoded content with model attributes and relationships, and return 404 for invalid slugs.
-  - Note: `/race/{slug}` and `/{year}/race/{id}` share the same stub view — consider splitting or adding conditional logic.
+  - Done: Updated all 5 route closures to resolve models by computed slug and abort 404 for invalid slugs. Rewrote all 5 blade views to use real model data (attributes, relationships, accessors) instead of hardcoded stubs. Both `/{year}/race/{id}` and `/race/{slug}` now resolve the Race model. Added 16 tests in DetailPageTest.php covering real data display, 404 handling, and absence of hardcoded data. Updated RoutesTest.php to create models before asserting 200.
 
 - [ ] **F1-091: Implement countries index page with real data** _(found 2026-02-10 audit)_
   - Type: bug | Priority: P1 | Risk: medium | Owner: agent

@@ -4,7 +4,10 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\RacesController;
+use App\Models\Circuits;
+use App\Models\Countries;
 use App\Models\Drivers;
+use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
 use Illuminate\Support\Facades\Route;
@@ -216,7 +219,10 @@ Route::middleware(['validate.year'])->group(function () {
     })->name('standings.predictions.user');
 
     Route::get('/{year}/race/{id}', function ($year, $id) {
-        return view('race', ['year' => $year, 'id' => $id]);
+        $race = Races::where('season', $year)->where('round', $id)->first();
+        abort_unless($race, 404);
+
+        return view('race', ['race' => $race]);
     })->name('race');
 });
 
@@ -226,23 +232,38 @@ Route::get('/countries', function () {
 })->name('countries');
 
 Route::get('/team/{slug}', function ($slug) {
-    return view('team', ['slug' => $slug]);
+    $team = Teams::with('drivers')->get()->first(fn ($t) => $t->slug === $slug);
+    abort_unless($team, 404);
+
+    return view('team', ['team' => $team]);
 })->name('team');
 
 Route::get('/driver/{slug}', function ($slug) {
-    return view('driver', ['slug' => $slug]);
+    $driver = Drivers::with('team')->get()->first(fn ($d) => $d->slug === $slug);
+    abort_unless($driver, 404);
+
+    return view('driver', ['driver' => $driver]);
 })->name('driver');
 
 Route::get('/circuit/{slug}', function ($slug) {
-    return view('circuit', ['slug' => $slug]);
+    $circuit = Circuits::all()->first(fn ($c) => $c->slug === $slug);
+    abort_unless($circuit, 404);
+
+    return view('circuit', ['circuit' => $circuit]);
 })->name('circuit');
 
 Route::get('/country/{slug}', function ($slug) {
-    return view('country', ['slug' => $slug]);
+    $country = Countries::all()->first(fn ($c) => $c->slug === $slug);
+    abort_unless($country, 404);
+
+    return view('country', ['country' => $country]);
 })->name('country');
 
 Route::get('/race/{slug}', function ($slug) {
-    return view('race', ['slug' => $slug]);
+    $race = Races::all()->first(fn ($r) => $r->slug === $slug);
+    abort_unless($race, 404);
+
+    return view('race', ['race' => $race]);
 })->name('race.detail');
 
 require __DIR__.'/auth.php';
