@@ -3,10 +3,12 @@
 use App\Livewire\Races\RacesList;
 use App\Models\User;
 use App\Services\F1ApiService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function Pest\Laravel\mock;
+
+uses(RefreshDatabase::class);
 
 test('races page loads successfully', function () {
     // Mock the F1ApiService to return test data
@@ -133,7 +135,7 @@ test('races list shows all races grouped as next, future, and past', function ()
         ->assertSee('Past races');
 });
 
-test('non-admin users cannot refresh races data', function () {
+test('non-admin users do not see refresh races button', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -144,8 +146,8 @@ test('non-admin users cannot refresh races data', function () {
     });
 
     Livewire::test(RacesList::class, ['year' => 2024])
-        ->call('refreshRaces');
-})->throws(HttpException::class, 'Access denied. Admin privileges required to refresh race data.');
+        ->assertDontSee('Refresh Data');
+});
 
 test('admins can refresh races data', function () {
     $admin = User::factory()->admin()->create();

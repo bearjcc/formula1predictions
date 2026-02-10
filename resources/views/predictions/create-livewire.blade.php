@@ -1,5 +1,9 @@
 @extends('components.layouts.layout')
 
 @section('content')
-    <livewire:predictions.prediction-form />
+    @php
+        /** @var \App\Models\Races|null $race */
+    @endphp
+
+    <livewire:predictions.prediction-form :race="$race ?? null" />
 @endsection

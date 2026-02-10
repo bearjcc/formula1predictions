@@ -10,6 +10,7 @@ use App\Models\Drivers;
 use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -44,8 +45,15 @@ Route::middleware(['auth'])->group(function () {
     // Notifications route
     Volt::route('notifications', 'pages.notifications.index')->name('notifications.index');
 
-    Route::get('predict/create', function () {
-        return view('predictions.create-livewire');
+    Route::get('predict/create', function (Request $request) {
+        $race = null;
+
+        if ($request->filled('race_id')) {
+            $raceId = (int) $request->input('race_id');
+            $race = Races::find($raceId);
+        }
+
+        return view('predictions.create-livewire', compact('race'));
     })->name('predict.create');
 
     Route::get('predictions/{prediction}/edit', function ($prediction) {
