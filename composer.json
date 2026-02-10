@@ -14,7 +14,6 @@
         "ext-bcmath": "*",
         "laravel/cashier": "^16.2",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6",
         "livewire/volt": "^1.7.0",
         "robsontenorio/mary": "^2.4"
@@ -25,6 +24,7 @@
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
+        "laravel/tinker": "^2.10.1",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^4.0",

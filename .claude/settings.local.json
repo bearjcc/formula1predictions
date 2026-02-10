@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan test:*)"
+      "Bash(php artisan test:*)",
+      "Read(//c/Users/bearj/Herd/formula1predictions/**)"
     ]
   }
 }

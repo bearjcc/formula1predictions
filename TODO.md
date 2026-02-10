@@ -84,10 +84,10 @@ Longer-horizon ideas and exploratory improvements.
   - Depends on: F1-006A (Phase 1 done)
   - Note: Deferred until representative data and human approval.
 
-- [ ] **F1-059: Enable session encryption**
+- [x] **F1-059: Enable session encryption** _(done 2026-02-10)_
   - Type: security | Priority: P2 | Risk: medium | Owner: agent
   - Affected: .env.example
-  - Session encryption disabled (SESSION_ENCRYPT=false). Enable for production.
+  - Done: Set SESSION_ENCRYPT=true in .env.example so production deployments copied from the template use encrypted sessions by default. Added ProductionConfigTest assertion to ensure the template keeps this default.
 
 - [ ] **F1-060: Optimize NotificationService user loading**
   - Type: performance | Priority: P2 | Risk: low | Owner: agent
@@ -182,8 +182,8 @@ Longer-horizon ideas and exploratory improvements.
 
 - [ ] **F1-070: Remove laravel/tinker from production dependencies**
   - Type: security | Priority: P2 | Risk: low | Owner: agent
-  - Affected: composer.json
-  - laravel/tinker in production dependencies. Move to require-dev.
+  - Affected: composer.json, tests/Feature/ProductionConfigTest.php
+  - Done: Moved `laravel/tinker` from production `require` section to `require-dev` only and added a configuration test to enforce this.
 
 - [ ] **F1-071: Update .gitignore for storage/logs/ subdirectories**
   - Type: security | Priority: P2 | Risk: low | Owner: agent

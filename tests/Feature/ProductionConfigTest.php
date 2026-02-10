@@ -47,3 +47,32 @@ test('env example documents production mail session and logging', function () {
 });
 
 // endregion
+
+// region Session encryption defaults (F1-059)
+
+test('env example enables session encryption by default', function () {
+    $path = base_path('.env.example');
+    expect($path)->toBeReadableFile();
+    $content = file_get_contents($path);
+    expect($content)->toContain('SESSION_ENCRYPT=true');
+});
+
+// endregion
+
+// region Composer dependencies (F1-070)
+
+test('laravel tinker is only in dev dependencies', function () {
+    $path = base_path('composer.json');
+    expect($path)->toBeReadableFile();
+
+    $content = file_get_contents($path);
+    $config = json_decode($content, true, flags: JSON_THROW_ON_ERROR);
+
+    expect($config)->toHaveKey('require');
+    expect($config)->toHaveKey('require-dev');
+
+    expect($config['require'])->not->toHaveKey('laravel/tinker');
+    expect($config['require-dev'])->toHaveKey('laravel/tinker');
+});
+
+// endregion
