@@ -200,10 +200,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: Dockerfile, docker-compose.yml
   - No Dockerfile or docker-compose for production. Create for containerized deployment.
 
-- [ ] **F1-074: Create deployment script**
+- [x] **F1-074: Create deployment script** _(done 2026-02-10)_
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
   - Affected: deploy.sh, Envoy.blade.php, or Forge config
-  - No deployment script (no Forge, Vapor, Envoy, or shell script). Create.
+  - Done: Added deploy.sh at project root to pull latest code, install PHP dependencies without dev packages, run migrations, build frontend assets, and warm Laravel caches. Added DeploymentScriptTest to ensure the script exists and includes key deployment steps.
 
 - [ ] **F1-075: Create production .env template**
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
