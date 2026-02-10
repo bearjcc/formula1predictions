@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Database\Seeders\BotPredictionsSeeder;
 use Database\Seeders\ChampionshipOrderBotSeeder;
 use Database\Seeders\PreviousCircuitBotSeeder;
 use Database\Seeders\PreviousYearChampionshipBotSeeder;
@@ -12,12 +13,14 @@ use Illuminate\Console\Command;
 class SeedBotPredictions extends Command
 {
     protected $signature = 'bots:seed
-                            {--only= : Comma-separated bot names: championship-order, random, previous-year, circuit, smart}';
+                            {--only= : Comma-separated: last, season, random, championship-order, previous-year, circuit, smart}';
 
     protected $description = 'Run all algorithm-based bot seeders to populate predictions.';
 
     /** @var array<string, class-string<\Illuminate\Database\Seeder>> */
     private const BOT_SEEDERS = [
+        'last' => BotPredictionsSeeder::class,
+        'season' => ChampionshipOrderBotSeeder::class,
         'championship-order' => ChampionshipOrderBotSeeder::class,
         'random' => RandomBotSeeder::class,
         'previous-year' => PreviousYearChampionshipBotSeeder::class,

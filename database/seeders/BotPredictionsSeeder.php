@@ -15,14 +15,15 @@ class BotPredictionsSeeder extends Seeder
     public function __construct(private F1ApiService $f1) {}
 
     /**
-     * Create a simple bot that predicts the next race as the same order as the last race.
+     * Create LastBot: predicts each race as the same order as the last race.
+     * First race of the year uses the last race of the previous year.
      * Seeds for seasons 2022–2024.
      */
     public function run(): void
     {
         $bot = User::firstOrCreate(
-            ['email' => 'lastracebot@example.com'],
-            ['name' => 'LastRaceBot', 'password' => bcrypt('secret-password')]
+            ['email' => 'lastbot@example.com'],
+            ['name' => 'LastBot', 'password' => bcrypt('secret-password')]
         );
 
         foreach ([2022, 2023, 2024] as $season) {
@@ -34,24 +35,49 @@ class BotPredictionsSeeder extends Seeder
     {
         $races = $this->f1->getRacesForYear($season);
 
-        $previousRaceOrder = null; // list of driver API ids in finish order
+        // First race of year: use last race of previous year
+        $previousRaceOrder = $this->getLastRaceDriverOrder($season - 1);
 
         foreach ($races as $race) {
-            $round = $race['round'] ?? 1;
+            $round = (int) ($race['round'] ?? 1);
 
-            // Determine prediction to use (previous race results)
-            if ($previousRaceOrder) {
+            if (! empty($previousRaceOrder)) {
                 $this->storeRacePrediction($botUserId, $season, $round, $previousRaceOrder);
             }
 
-            // Update previous race order using current race results if available
             $results = Arr::get($race, 'results', []);
             if (! empty($results)) {
-                $previousRaceOrder = array_values(array_filter(array_map(function ($r) {
-                    return Arr::get($r, 'driver.id');
-                }, $results)));
+                $previousRaceOrder = $this->driverIdsFromResults($results);
             }
         }
+    }
+
+    /**
+     * Get driver API IDs in finish order from the last race of the given season.
+     *
+     * @return array<int, string>
+     */
+    private function getLastRaceDriverOrder(int $season): array
+    {
+        $races = $this->f1->getRacesForYear($season);
+        if (empty($races)) {
+            return [];
+        }
+        $last = end($races);
+        $results = Arr::get($last, 'results', []);
+
+        return $this->driverIdsFromResults($results);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $results
+     * @return array<int, string>
+     */
+    private function driverIdsFromResults(array $results): array
+    {
+        return array_values(array_filter(array_map(function ($r) {
+            return Arr::get($r, 'driver.id') ?? Arr::get($r, 'driverId') ?? Arr::get($r, 'driver_id');
+        }, $results)));
     }
 
     private function storeRacePrediction(int $userId, int $season, int $round, array $driverApiOrder): void

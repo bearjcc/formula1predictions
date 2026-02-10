@@ -73,7 +73,7 @@ test('races page does not expose technical error details to user', function () {
     $response->assertDontSee('Operation timed out');
 });
 
-test('races list filters by status and search query', function () {
+test('races list shows all races grouped as next, future, and past', function () {
     mock(F1ApiService::class, function ($mock) {
         $mock->shouldReceive('getRacesForYear')
             ->with(2024)
@@ -108,13 +108,8 @@ test('races list filters by status and search query', function () {
     });
 
     Livewire::test(RacesList::class, ['year' => 2024])
-        ->set('statusFilter', 'upcoming')
         ->assertSee('Australian Grand Prix')
-        ->assertDontSee('Canadian Grand Prix');
-
-    Livewire::test(RacesList::class, ['year' => 2024])
-        ->set('statusFilter', 'completed')
-        ->set('searchQuery', 'Canada')
         ->assertSee('Canadian Grand Prix')
-        ->assertDontSee('Australian Grand Prix');
+        ->assertSee('Next race')
+        ->assertSee('Past races');
 });

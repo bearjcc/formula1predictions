@@ -60,6 +60,20 @@ php artisan db:seed --class=AdminSeeder
 
 The seeder will create or update the admin user automatically. **Important:** Change your password after first login.
 
+### Demo bots (testing / demonstration)
+
+To seed the site with algorithm bots that submit predictions for every race:
+
+```bash
+php artisan bots:seed --only=last,season,random
+```
+
+- **LastBot** — Predicts each race as the same order as the previous race; first race of the year uses the last race of the previous year.
+- **SeasonBot** — Predicts current championship order (before each round); first race uses previous season’s final standings.
+- **RandomBot** — Random driver order per race.
+
+To run all bot seeders (including circuit-, previous-year-, and smart-weighted bots): `php artisan bots:seed`.
+
 ---
 
 ## Scoring

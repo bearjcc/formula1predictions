@@ -19,7 +19,8 @@ test('bots:seed runs all bot seeders', function () {
     $this->artisan('bots:seed')
         ->assertSuccessful();
 
-    expect(User::where('email', 'championshiporderbot@example.com')->exists())->toBeTrue();
+    expect(User::where('email', 'lastbot@example.com')->exists())->toBeTrue();
+    expect(User::where('email', 'seasonbot@example.com')->exists())->toBeTrue();
     expect(User::where('email', 'randombot@example.com')->exists())->toBeTrue();
 });
 
@@ -30,10 +31,10 @@ test('bots:seed --only runs specified bots only', function () {
         'entity_id' => 'x', 'entity_name' => 'X', 'position' => 1,
     ]);
 
-    $this->artisan('bots:seed', ['--only' => 'championship-order,random'])
+    $this->artisan('bots:seed', ['--only' => 'season,random'])
         ->assertSuccessful();
 
-    expect(User::where('email', 'championshiporderbot@example.com')->exists())->toBeTrue();
+    expect(User::where('email', 'seasonbot@example.com')->exists())->toBeTrue();
     expect(User::where('email', 'randombot@example.com')->exists())->toBeTrue();
     expect(User::where('email', 'championshipbot@example.com')->exists())->toBeFalse();
 });

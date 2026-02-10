@@ -11,48 +11,6 @@
         </div>
     </div>
 
-    <!-- Filters Section -->
-    <x-mary-card class="mb-8">
-        <h3 class="text-heading-3 mb-4">Filters</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Engine</label>
-                <x-mary-select>
-                    <option value="">All Engines</option>
-                    <option value="honda">Honda RBPT</option>
-                    <option value="mercedes">Mercedes</option>
-                    <option value="ferrari">Ferrari</option>
-                    <option value="renault">Renault</option>
-                </x-mary-select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Country</label>
-                <x-mary-select>
-                    <option value="">All Countries</option>
-                    <option value="uk">United Kingdom</option>
-                    <option value="italy">Italy</option>
-                    <option value="austria">Austria</option>
-                    <option value="france">France</option>
-                </x-mary-select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>
-                <x-mary-select>
-                    <option value="">All Teams</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </x-mary-select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Search</label>
-                <x-mary-input placeholder="Search teams..." icon="o-magnifying-glass" />
-            </div>
-        </div>
-    </x-mary-card>
-
     <!-- Team Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">

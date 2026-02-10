@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('championship order bot seeder creates user', function () {
+test('championship order bot seeder creates SeasonBot user', function () {
     Races::factory()->create(['season' => 2023, 'round' => 1]);
     Standings::factory()->create([
         'season' => 2022,
@@ -23,9 +23,9 @@ test('championship order bot seeder creates user', function () {
 
     (new ChampionshipOrderBotSeeder)->run();
 
-    $bot = User::where('email', 'championshiporderbot@example.com')->first();
+    $bot = User::where('email', 'seasonbot@example.com')->first();
     expect($bot)->not->toBeNull();
-    expect($bot->name)->toBe('ChampionshipOrderBot');
+    expect($bot->name)->toBe('SeasonBot');
 });
 
 test('championship order bot uses current season standings before each round', function () {
@@ -45,7 +45,7 @@ test('championship order bot uses current season standings before each round', f
 
     (new ChampionshipOrderBotSeeder)->run();
 
-    $predRound2 = Prediction::where('user_id', User::where('email', 'championshiporderbot@example.com')->first()->id)
+    $predRound2 = Prediction::where('user_id', User::where('email', 'seasonbot@example.com')->first()->id)
         ->where('season', 2023)->where('race_round', 2)->first();
     expect($predRound2)->not->toBeNull();
     expect($predRound2->prediction_data['driver_order'])->toEqual([$d2->id, $d1->id]);
@@ -61,6 +61,6 @@ test('championship order bot run is idempotent', function () {
     (new ChampionshipOrderBotSeeder)->run();
     (new ChampionshipOrderBotSeeder)->run();
 
-    expect(User::where('email', 'championshiporderbot@example.com')->count())->toBe(1);
+    expect(User::where('email', 'seasonbot@example.com')->count())->toBe(1);
     expect(Prediction::where('season', 2024)->where('race_round', 1)->count())->toBe(1);
 });

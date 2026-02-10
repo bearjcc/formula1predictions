@@ -11,48 +11,6 @@
         </div>
     </div>
 
-    <!-- Filters Section -->
-    <x-mary-card class="p-6 mb-8">
-        <h2 class="text-heading-3 mb-4">Filters</h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Team</label>
-                <x-mary-select>
-                    <option value="">All Teams</option>
-                    <option value="red-bull">Red Bull Racing</option>
-                    <option value="mercedes">Mercedes</option>
-                    <option value="ferrari">Ferrari</option>
-                    <option value="mclaren">McLaren</option>
-                </x-mary-select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Nationality</label>
-                <x-mary-select>
-                    <option value="">All Nationalities</option>
-                    <option value="dutch">Dutch</option>
-                    <option value="british">British</option>
-                    <option value="spanish">Spanish</option>
-                    <option value="australian">Australian</option>
-                </x-mary-select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>
-                <x-mary-select>
-                    <option value="">All Drivers</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </x-mary-select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Search</label>
-                <x-mary-input placeholder="Search drivers..." icon="o-magnifying-glass" />
-            </div>
-        </div>
-    </x-mary-card>
-
     <!-- Driver Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">

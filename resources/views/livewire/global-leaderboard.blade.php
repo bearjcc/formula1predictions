@@ -102,7 +102,7 @@
     <!-- Leaderboard Table -->
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body p-0">
-            @if(!empty($leaderboard))
+            @if($paginatedLeaderboard->count() > 0)
                 <div class="overflow-x-auto">
                     <table class="table table-zebra">
                         <thead>
@@ -117,7 +117,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leaderboard as $user)
+                            @foreach($paginatedLeaderboard as $user)
                                 <tr class="@if($user['is_supporter']) border-l-4 border-yellow-500 @endif">
                                     <td>
                                         @if($user['rank'] <= 3)
@@ -195,6 +195,9 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+                <div class="p-4 border-t border-zinc-200 dark:border-zinc-700">
+                    {{ $paginatedLeaderboard->links() }}
                 </div>
             @else
                 <div class="p-12 text-center">

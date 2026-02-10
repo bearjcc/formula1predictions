@@ -16,14 +16,14 @@ class ChampionshipOrderBotSeeder extends Seeder
     private const SEASONS = [2022, 2023, 2024, 2025];
 
     /**
-     * Create a bot that predicts each race using current championship order *before* that round.
+     * Create SeasonBot: predicts each race using current championship order.
      * Round 1 uses previous year's final standings; round N uses standings after round N-1.
      */
     public function run(): void
     {
         $bot = User::firstOrCreate(
-            ['email' => 'championshiporderbot@example.com'],
-            ['name' => 'ChampionshipOrderBot', 'password' => bcrypt('secret-password')]
+            ['email' => 'seasonbot@example.com'],
+            ['name' => 'SeasonBot', 'password' => bcrypt('secret-password')]
         );
 
         foreach (self::SEASONS as $season) {

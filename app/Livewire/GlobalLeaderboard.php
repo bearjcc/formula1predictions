@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Prediction;
 use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -18,7 +20,12 @@ class GlobalLeaderboard extends Component
     #[Url]
     public string $sortBy = 'total_score'; // total_score, avg_score, accuracy, predictions
 
+    #[Url]
+    public int $page = 1;
+
     public array $leaderboard = [];
+
+    public int $perPage = 15;
 
     public array $proStats = [];
 
@@ -35,17 +42,25 @@ class GlobalLeaderboard extends Component
 
     public function updatedSeason(): void
     {
+        $this->resetPage();
         $this->loadLeaderboard();
     }
 
     public function updatedType(): void
     {
+        $this->resetPage();
         $this->loadLeaderboard();
     }
 
     public function updatedSortBy(): void
     {
+        $this->resetPage();
         $this->sortLeaderboard();
+    }
+
+    public function resetPage(): void
+    {
+        $this->page = 1;
     }
 
     private function loadAvailableSeasons(): void
@@ -158,7 +173,7 @@ class GlobalLeaderboard extends Component
             'median_score' => $this->calculateMedian($totalScores),
             'avg_accuracy' => round(array_sum($accuracies) / $totalUsers, 2),
             'perfect_predictions' => array_sum(array_column($this->leaderboard, 'perfect_predictions')),
-            'supporters' => array_sum(array_column($this->leaderboard, fn ($u) => $u['is_supporter'] ? 1 : 0)),
+            'supporters' => array_sum(array_map(fn ($u) => $u['is_supporter'] ? 1 : 0, $this->leaderboard)),
         ];
     }
 
@@ -177,6 +192,19 @@ class GlobalLeaderboard extends Component
 
     public function render()
     {
-        return view('livewire.global-leaderboard');
+        $total = count($this->leaderboard);
+        $currentPage = Paginator::resolveCurrentPage('page');
+        $slice = array_slice($this->leaderboard, ($currentPage - 1) * $this->perPage, $this->perPage);
+        $paginated = new LengthAwarePaginator(
+            $slice,
+            $total,
+            $this->perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query(), 'pageName' => 'page']
+        );
+
+        return view('livewire.global-leaderboard', [
+            'paginatedLeaderboard' => $paginated,
+        ]);
     }
 }

@@ -6,7 +6,6 @@ use App\Exceptions\F1ApiException;
 use App\Models\Races;
 use App\Services\F1ApiService;
 use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class RacesList extends Component
@@ -19,17 +18,9 @@ class RacesList extends Component
 
     public ?string $error = null;
 
-    #[Url(as: 'status', except: '')]
-    public string $statusFilter = '';
-
-    #[Url(as: 'search', except: '')]
-    public string $searchQuery = '';
-
     public function mount(int $year)
     {
         $this->year = $year;
-        $this->statusFilter = request()->query('status', $this->statusFilter);
-        $this->searchQuery = request()->query('search', $this->searchQuery);
         $this->loadRaces();
     }
 
@@ -79,29 +70,29 @@ class RacesList extends Component
         $this->redirect(route('predict.create', ['race_id' => $race->id]));
     }
 
-    public function getFilteredRacesProperty(): array
+    /** @return array{past: array, next: array|null, future: array} */
+    public function getGroupedRacesProperty(): array
     {
-        $filtered = $this->races;
+        $past = [];
+        $next = null;
+        $future = [];
 
-        // Apply status filter
-        if (! empty($this->statusFilter)) {
-            $filtered = array_filter($filtered, function ($race) {
-                return $race['status'] === $this->statusFilter;
-            });
+        foreach ($this->races as $race) {
+            $status = $race['status'] ?? 'upcoming';
+            if (in_array($status, ['completed', 'cancelled'], true)) {
+                $past[] = $race;
+            } elseif ($status === 'ongoing') {
+                $next = $race;
+            } elseif ($status === 'upcoming') {
+                if ($next === null) {
+                    $next = $race;
+                } else {
+                    $future[] = $race;
+                }
+            }
         }
 
-        // Apply search filter
-        if (! empty($this->searchQuery)) {
-            $filtered = array_filter($filtered, function ($race) {
-                $searchLower = strtolower($this->searchQuery);
-
-                return str_contains(strtolower($race['raceName']), $searchLower) ||
-                       str_contains(strtolower($race['circuit']['circuitName']), $searchLower) ||
-                       str_contains(strtolower($race['circuit']['country']), $searchLower);
-            });
-        }
-
-        return array_values($filtered);
+        return ['past' => $past, 'next' => $next, 'future' => $future];
     }
 
     public function getStatusBadgeVariant(string $status): string

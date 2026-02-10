@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -29,6 +30,12 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        // Weekly sync of current F1 season data (races, drivers, teams) so the app
+        // serves almost everything from the local database/cache and only hits the
+        // external API once a week on Tuesday.
+        $schedule->command('f1:sync-season')->weeklyOn(2, '03:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

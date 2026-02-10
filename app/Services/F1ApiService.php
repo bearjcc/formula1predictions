@@ -71,11 +71,42 @@ class F1ApiService
     public function getRacesForYear(int $year): array
     {
         $races = Races::where('season', $year)->orderBy('round')->get();
-        if ($races->isNotEmpty()) {
-            return $this->racesCollectionToApiShape($races);
+        if ($races->isEmpty()) {
+            try {
+                // Prefer the single-shot season schedule endpoint to avoid
+                // dozens of per-round API calls, especially for future
+                // seasons like 2026 where data may be incomplete.
+                $syncedCount = $this->syncScheduleToRaces($year);
+
+                if ($syncedCount === 0) {
+                    // If the schedule endpoint is available but returns no
+                    // races yet, treat it as "no data" instead of a hard
+                    // failure so the UI can render a friendly empty state.
+                    return [];
+                }
+
+                $races = Races::where('season', $year)->orderBy('round')->get();
+            } catch (F1ApiException $e) {
+                Log::warning('F1 API season schedule sync failed', array_merge(
+                    ['year' => $year, 'message' => $e->getMessage()],
+                    $e->getLogContext()
+                ));
+
+                // Gracefully degrade to an empty list so we don\'t block
+                // the races page behind a 500 when the upstream API is
+                // flaky or future-season data is not published yet.
+                return [];
+            } catch (Throwable $e) {
+                Log::warning('F1 API season schedule sync failed', [
+                    'year' => $year,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return [];
+            }
         }
 
-        return $this->fetchAllRacesForYear($year);
+        return $this->racesCollectionToApiShape($races);
     }
 
     /**

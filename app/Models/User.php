@@ -122,10 +122,12 @@ class User extends Authenticatable
     public function isBot(): bool
     {
         return in_array($this->email, [
+            'lastbot@example.com',
+            'seasonbot@example.com',
+            'randombot@example.com',
             'lastracebot@example.com',
             'championshipbot@example.com',
             'championshiporderbot@example.com',
-            'randombot@example.com',
             'circuitbot@example.com',
             'smartbot@example.com',
         ], true);
