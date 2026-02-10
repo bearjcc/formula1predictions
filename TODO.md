@@ -139,10 +139,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: resources/js/notifications.js (L11, L79)
   - console.log debug statements in production JS. Remove.
 
-- [ ] **F1-064: Fix clearAllCache() to cover all years**
+- [x] **F1-064: Fix clearAllCache() to cover all years** _(done 2026-02-10)_
   - Type: bug | Priority: P2 | Risk: low | Owner: agent
-  - Affected: app/Services/F1ApiService.php (L720)
-  - clearAllCache() only covers years 2020-2025, misses 2026. Update to include all years.
+  - Affected: app/Services/F1ApiService.php
+  - Fixed: Loop now clears years 2020 through current_season + 1 (covers 2026 and next season). Added test.
 
 - [ ] **F1-065: Remove sensitive fields from User $fillable**
   - Type: security | Priority: P2 | Risk: low | Owner: agent

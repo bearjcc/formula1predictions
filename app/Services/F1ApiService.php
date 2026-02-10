@@ -866,11 +866,14 @@ class F1ApiService
 
     /**
      * Clear all caches
+     *
+     * Covers years 2020 through current_season + 1 so that current and
+     * upcoming season data (e.g. 2026 when deploying in 2025) is cleared.
      */
     public function clearAllCache(): void
     {
-        // Clear year-specific caches
-        for ($year = 2020; $year <= config('f1.current_season'); $year++) {
+        $maxYear = config('f1.current_season') + 1;
+        for ($year = 2020; $year <= $maxYear; $year++) {
             $this->clearCache($year);
         }
 

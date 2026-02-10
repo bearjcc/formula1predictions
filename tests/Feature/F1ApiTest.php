@@ -5,6 +5,8 @@ use App\Models\Races;
 use App\Models\User;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\mock;
@@ -258,6 +260,19 @@ test('f1 api service handles api errors gracefully', function () {
     // Ensure clearAllCache does not throw
     expect(fn () => $service->clearAllCache())
         ->not->toThrow(\Exception::class);
+});
+
+test('clearAllCache clears year-specific caches including current and next season', function () {
+    Config::set('f1.current_season', 2026);
+
+    Cache::put('f1_races_2026', ['cached'], 60);
+    Cache::put('f1_races_2027', ['cached'], 60);
+
+    $service = new F1ApiService;
+    $service->clearAllCache();
+
+    expect(Cache::has('f1_races_2026'))->toBeFalse();
+    expect(Cache::has('f1_races_2027'))->toBeFalse();
 });
 
 test('f1 api service throws F1ApiException when API returns 500', function () {
