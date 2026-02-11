@@ -200,7 +200,7 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: deploy.sh, Envoy.blade.php, or Forge config
   - Done: Added deploy.sh at project root to pull latest code, install PHP dependencies without dev packages, run migrations, build frontend assets, and warm Laravel caches. Added DeploymentScriptTest to ensure the script exists and includes key deployment steps.
 
-- [ ] **F1-075: Create production .env template**
+- [x] **F1-075: Create production .env template** _(done 2026-02-11)_
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
   - Affected: .env.production.example
   - No production .env template. Create with production-appropriate values.

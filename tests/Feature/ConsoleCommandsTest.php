@@ -266,7 +266,7 @@ test('ensure admin user command promotes existing non-admin user', function () {
     $user = User::factory()->create(['email' => 'existing@example.com']);
 
     $this->artisan('app:ensure-admin-user')
-        ->expectsOutputToContain('already existed; promoted to admin')
+        ->expectsOutputToContain('already existed; credentials synced with environment.')
         ->assertExitCode(0);
 
     $user->refresh();
@@ -284,4 +284,26 @@ test('ensure admin user command is idempotent when admin already exists', functi
 
     $user->refresh();
     expect($user->is_admin)->toBeTrue();
+});
+
+test('ensure admin user command updates password when ADMIN_PASSWORD changes', function () {
+    config([
+        'admin.promotable_admin_email' => 'env-admin@example.com',
+        'admin.admin_password' => 'old-password',
+    ]);
+
+    $user = User::factory()->admin()->create([
+        'email' => 'env-admin@example.com',
+        'password' => 'old-password',
+    ]);
+
+    // Change the configured admin password and ensure the command syncs it.
+    config(['admin.admin_password' => 'new-super-secret']);
+
+    $this->artisan('app:ensure-admin-user')
+        ->expectsOutputToContain('already existed; credentials synced with environment.')
+        ->assertExitCode(0);
+
+    $user->refresh();
+    expect(\Illuminate\Support\Facades\Hash::check('new-super-secret', $user->password))->toBeTrue();
 });

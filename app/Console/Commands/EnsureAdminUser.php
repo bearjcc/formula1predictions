@@ -17,6 +17,7 @@ class EnsureAdminUser extends Command
         $email = config('admin.promotable_admin_email');
         $name = config('admin.admin_name') ?? 'Admin';
         $password = config('admin.admin_password');
+        $madeChanges = false;
 
         if (empty($email)) {
             $this->warn('ADMIN_EMAIL is not set. Skipping admin creation.');
@@ -39,7 +40,9 @@ class EnsureAdminUser extends Command
             $user = User::create([
                 'email' => $email,
                 'name' => $name,
-                'password' => Hash::make($password),
+                // Let the User model's "hashed" cast handle encryption so it stays
+                // consistent with normal registrations and password updates.
+                'password' => $password,
                 'email_verified_at' => now(),
             ]);
             $user->forceFill(['is_admin' => true])->save();
@@ -51,8 +54,22 @@ class EnsureAdminUser extends Command
         }
 
         if (! $user->is_admin) {
-            $user->forceFill(['is_admin' => true])->save();
-            $this->info("User {$email} already existed; promoted to admin.");
+            $user->forceFill(['is_admin' => true]);
+            $madeChanges = true;
+        }
+
+        // If an ADMIN_PASSWORD is configured and it does not match the current
+        // password hash, sync it so deploy-time credentials always reflect
+        // the environment variables.
+        if (! empty($password) && ! Hash::check($password, $user->password)) {
+            $user->password = $password;
+            $madeChanges = true;
+        }
+
+        if ($madeChanges) {
+            $user->save();
+
+            $this->info("Admin user {$email} already existed; credentials synced with environment.");
 
             return Command::SUCCESS;
         }
