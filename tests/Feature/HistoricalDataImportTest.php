@@ -233,10 +233,10 @@ test('imported historical predictions can feed basic analytics for a season', fu
 
     // Assign simple synthetic scores and accuracy values so analytics have data to work with
     foreach ($predictions as $index => $prediction) {
-        $prediction->update([
+        $prediction->forceFill([
             'score' => 50 + ($index % 25),
             'accuracy' => 60 + ($index % 40),
-        ]);
+        ])->save();
     }
 
     // Create some simple current standings for the same season so standings-based charts have data

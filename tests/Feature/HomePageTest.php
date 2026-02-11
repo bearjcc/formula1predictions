@@ -22,7 +22,6 @@ test('home page card links resolve to valid routes', function () {
     $year = 2026;
 
     /** @var \Tests\TestCase $this */
-
     $response = $this->get('/');
 
     $response->assertOk();
@@ -31,7 +30,7 @@ test('home page card links resolve to valid routes', function () {
     $response->assertSee(route('standings.predictions', ['year' => $year]), false);
     $response->assertSee(route('standings.teams', ['year' => $year]), false);
     $response->assertSee(route('standings.drivers', ['year' => $year]), false);
-    $response->assertSee(route('countries'), false);
+    // Countries card intentionally hidden (F1-106)
 });
 
 test('home page standings link returns 200', function () {
@@ -39,7 +38,6 @@ test('home page standings link returns 200', function () {
     $year = 2026;
 
     /** @var \Tests\TestCase $this */
-
     $response = $this->get(route('standings', ['year' => $year]));
 
     $response->assertOk();

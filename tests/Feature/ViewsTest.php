@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\Circuits;
+use App\Models\Countries;
+use App\Models\Drivers;
+use App\Models\Races;
+use App\Models\Teams;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -54,63 +59,82 @@ describe('Year-specific views load correctly', function () {
         $response->assertViewHas('username', 'bearjcc');
     });
 
-    it('loads race view for /2023/race/123', function () {
-        $response = $this->get('/2023/race/123');
+    it('loads race view for a valid race', function () {
+        $race = Races::factory()->create(['season' => 2023, 'round' => 5]);
+
+        $response = $this->get('/2023/race/5');
         $response->assertOk();
         $response->assertViewIs('race');
-        $response->assertViewHas('year', '2023');
-        $response->assertViewHas('id', '123');
+        $response->assertViewHas('race');
+    });
+
+    it('returns 404 for non-existent race', function () {
+        $response = $this->get('/2023/race/999');
+        $response->assertNotFound();
     });
 });
 
 // Test non-year-specific views
 describe('Non-year-specific views load correctly', function () {
-    $routes = [
-        '/team/mercedes' => 'team',
-        '/driver/lewis-hamilton' => 'driver',
-        '/circuit/silverstone' => 'circuit',
-        '/country/belgium' => 'country',
-        '/race/british-grand-prix' => 'race',
-    ];
-
     it('loads countries index (Livewire full-page) for /countries', function () {
         $response = $this->get('/countries');
         $response->assertOk();
         $response->assertSee('F1 Countries', false);
     });
 
-    foreach ($routes as $route => $view) {
-        it("loads {$view} view for {$route}", function () use ($route, $view) {
-            $response = $this->get($route);
-            $response->assertOk();
-            $response->assertViewIs($view);
-        });
-    }
+    it('loads team view for /team/{slug}', function () {
+        Teams::factory()->create(['team_name' => 'Mercedes']);
 
-    // Test that slug parameters are passed correctly
-    it('passes slug parameter to team view', function () {
         $response = $this->get('/team/mercedes');
-        $response->assertViewHas('slug', 'mercedes');
+        $response->assertOk();
+        $response->assertViewIs('team');
+        $response->assertViewHas('team');
     });
 
-    it('passes slug parameter to driver view', function () {
+    it('loads driver view for /driver/{slug}', function () {
+        Drivers::factory()->create(['name' => 'Lewis', 'surname' => 'Hamilton']);
+
         $response = $this->get('/driver/lewis-hamilton');
-        $response->assertViewHas('slug', 'lewis-hamilton');
+        $response->assertOk();
+        $response->assertViewIs('driver');
+        $response->assertViewHas('driver');
     });
 
-    it('passes slug parameter to circuit view', function () {
+    it('loads circuit view for /circuit/{slug}', function () {
+        Circuits::factory()->create(['circuit_name' => 'Silverstone']);
+
         $response = $this->get('/circuit/silverstone');
-        $response->assertViewHas('slug', 'silverstone');
+        $response->assertOk();
+        $response->assertViewIs('circuit');
+        $response->assertViewHas('circuit');
     });
 
-    it('passes slug parameter to country view', function () {
+    it('loads country view for /country/{slug}', function () {
+        Countries::factory()->create(['name' => 'Belgium']);
+
         $response = $this->get('/country/belgium');
-        $response->assertViewHas('slug', 'belgium');
+        $response->assertOk();
+        $response->assertViewIs('country');
+        $response->assertViewHas('country');
     });
 
-    it('passes slug parameter to race detail view', function () {
+    it('loads race detail view for /race/{slug}', function () {
+        Races::factory()->create(['race_name' => 'British Grand Prix']);
+
         $response = $this->get('/race/british-grand-prix');
-        $response->assertViewHas('slug', 'british-grand-prix');
+        $response->assertOk();
+        $response->assertViewIs('race');
+        $response->assertViewHas('race');
+    });
+
+    it('returns 404 for non-existent team slug', function () {
+        $response = $this->get('/team/nonexistent');
+        $response->assertNotFound();
+    });
+
+    it('returns 404 for non-existent driver slug', function () {
+        $response = $this->get('/driver/nonexistent');
+        $response->assertNotFound();
     });
 });
 
@@ -128,7 +152,9 @@ describe('Views have basic structure', function () {
         $response->assertSee('2023');
     });
 
-    it('team page shows the team slug', function () {
+    it('team page shows the team name', function () {
+        Teams::factory()->create(['team_name' => 'Mercedes']);
+
         $response = $this->get('/team/mercedes');
         $response->assertSee('Mercedes');
     });
@@ -153,10 +179,11 @@ describe('View data is structured correctly', function () {
         $response->assertViewHasAll(['year']);
     });
 
-    it('slug-based routes pass slug data', function () {
+    it('slug-based routes pass model data', function () {
+        Teams::factory()->create(['team_name' => 'Ferrari']);
+
         $response = $this->get('/team/ferrari');
-        $response->assertViewHas('slug');
-        $response->assertViewHasAll(['slug']);
+        $response->assertViewHas('team');
     });
 
     it('complex routes pass multiple parameters', function () {
