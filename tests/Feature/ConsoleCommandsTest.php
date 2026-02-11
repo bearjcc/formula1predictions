@@ -223,15 +223,15 @@ test('promote admin command is idempotent when user already admin', function () 
     expect($user->is_admin)->toBeTrue();
 });
 
-test('ensure admin user command fails when ADMIN_EMAIL not set', function () {
+test('ensure admin user command skips when ADMIN_EMAIL not set', function () {
     config(['admin.promotable_admin_email' => null]);
 
     $this->artisan('app:ensure-admin-user')
         ->expectsOutputToContain('ADMIN_EMAIL is not set')
-        ->assertExitCode(1);
+        ->assertExitCode(0);
 });
 
-test('ensure admin user command fails when ADMIN_PASSWORD not set and user must be created', function () {
+test('ensure admin user command skips when ADMIN_PASSWORD not set and user must be created', function () {
     config([
         'admin.promotable_admin_email' => 'new-admin@example.com',
         'admin.admin_password' => null,
@@ -239,7 +239,7 @@ test('ensure admin user command fails when ADMIN_PASSWORD not set and user must 
 
     $this->artisan('app:ensure-admin-user')
         ->expectsOutputToContain('ADMIN_PASSWORD is not set')
-        ->assertExitCode(1);
+        ->assertExitCode(0);
 
     expect(User::where('email', 'new-admin@example.com')->exists())->toBeFalse();
 });

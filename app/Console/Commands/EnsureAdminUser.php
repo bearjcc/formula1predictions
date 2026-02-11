@@ -19,10 +19,10 @@ class EnsureAdminUser extends Command
         $password = config('admin.admin_password');
 
         if (empty($email)) {
-            $this->error('ADMIN_EMAIL is not set. Skipping admin creation.');
-            $this->comment('Set ADMIN_EMAIL (and optionally ADMIN_NAME, ADMIN_PASSWORD) then re-run this command.');
+            $this->warn('ADMIN_EMAIL is not set. Skipping admin creation.');
+            $this->comment('Set ADMIN_EMAIL (and optionally ADMIN_NAME, ADMIN_PASSWORD) to auto-create admin on deploy.');
 
-            return Command::FAILURE;
+            return Command::SUCCESS;
         }
 
         /** @var \App\Models\User|null $user */
@@ -30,10 +30,10 @@ class EnsureAdminUser extends Command
 
         if (! $user) {
             if (empty($password)) {
-                $this->error('ADMIN_PASSWORD is not set. Cannot create admin without an explicit password.');
-                $this->comment('Set ADMIN_PASSWORD in .env for production deployment, then re-run this command.');
+                $this->warn('ADMIN_PASSWORD is not set. Cannot create admin without an explicit password.');
+                $this->comment('Set ADMIN_PASSWORD in production env to auto-create admin on deploy.');
 
-                return Command::FAILURE;
+                return Command::SUCCESS;
             }
 
             $user = User::create([

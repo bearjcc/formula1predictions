@@ -17,7 +17,7 @@ npm run build               # after UI changes (or npm run dev / composer run de
 
 **First admin (deploy):**
 - **Local:** Register a user, then promote: `php artisan app:promote-admin you@example.com` or set `ADMIN_EMAIL` in .env and run `php artisan app:promote-admin`.
-- **Railway/Production:** Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` in environment variables, then run `php artisan db:seed --class=AdminSeeder`. The seeder creates the admin user directly.
+- **Railway/Production:** Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` in environment variables. The start command runs `app:ensure-admin-user` on every deploy—creates admin if not exist, sets `email_verified_at`, never overwrites password on existing users.
 
 Use minimal test filters when validating changes. No verification scripts or tinker when tests cover the behavior. If full `php artisan test` times out (e.g. Windows), run `.\scripts\test-batches.ps1` or run in two batches: (1) `php artisan test tests/Unit tests/Feature/AccessibilityTest.php tests/Feature/AdminControllerTest.php tests/Feature/Auth tests/Feature/AutoLockPredictionsTest.php tests/Feature/BasicPhase1Test.php tests/Feature/BotPredictionsSeederTest.php tests/Feature/BotsSeedCommandTest.php tests/Feature/ChampionshipOrderBotSeederTest.php tests/Feature/ChartDataServiceTest.php tests/Feature/ConsoleCommandsTest.php tests/Feature/DashboardTest.php tests/Feature/DataVisualizationTest.php tests/Feature/DraggableDriverListTest.php tests/Feature/DraggableTeamListTest.php tests/Feature/F1ApiTest.php tests/Feature/FakerBasicSeederTest.php tests/Feature/FormValidationTest.php` (165 tests); (2) remaining tests in tests/Feature/.
 
