@@ -5,22 +5,27 @@ namespace App\Database\Schema\Grammars;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar as BaseMySqlGrammar;
 
 /**
- * MySQL schema grammar that avoids SYSTEM VERSIONED in table-existence checks.
- * Uses only 'BASE TABLE' so migrations work on MySQL/MariaDB versions and
- * environments (e.g. Railway) where the default Laravel query can trigger
- * SQLSTATE[42000] syntax errors.
+ * MySQL schema grammar that avoids SYSTEM VERSIONED in table-existence checks
+ * and avoids schema() so migrations work on Railway/MySQL where "near '10'"
+ * syntax errors can occur (e.g. when schema is misparsed or schema() is used).
  */
 class MySqlGrammar extends BaseMySqlGrammar
 {
     /**
      * Compile the query to determine if the given table exists.
+     * Uses the connection's database name (quoted) instead of schema() so
+     * the query never embeds a raw integer or triggers MySQL syntax errors.
      */
     public function compileTableExists($schema, $table): string
     {
+        $schemaValue = ($schema !== null && $schema !== '')
+            ? (string) $schema
+            : $this->connection->getDatabaseName();
+
         return sprintf(
             'select exists (select 1 from information_schema.tables where '
             ."table_schema = %s and table_name = %s and table_type = 'BASE TABLE') as `exists`",
-            $schema ? $this->quoteString($schema) : 'schema()',
+            $this->quoteString($schemaValue),
             $this->quoteString($table)
         );
     }
