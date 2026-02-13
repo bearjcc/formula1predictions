@@ -43,6 +43,13 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Use MySQL grammar that checks only BASE TABLE (avoids SYSTEM VERSIONED) so
+        // migrations work on Railway and other MySQL/MariaDB where the default query can error.
+        if (config('database.default') === 'mysql') {
+            $connection = $this->app->make('db')->connection();
+            $connection->setSchemaGrammar(new \App\Database\Schema\Grammars\MySqlGrammar($connection));
+        }
+
         // Rate limiters
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip());

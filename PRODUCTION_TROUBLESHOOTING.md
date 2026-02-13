@@ -43,6 +43,12 @@ A redeploy should have been triggered. After it completes, test login and page l
 
 ---
 
+## 1b. Migrations fail: SQLSTATE[42000] syntax error "near '10'" or table_type
+
+If deploy fails during `php artisan migrate` with a MySQL syntax error on `information_schema.tables` / `table_type in ('BASE TABLE', 'SYSTEM VERSIONED')`, the app uses a custom MySQL schema grammar that checks only `BASE TABLE`. This is already applied in code (see `App\Database\Schema\Grammars\MySqlGrammar` and `AppServiceProvider`). Ensure you’re on the latest deploy. If the error persists, confirm `DB_URL` or `DB_DATABASE` is set to your actual database name (e.g. `railway`), not a number or wrong value.
+
+---
+
 ## 2. Site Crashes (500 errors)
 
 ### Checklist
