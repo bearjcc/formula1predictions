@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div class="relative" style="height: 300px; sm:height: 400px;">
+    <div class="relative h-[300px] min-h-[280px]">
         <canvas id="{{ $chartId }}" wire:ignore></canvas>
     </div>
 

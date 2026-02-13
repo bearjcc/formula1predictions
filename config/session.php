@@ -156,7 +156,8 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    // Null when unset or literal "null" so the cookie is scoped to current host (fixes production login).
+    'domain' => in_array(env('SESSION_DOMAIN'), [null, '', 'null'], true) ? null : env('SESSION_DOMAIN'),
 
     /*
     |--------------------------------------------------------------------------
