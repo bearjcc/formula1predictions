@@ -1,22 +1,17 @@
 @extends('components.layouts.layout')
 
+@section('title', $user->name . "'s Statistics")
+@section('headerSubtitle', 'Prediction performance overview')
+
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1">{{ $user->name }}'s Statistics</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">Prediction performance overview</p>
-            </div>
-            <div class="flex gap-2">
-                <a href="{{ route('leaderboard.compare', ['season' => $stats['season_stats']->first()?->season ?? date('Y'), 'users' => $user->id]) }}" class="btn btn-outline">
-                    Head-to-Head Compare
-                </a>
-                <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
-                    ← Back to Leaderboard
-                </a>
-            </div>
-        </div>
+    <div class="mb-8 flex justify-end gap-2">
+        <a href="{{ route('leaderboard.compare', ['season' => $stats['season_stats']->first()?->season ?? date('Y'), 'users' => $user->id]) }}" class="btn btn-outline">
+            Head-to-Head Compare
+        </a>
+        <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
+            Back to Leaderboard
+        </a>
     </div>
 
     <!-- User Info -->

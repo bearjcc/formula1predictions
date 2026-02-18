@@ -1,10 +1,6 @@
-<x-layouts.layout title="Admin – Predictions">
+<x-layouts.layout title="Admin – Predictions" headerSubtitle="Score, lock, unlock, or delete predictions">
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-heading-1">Manage Predictions</h1>
-            <p class="text-auto-muted">Score, lock, unlock, or delete predictions</p>
-        </div>
+    <div class="mb-8 flex justify-end">
         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
     </div>
 

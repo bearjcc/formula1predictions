@@ -1,12 +1,11 @@
 @extends('components.layouts.layout')
 
+@section('title', 'Leaderboard')
+@section('headerSubtitle', 'F1 Predictions Rankings')
+
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-heading-1">Leaderboard</h1>
-            <p class="text-zinc-600 dark:text-zinc-400">F1 Predictions Rankings</p>
-        </div>
+    <div class="mb-8 flex flex-wrap items-center justify-end gap-4">
         <a href="{{ route('leaderboard.compare', ['season' => $season]) }}" class="btn btn-outline btn-primary">
             Head-to-Head Compare
         </a>

@@ -62,7 +62,7 @@ class PredictionController extends Controller
     {
         Gate::authorize('update', $prediction);
 
-        return view('predictions.edit', compact('prediction'));
+        return view('predictions.edit-livewire', compact('prediction'));
     }
 
     /**

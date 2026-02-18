@@ -1,17 +1,14 @@
 @extends('components.layouts.layout')
 
+@section('title', 'Head-to-Head Comparison')
+@section('headerSubtitle', 'Compare scores and accuracy with other predictors')
+
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1">Head-to-Head Comparison</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">Compare scores and accuracy with other predictors</p>
-            </div>
-            <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
-                ← Back to Leaderboard
-            </a>
-        </div>
+    <div class="mb-8 flex justify-end">
+        <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
+            Back to Leaderboard
+        </a>
     </div>
 
     {{-- Filters: season + user multi-select --}}

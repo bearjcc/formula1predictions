@@ -17,42 +17,27 @@
     @enderror
 
     <form wire:submit="save" class="space-y-8">
-        <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <x-mary-select label="Prediction Type" wire:model.live="type" :disabled="$isLocked || $editingPrediction !== null">
-                    <option value="race">Race Results</option>
-                    <option value="sprint">Sprint Results</option>
-                    <option value="preseason">Pre-Season Championship Only</option>
-                    <option value="midseason">Mid-Season Revision</option>
-                </x-mary-select>
-
-                <x-mary-select label="Season" wire:model.live="season" :disabled="$isLocked || $editingPrediction !== null">
-                    @foreach(range(date('Y'), 2020) as $y)
-                        <option value="{{ $y }}">{{ $y }}</option>
-                    @endforeach
-                </x-mary-select>
+        @if($race)
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-zinc-900 dark:text-white uppercase tracking-tight">
+                {{ $race->race_name }} {{ $season }}
+            </h2>
+            <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                <span>Round {{ $race->round }}</span>
+                @if($race->date)
+                    <span>{{ $race->date->format('j M Y') }}</span>
+                @endif
+                @if($race->circuit_name || $race->locality)
+                    <span>{{ trim(implode(', ', array_filter([$race->circuit_name, $race->locality]))) }}</span>
+                @endif
             </div>
-
-            @if(in_array($type, ['race', 'sprint']))
-                <div class="mt-6">
-                    <x-mary-input label="Race Round" wire:model="raceRound" type="number" readonly />
-                    @if($race)
-                        <div class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                            Predicting for: <strong>{{ $race->race_name }}</strong>
-                        </div>
-                        @if($this->predictionDeadline && !$isLocked)
-                            <div class="mt-1 text-sm text-amber-600 dark:text-amber-400">
-                                Closes 1 hour before {{ $type === 'sprint' ? 'sprint qualifying' : 'qualifying' }}: {{ $this->predictionDeadline->format('M j, Y g:i A T') }}
-                            </div>
-                        @endif
-                    @endif
-                </div>
+            @if($this->predictionDeadline && !$isLocked)
+                <p class="mt-2 text-sm text-amber-600 dark:text-amber-400">
+                    Closes 1 hour before {{ $type === 'sprint' ? 'sprint qualifying' : 'qualifying' }}: {{ $this->predictionDeadline->format('M j, Y g:i A T') }}
+                </p>
             @endif
-
-            <div class="mt-6">
-                <x-mary-textarea label="Notes" wire:model="notes" placeholder="Your thoughts on this prediction..." :disabled="$isLocked" />
-            </div>
         </div>
+        @endif
 
         @if(in_array($type, ['race', 'sprint']))
             <div class="{{ $isLocked ? 'pointer-events-none grayscale-[0.5] opacity-80' : '' }}">
@@ -60,10 +45,10 @@
                     'drivers' => $drivers,
                     'raceName' => $race ? $race->race_name : 'Race',
                     'season' => $season,
-                    'raceRound' => $raceRound,
+                    'raceRound' => $raceRound ?? 1,
                     'driverOrder' => $driverOrder,
                     'fastestLapDriverId' => $fastestLapDriverId
-                ], key('driver-list-' . $raceRound))
+                ], key('driver-list-' . ($race?->id ?? 'create')))
             </div>
 
             @if($type === 'race' && !empty($drivers))

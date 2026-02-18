@@ -1,4 +1,4 @@
-@props(['title' => 'F1 Predictor'])
+@props(['title' => null, 'headerSubtitle' => null])
 <!DOCTYPE html>
 @php
   $appearance = session('appearance', config('f1.default_appearance', 'system'));
@@ -141,11 +141,20 @@
             <!-- Header -->
             <header class="bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 p-4">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button type="button" id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
+                    <div class="flex items-center space-x-4 min-w-0 flex-1">
+                        <button type="button" id="open-sidebar" class="lg:hidden shrink-0 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
                             <x-mary-icon name="o-bars-3" class="w-5 h-5" />
                         </button>
-                        <h1 class="text-xl font-semibold truncate">{{ $title }}</h1>
+                        <div class="min-w-0">
+                            @php
+                                $headerTitle = $title ?? $__env->yieldContent('title') ?? config('app.name');
+                                $headerSub = $headerSubtitle ?? $__env->yieldContent('headerSubtitle');
+                            @endphp
+                            <h1 class="text-xl font-semibold truncate text-zinc-900 dark:text-zinc-100">{{ $headerTitle }}</h1>
+                            @if($headerSub)
+                                <p class="text-sm mt-0.5 truncate text-zinc-600 dark:text-zinc-400">{{ $headerSub }}</p>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="flex items-center space-x-4">

@@ -1,10 +1,6 @@
-<x-layouts.layout title="Admin – Races">
+<x-layouts.layout title="Admin – Races" headerSubtitle="View race calendar and status">
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-heading-1">Manage Races</h1>
-            <p class="text-auto-muted">View race calendar and status</p>
-        </div>
+    <div class="mb-8 flex justify-end">
         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
     </div>
 

@@ -1,17 +1,5 @@
-<x-layouts.layout title="Prediction Details">
-    <div class="mb-8 flex items-center justify-between">
-        <div>
-            <h1 class="text-heading-1 mb-2">
-                @if($prediction->type === 'race')
-                    {{ $prediction->race->race_name ?? "Round {$prediction->race_round}" }} Prediction
-                @else
-                    {{ ucfirst($prediction->type) }} Prediction
-                @endif
-            </h1>
-            <p class="text-zinc-600 dark:text-zinc-400">
-                Performance overview and details.
-            </p>
-        </div>
+<x-layouts.layout :title="($prediction->type === 'race' ? ($prediction->race->race_name ?? 'Round ' . $prediction->race_round) : ucfirst($prediction->type)) . ' Prediction'" headerSubtitle="Performance overview and details.">
+    <div class="mb-8 flex justify-end">
         <div class="flex items-center space-x-2">
             @if($prediction->isEditable())
                 <x-mary-button label="Edit" link="{{ route('predictions.edit', $prediction) }}" variant="primary" icon="o-pencil" />

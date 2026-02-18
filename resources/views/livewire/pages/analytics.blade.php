@@ -1,15 +1,9 @@
-@layoutData(['title' => 'Analytics Dashboard'])
+@layoutData(['title' => 'Analytics Dashboard', 'headerSubtitle' => 'Comprehensive data visualization and insights for Formula 1 predictions'])
 
 <div>
     {{-- #region Page Header --}}
     <div class="mb-8">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <h1 class="text-heading-1 mb-2">Analytics Dashboard</h1>
-                <p class="text-auto-muted">
-                    Comprehensive data visualization and insights for Formula 1 predictions
-                </p>
-            </div>
+        <div class="flex justify-end">
             <div class="flex items-center space-x-2">
                 <label for="season-select" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Season:

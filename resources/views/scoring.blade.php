@@ -1,13 +1,5 @@
-<x-layouts.layout title="How Scoring Works">
+<x-layouts.layout title="How Scoring Works" headerSubtitle="How your race predictions are turned into points and feed into the season leaderboard.">
     <div class="max-w-4xl mx-auto py-8">
-        <div class="mb-8">
-            <h1 class="text-heading-1 mb-3">How scoring works</h1>
-            <p class="text-auto-muted">
-                This page explains how your race predictions are turned into points, and how those points feed into the season
-                leaderboard.
-            </p>
-        </div>
-
         <x-mary-card class="mb-8">
             <h2 class="text-heading-2 mb-3">Big picture</h2>
             <p class="text-auto-muted mb-3">

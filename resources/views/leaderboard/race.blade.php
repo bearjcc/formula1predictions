@@ -1,22 +1,17 @@
 @extends('components.layouts.layout')
 
+@section('title', $race->race_name . ' Leaderboard')
+@section('headerSubtitle', 'Round ' . $raceRound . ' - ' . $season . ' Season')
+
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-heading-1">{{ $race->race_name }} Leaderboard</h1>
-            <p class="text-zinc-600 dark:text-zinc-400">
-                Round {{ $raceRound }} - {{ $season }} Season
-            </p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{{ route('leaderboard.season', $season) }}" class="btn btn-outline">
-                Season Leaderboard
-            </a>
-            <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
-                All Seasons
-            </a>
-        </div>
+    <div class="mb-8 flex flex-wrap items-center justify-end gap-2">
+        <a href="{{ route('leaderboard.season', $season) }}" class="btn btn-outline">
+            Season Leaderboard
+        </a>
+        <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
+            All Seasons
+        </a>
     </div>
 
     <!-- Race Leaderboard Table -->

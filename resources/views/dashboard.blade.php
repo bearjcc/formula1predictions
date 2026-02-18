@@ -1,21 +1,13 @@
-<x-layouts.layout>
+<x-layouts.layout title="Dashboard" headerSubtitle="Your personalized Formula 1 prediction dashboard">
     {{-- #region Page Header --}}
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1 mb-2">Dashboard</h1>
-                <p class="text-auto-muted">
-                    Your personalized Formula 1 prediction dashboard
-                </p>
-            </div>
-            <div class="flex items-center gap-3">
-                <x-mary-button variant="outline" size="sm" icon="o-chart-bar" link="{{ route('analytics') }}" wire:navigate>
-                    View Stats
-                </x-mary-button>
-                <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
-                    Make Prediction
-                </x-mary-button>
-            </div>
+    <div class="mb-8 flex justify-end">
+        <div class="flex items-center gap-3">
+            <x-mary-button variant="outline" size="sm" icon="o-chart-bar" link="{{ route('analytics') }}" wire:navigate>
+                View Stats
+            </x-mary-button>
+            <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
+                Make Prediction
+            </x-mary-button>
         </div>
     </div>
 

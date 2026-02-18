@@ -1,20 +1,17 @@
 @extends('components.layouts.layout')
 
+@section('title', $season . ' Season Leaderboard')
+@section('headerSubtitle', 'Rankings for the ' . $season . ' season')
+
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-heading-1">{{ $season }} Season Leaderboard</h1>
-            <p class="text-zinc-600 dark:text-zinc-400">Rankings for the {{ $season }} season</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{{ route('leaderboard.compare', ['season' => $season]) }}" class="btn btn-outline btn-primary">
-                Head-to-Head Compare
-            </a>
-            <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
-                All Seasons
-            </a>
-        </div>
+    <div class="mb-8 flex flex-wrap items-center justify-end gap-2">
+        <a href="{{ route('leaderboard.compare', ['season' => $season]) }}" class="btn btn-outline btn-primary">
+            Head-to-Head Compare
+        </a>
+        <a href="{{ route('leaderboard.index') }}" class="btn btn-outline">
+            All Seasons
+        </a>
     </div>
 
     <!-- Season Selector -->

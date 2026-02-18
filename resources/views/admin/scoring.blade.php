@@ -1,10 +1,6 @@
-<x-layouts.layout title="Admin – Scoring">
+<x-layouts.layout title="Admin – Scoring" headerSubtitle="Score race predictions and manage results">
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-heading-1">Scoring</h1>
-            <p class="text-auto-muted">Score race predictions and manage results</p>
-        </div>
+    <div class="mb-8 flex justify-end">
         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
     </div>
 

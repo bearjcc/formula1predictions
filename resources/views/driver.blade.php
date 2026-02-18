@@ -1,16 +1,4 @@
-<x-layouts.layout>
-    <!-- Page Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold mb-2">{{ $driver->full_name }}</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
-                    Complete driver information and statistics for {{ $driver->full_name }}
-                </p>
-            </div>
-        </div>
-    </div>
-
+<x-layouts.layout :title="$driver->full_name" :headerSubtitle="'Complete driver information and statistics for ' . $driver->full_name">
     <!-- Driver Overview Card -->
     <x-mary-card class="mb-8">
         <div class="flex items-start space-x-6">

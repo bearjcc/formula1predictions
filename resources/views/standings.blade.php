@@ -1,16 +1,4 @@
-<x-layouts.layout>
-    <!-- Page Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1 mb-2">{{ $year }} Standings</h1>
-                <p class="text-auto-muted">
-                    {{ __('Browse driver, team, and prediction standings for the :year season.', ['year' => $year]) }}
-                </p>
-            </div>
-        </div>
-    </div>
-
+<x-layouts.layout :title="$year . ' Standings'" :headerSubtitle="__('Browse driver, team, and prediction standings for the :year season.', ['year' => $year])">
     <!-- Navigation Tabs -->
     <div class="mb-8">
         <div class="border-b border-zinc-200 dark:border-zinc-700">

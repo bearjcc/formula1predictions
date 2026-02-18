@@ -1,16 +1,4 @@
-<x-layouts.layout>
-    <!-- Page Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1 mb-2">{{ $country->name }} F1 Profile</h1>
-                <p class="text-auto-muted">
-                    Formula 1 history and statistics for {{ $country->name }}
-                </p>
-            </div>
-        </div>
-    </div>
-
+<x-layouts.layout :title="$country->name . ' F1 Profile'" :headerSubtitle="'Formula 1 history and statistics for ' . $country->name">
     <!-- Country Overview Card -->
     <x-mary-card class="p-6 mb-8">
         <div class="flex items-start space-x-6">

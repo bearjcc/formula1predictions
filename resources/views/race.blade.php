@@ -1,16 +1,4 @@
-<x-layouts.layout>
-    <!-- Page Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1 mb-2">{{ $race->race_name }}</h1>
-                <p class="text-auto-muted">
-                    Complete race information and results for {{ $race->race_name }}
-                </p>
-            </div>
-        </div>
-    </div>
-
+<x-layouts.layout :title="$race->race_name" :headerSubtitle="'Complete race information and results for ' . $race->race_name">
     <!-- Race Overview Card -->
     <x-mary-card class="p-6 mb-8">
         <div class="flex items-start space-x-6">

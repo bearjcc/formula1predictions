@@ -1,16 +1,4 @@
-<x-layouts.layout>
-    <!-- Page Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1 mb-2">{{ $year }} Driver Standings</h1>
-                <p class="text-auto-muted">
-                    Current driver championship standings for the {{ $year }} Formula 1 season
-                </p>
-            </div>
-        </div>
-    </div>
-
+<x-layouts.layout :title="$year . ' Driver Standings'" :headerSubtitle="'Current driver championship standings for the ' . $year . ' Formula 1 season'">
     <!-- Driver Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">

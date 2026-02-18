@@ -1,13 +1,5 @@
-<x-layouts.layout>
+<x-layouts.layout title="Components" headerSubtitle="Explore all available Mary UI components and their variants">
     <div class="space-y-12">
-        <!-- Header -->
-        <div class="text-center">
-            <h1 class="text-3xl font-bold mb-4">Mary UI Components Demo</h1>
-            <p class="text-lg text-zinc-600 dark:text-zinc-400">
-                Explore all available Mary UI components and their variants
-            </p>
-        </div>
-
         <!-- Buttons Section -->
         <section class="space-y-6">
             <h2 class="text-2xl font-bold">Buttons</h2>

@@ -1,10 +1,5 @@
-<x-layouts.layout title="Admin Dashboard">
+<x-layouts.layout title="Admin Dashboard" headerSubtitle="Manage F1 Predictions system">
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-heading-1">Admin Dashboard</h1>
-        <p class="text-auto-muted">Manage F1 Predictions system</p>
-    </div>
-
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="card bg-base-100">

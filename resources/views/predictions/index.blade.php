@@ -1,11 +1,5 @@
-<x-layouts.layout title="My Predictions">
-    <div class="mb-8 flex items-center justify-between">
-        <div>
-            <h1 class="text-heading-1 mb-2">My Predictions</h1>
-            <p class="text-zinc-600 dark:text-zinc-400">
-                Track your performance across the season.
-            </p>
-        </div>
+<x-layouts.layout title="My Predictions" headerSubtitle="Track your performance across the season.">
+    <div class="mb-8 flex justify-end">
         <x-mary-button label="New Prediction" link="{{ route('races', ['year' => config('f1.current_season')]) }}" variant="primary" icon="o-plus" />
     </div>
 

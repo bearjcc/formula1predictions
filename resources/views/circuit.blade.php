@@ -1,16 +1,4 @@
-<x-layouts.layout>
-    <!-- Page Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1 mb-2">{{ $circuit->circuit_name }}</h1>
-                <p class="text-auto-muted">
-                    Complete circuit information and statistics for {{ $circuit->circuit_name }}
-                </p>
-            </div>
-        </div>
-    </div>
-
+<x-layouts.layout :title="$circuit->circuit_name" :headerSubtitle="'Complete circuit information and statistics for ' . $circuit->circuit_name">
     <!-- Circuit Overview Card -->
     <x-mary-card class="mb-8">
         <div class="flex items-start space-x-6">

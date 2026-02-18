@@ -1,21 +1,14 @@
-<x-layouts.layout>
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-heading-1 mb-2">F1 Countries</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
-                    Explore Formula 1 history and statistics by country
-                </p>
-            </div>
-            <div class="flex items-center gap-3">
-                <x-mary-button variant="outline" size="sm" icon="o-map">
-                    Map View
-                </x-mary-button>
-                <x-mary-button variant="primary" size="sm" icon="o-plus">
-                    Compare Countries
-                </x-mary-button>
-            </div>
-        </div>
+@layout('components.layouts.app')
+@layoutData(['title' => 'F1 Countries', 'headerSubtitle' => 'Explore Formula 1 history and statistics by country'])
+
+<div>
+    <div class="mb-8 flex justify-end gap-3">
+        <x-mary-button variant="outline" size="sm" icon="o-map">
+            Map View
+        </x-mary-button>
+        <x-mary-button variant="primary" size="sm" icon="o-plus">
+            Compare Countries
+        </x-mary-button>
     </div>
 
     <x-mary-card class="mb-8">
@@ -108,4 +101,4 @@
             Showing {{ $countries->total() }} {{ str('country')->plural($countries->total()) }}
         </p>
     @endif
-</x-layouts.layout>
+</div>

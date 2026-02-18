@@ -1,10 +1,6 @@
-<x-layouts.layout title="Admin – Settings">
+<x-layouts.layout title="Admin – Settings" headerSubtitle="Application and environment settings">
 <div class="container mx-auto px-4 py-8">
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-heading-1">System Settings</h1>
-            <p class="text-auto-muted">Application and environment settings</p>
-        </div>
+    <div class="mb-8 flex justify-end">
         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
     </div>
 

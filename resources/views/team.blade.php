@@ -1,16 +1,4 @@
-<x-layouts.layout>
-    <!-- Page Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold mb-2">{{ $team->team_name }}</h1>
-                <p class="text-zinc-600 dark:text-zinc-400">
-                    Complete team information and statistics for {{ $team->team_name }}
-                </p>
-            </div>
-        </div>
-    </div>
-
+<x-layouts.layout :title="$team->team_name" :headerSubtitle="'Complete team information and statistics for ' . $team->team_name">
     <!-- Team Overview Card -->
     <x-mary-card class="mb-8">
         <div class="flex items-start space-x-6">

@@ -1,4 +1,4 @@
-<x-layouts.layout>
+<x-layouts.layout title="Home" headerSubtitle="F1 Predictions">
     <!-- Hero Section -->
     <div class="relative overflow-hidden bg-gradient-to-br from-red-500 via-red-400 to-red-600 dark:from-red-700 dark:via-red-600 dark:to-red-800">
         <div class="absolute inset-0 bg-black/10"></div>
