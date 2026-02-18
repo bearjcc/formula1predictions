@@ -47,13 +47,21 @@ A redeploy should have been triggered. After it completes, test login and page l
 
 If deploy fails during `php artisan migrate` with a MySQL syntax error on `information_schema.tables` / `table_type in ('BASE TABLE', 'SYSTEM VERSIONED')`, the app uses a custom MySQL schema grammar that uses `SHOW TABLES LIKE 'table'` (not information_schema) to avoid "near '10'" errors. For table listing it checks only `BASE TABLE`. This is already applied in code (see `App\Database\Schema\Grammars\MySqlGrammar` and `AppServiceProvider`). Ensure you’re on the latest deploy. If the error persists:
 
-1. **Set DB_DATABASE:** `DB_DATABASE=${{MySQL.MYSQLDATABASE}}` in Railway Variables. With `DB_URL`, the path must be like `.../railway`; a misparsed URL can pass a number as the database and trigger "near '10'". AppServiceProvider strips url and injects parsed params with explicit database when both are set.
+**REQUIRED FIX: Remove DB_URL and use explicit vars only.**
 
-2. **Try private URL (bypass proxy):** The public TCP proxy may mangle queries. Set `DB_USE_PRIVATE_MYSQL=1` in Railway Variables. The app will use `MYSQL_PRIVATE_URL` instead of `DB_URL` when both exist. Railway injects `MYSQL_PRIVATE_URL` from the MySQL service. Private networking only works when app and MySQL are in the same Railway project.
+1. **Remove** `DB_URL` from Railway Variables (delete it).
 
-3. **Use explicit vars (no URL parsing):** Set `DB_HOST=${{MySQL.MYSQLHOST}}`, `DB_PORT=${{MySQL.MYSQLPORT}}`, `DB_DATABASE=${{MySQL.MYSQLDATABASE}}`, `DB_USERNAME=${{MySQL.MYSQLUSER}}`, `DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}` and leave `DB_URL` unset. This avoids URL parsing entirely.
+2. **Add** these (reference your MySQL service name; use `MySQL` if that is the service name):
+   ```
+   DB_CONNECTION=mysql
+   DB_HOST=${{MySQL.MYSQLHOST}}
+   DB_PORT=${{MySQL.MYSQLPORT}}
+   DB_DATABASE=${{MySQL.MYSQLDATABASE}}
+   DB_USERNAME=${{MySQL.MYSQLUSER}}
+   DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+   ```
 
-4. **Start command:** Runs config:clear before config:cache. Use `DB_URL=${{MySQL.MYSQL_PUBLIC_URL}}` (not MYSQL_URL) for public connections. The app uses a custom DatabaseManager (`App\Database\DatabaseManager`) that forces the database name to string.
+3. Redeploy. The app skips URL parsing and uses these vars directly. Laravel's DB_URL parser causes the "near 10" error.
 
 ---
 
@@ -133,14 +141,11 @@ SESSION_LIFETIME=120
 SESSION_ENCRYPT=true
 SESSION_SECURE_COOKIE=true
 
-# Database: Prefer DB_URL (public TCP proxy) over private host—avoids connection timeouts.
-# Set DB_DATABASE explicitly to avoid "near '10'" when URL path parses as numeric.
-DB_URL=${{MySQL.MYSQL_PUBLIC_URL}}
+# Database: Use explicit vars only. Do NOT set DB_URL (causes 1064 "near 10").
 DB_CONNECTION=mysql
-DB_DATABASE=${{MySQL.MYSQLDATABASE}}
-# Fallbacks (used only if DB_URL unset):
 DB_HOST=${{MySQL.MYSQLHOST}}
 DB_PORT=${{MySQL.MYSQLPORT}}
+DB_DATABASE=${{MySQL.MYSQLDATABASE}}
 DB_USERNAME=${{MySQL.MYSQLUSER}}
 DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
 ```
