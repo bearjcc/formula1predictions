@@ -124,44 +124,69 @@ class AppServiceProvider extends ServiceProvider
     /**
      * When DB_DATABASE is set, replace mysql config url with parsed params so
      * ConfigurationUrlParser never overwrites database (fixes Railway "near '10'").
+     * Prefer MYSQL_PRIVATE_URL when DB_USE_PRIVATE_MYSQL=1 (bypasses public proxy).
+     * When explicit vars exist (DB_HOST, DB_DATABASE, etc.), strip url so parser never runs.
      */
     private function forceExplicitDatabaseWhenSet(): void
     {
         $mysql = config('database.connections.mysql');
-        error_log('[DB_FIX] forceExplicitDatabaseWhenSet: mysql is_array='.(is_array($mysql) ? '1' : '0').' has_url='.(! empty($mysql['url'] ?? null) ? '1' : '0'));
+        if (! is_array($mysql)) {
+            return;
+        }
 
-        if (! is_array($mysql) || empty($mysql['url'])) {
-            error_log('[DB_FIX] skip: no url');
+        $hasExplicitVars = ! empty($mysql['host'] ?? null)
+            && ! empty($mysql['database'] ?? null)
+            && ! empty($mysql['username'] ?? null);
+
+        if ($hasExplicitVars && ! empty($mysql['url'] ?? null)) {
+            config(['database.connections.mysql' => array_merge($mysql, ['url' => null])]);
+            $this->ensureDatabaseIsString(config('database.connections.mysql'));
 
             return;
         }
+
+        $url = $mysql['url'] ?? null;
+        if (config('app.env') === 'production' && config('database.use_private_mysql')) {
+            $privateUrl = config('database.mysql_private_url');
+            if (! empty($privateUrl)) {
+                $url = $privateUrl;
+            }
+        }
+        if (empty($url)) {
+            $this->ensureDatabaseIsString($mysql);
+
+            return;
+        }
+
         $explicitDb = $mysql['database'] ?? null;
-        error_log('[DB_FIX] explicitDb='.var_export($explicitDb, true).' type='.gettype($explicitDb));
-
         if ($explicitDb === null || $explicitDb === '') {
-            error_log('[DB_FIX] skip: no explicit database');
-
             return;
         }
-        $parsed = parse_url($mysql['url']);
+
+        $parsed = parse_url($url);
         if ($parsed === false || ! isset($parsed['host'])) {
-            error_log('[DB_FIX] skip: url parse failed');
-
             return;
         }
-        $path = $parsed['path'] ?? '';
-        $dbFromPath = $path && $path !== '/' ? substr($path, 1) : null;
-        error_log('[DB_FIX] url path='.var_export($path, true).' dbFromPath='.var_export($dbFromPath, true).' json_decode='.var_export(@json_decode((string) $dbFromPath), true));
 
-        $replace = [
+        config(['database.connections.mysql' => array_merge($mysql, [
             'url' => null,
             'host' => $parsed['host'] ?? ($mysql['host'] ?? '127.0.0.1'),
             'port' => $parsed['port'] ?? ($mysql['port'] ?? '3306'),
             'username' => isset($parsed['user']) ? rawurldecode($parsed['user']) : ($mysql['username'] ?? 'root'),
             'password' => isset($parsed['pass']) ? rawurldecode($parsed['pass']) : ($mysql['password'] ?? ''),
             'database' => (string) $explicitDb,
-        ];
-        config(['database.connections.mysql' => array_merge($mysql, $replace)]);
-        error_log('[DB_FIX] applied: database='.$replace['database']);
+        ])]);
+    }
+
+    /**
+     * Ensure database config is string when using explicit vars (no url).
+     * Prevents int from json_decode of numeric path leaking through cached config.
+     */
+    private function ensureDatabaseIsString(array $mysql): void
+    {
+        $db = $mysql['database'] ?? null;
+        if ($db !== null && $db !== '' && ! is_string($db)) {
+            config(['database.connections.mysql' => array_merge($mysql, ['database' => (string) $db])]);
+        }
     }
 }

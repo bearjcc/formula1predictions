@@ -223,6 +223,7 @@ class PredictionForm extends Component
     public function handleToggleDnf(string $driverId): void
     {
         $this->toggleDnfDriver($driverId);
+        $this->dispatch('dnf-updated', dnfPredictions: $this->dnfPredictions)->to(DraggableDriverList::class);
     }
 
     #[On('team-order-updated')]

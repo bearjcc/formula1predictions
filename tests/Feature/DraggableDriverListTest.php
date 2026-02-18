@@ -5,11 +5,15 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+
 uses(RefreshDatabase::class);
 
 test('draggable driver list component can be rendered', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $drivers = [
         [
@@ -34,18 +38,41 @@ test('draggable driver list component can be rendered', function () {
         'season' => 2024,
         'raceRound' => 8,
     ])
-        ->assertSee('Monaco GP Predicted Order')
-        ->assertSee('Drag to reorder');
+        ->assertSee('Your prediction')
+        ->assertSee('Drivers (drag into list)');
 });
 
 test('draggable driver list initializes with correct driver order', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $drivers = [
         ['id' => 1, 'name' => 'Max', 'surname' => 'Verstappen', 'nationality' => 'Dutch', 'team' => ['team_name' => 'Red Bull']],
         ['id' => 2, 'name' => 'Lewis', 'surname' => 'Hamilton', 'nationality' => 'British', 'team' => ['team_name' => 'Mercedes']],
         ['id' => 3, 'name' => 'Charles', 'surname' => 'Leclerc', 'nationality' => 'Monégasque', 'team' => ['team_name' => 'Ferrari']],
+    ];
+
+    // Race/sprint (raceRound > 0): pass driverOrder explicitly; component does not auto-fill
+    $component = Livewire::test(DraggableDriverList::class, [
+        'drivers' => $drivers,
+        'raceName' => 'Test Race',
+        'season' => 2024,
+        'raceRound' => 1,
+        'driverOrder' => [1, 2, 3],
+    ]);
+
+    expect($component->get('driverOrder'))->toBe([1, 2, 3]);
+});
+
+test('draggable driver list race mode keeps empty driver order when not passed', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $drivers = [
+        ['id' => 1, 'name' => 'Max', 'surname' => 'Verstappen', 'nationality' => 'Dutch', 'team' => ['team_name' => 'Red Bull']],
+        ['id' => 2, 'name' => 'Lewis', 'surname' => 'Hamilton', 'nationality' => 'British', 'team' => ['team_name' => 'Mercedes']],
     ];
 
     $component = Livewire::test(DraggableDriverList::class, [
@@ -55,13 +82,33 @@ test('draggable driver list initializes with correct driver order', function () 
         'raceRound' => 1,
     ]);
 
-    // Check that driver order is initialized correctly
-    expect($component->get('driverOrder'))->toBe([1, 2, 3]);
+    expect($component->get('driverOrder'))->toBe([]);
+});
+
+test('draggable driver list championship mode auto-fills driver order when empty', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $drivers = [
+        ['id' => 1, 'name' => 'Max', 'surname' => 'Verstappen', 'nationality' => 'Dutch', 'team' => ['team_name' => 'Red Bull']],
+        ['id' => 2, 'name' => 'Lewis', 'surname' => 'Hamilton', 'nationality' => 'British', 'team' => ['team_name' => 'Mercedes']],
+    ];
+
+    $component = Livewire::test(DraggableDriverList::class, [
+        'drivers' => $drivers,
+        'raceName' => 'Driver Championship',
+        'season' => 2024,
+        'raceRound' => 0,
+    ]);
+
+    expect($component->get('driverOrder'))->toBe([1, 2]);
 });
 
 test('draggable driver list can update driver order', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $drivers = [
         ['id' => 1, 'name' => 'Max', 'surname' => 'Verstappen', 'nationality' => 'Dutch', 'team' => ['team_name' => 'Red Bull']],
@@ -84,8 +131,9 @@ test('draggable driver list can update driver order', function () {
 });
 
 test('draggable driver list can set fastest lap', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $drivers = [
         ['id' => 1, 'name' => 'Max', 'surname' => 'Verstappen', 'nationality' => 'Dutch', 'team' => ['team_name' => 'Red Bull']],
@@ -107,14 +155,15 @@ test('draggable driver list can set fastest lap', function () {
     $component->call('setFastestLap', '2');
     expect($component->get('fastestLapDriverId'))->toBe('2');
 
-    // Unset fastest lap (click same driver again)
-    $component->call('setFastestLap', '2');
+    // Unset fastest lap (pass null)
+    $component->call('setFastestLap', null);
     expect($component->get('fastestLapDriverId'))->toBeNull();
 });
 
 test('draggable driver list exposes driver order and fastest lap state', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $drivers = [
         ['id' => 1, 'name' => 'Max', 'surname' => 'Verstappen', 'nationality' => 'Dutch', 'team' => ['team_name' => 'Red Bull']],
@@ -136,8 +185,9 @@ test('draggable driver list exposes driver order and fastest lap state', functio
 });
 
 test('draggable driver list handles empty drivers gracefully', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $component = Livewire::test(DraggableDriverList::class, [
         'drivers' => [],
@@ -151,13 +201,14 @@ test('draggable driver list handles empty drivers gracefully', function () {
 });
 
 test('draggable driver list demo page loads correctly', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
-    $response = $this->get('/draggable-demo');
+    $response = get('/draggable-demo');
 
     $response->assertStatus(200);
     $response->assertSee('Draggable Driver Predictions Demo');
-    $response->assertSee('Monaco Grand Prix Predicted Order');
-    $response->assertSee('Drag to reorder');
+    $response->assertSee('Your prediction');
+    $response->assertSee('Drivers (drag into list)');
 });

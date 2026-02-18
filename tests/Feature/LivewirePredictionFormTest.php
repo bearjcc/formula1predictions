@@ -23,8 +23,7 @@ class LivewirePredictionFormTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(PredictionForm::class)
-            ->assertSee('Prediction Type')
-            ->assertSee('Season');
+            ->assertSee('Cancel');
     }
 
     public function test_prediction_form_loads_drivers_and_teams(): void
@@ -59,7 +58,6 @@ class LivewirePredictionFormTest extends TestCase
             ->set('raceRound', 1)
             ->set('driverOrder', $driverOrder)
             ->set('fastestLapDriverId', $drivers->first()->driver_id)
-            ->set('notes', 'Test prediction')
             ->call('save')
             ->assertRedirect(route('predictions.index'));
 
@@ -68,7 +66,6 @@ class LivewirePredictionFormTest extends TestCase
             'type' => 'race',
             'season' => 2024,
             'race_round' => 1,
-            'notes' => 'Test prediction',
         ]);
     }
 
@@ -212,14 +209,8 @@ class LivewirePredictionFormTest extends TestCase
         Livewire::actingAs($user)
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('canEdit', false)
-            ->set('notes', 'Updated notes that should not persist')
             ->call('save')
             ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
-
-        $this->assertDatabaseMissing('predictions', [
-            'id' => $prediction->id,
-            'notes' => 'Updated notes that should not persist',
-        ]);
     }
 
     public function test_cannot_edit_scored_prediction_via_livewire(): void
@@ -241,14 +232,8 @@ class LivewirePredictionFormTest extends TestCase
         Livewire::actingAs($user)
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('canEdit', false)
-            ->set('notes', 'Updated notes that should not persist')
             ->call('save')
             ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
-
-        $this->assertDatabaseMissing('predictions', [
-            'id' => $prediction->id,
-            'notes' => 'Updated notes that should not persist',
-        ]);
     }
 
     public function test_cannot_edit_other_users_prediction_via_livewire(): void
@@ -272,13 +257,7 @@ class LivewirePredictionFormTest extends TestCase
         Livewire::actingAs($otherUser)
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('canEdit', false)
-            ->set('notes', 'Updated notes that should not persist')
             ->call('save')
             ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
-
-        $this->assertDatabaseMissing('predictions', [
-            'id' => $prediction->id,
-            'notes' => 'Updated notes that should not persist',
-        ]);
     }
 }

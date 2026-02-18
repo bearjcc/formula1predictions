@@ -18,6 +18,9 @@ return [
 
     'default' => env('DB_CONNECTION', 'sqlite'),
 
+    'use_private_mysql' => (bool) env('DB_USE_PRIVATE_MYSQL', false),
+    'mysql_private_url' => env('MYSQL_PRIVATE_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections
@@ -59,7 +62,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                (defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT') ? PDO::MYSQL_ATTR_CONNECT_TIMEOUT : 1002) => (int) env('DB_CONNECT_TIMEOUT', 10),
+                (defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT') ? constant('PDO::MYSQL_ATTR_CONNECT_TIMEOUT') : 1002) => (int) env('DB_CONNECT_TIMEOUT', 10),
             ]) : [],
         ],
 
@@ -80,7 +83,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                (defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT') ? PDO::MYSQL_ATTR_CONNECT_TIMEOUT : 1002) => (int) env('DB_CONNECT_TIMEOUT', 10),
+                (defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT') ? constant('PDO::MYSQL_ATTR_CONNECT_TIMEOUT') : 1002) => (int) env('DB_CONNECT_TIMEOUT', 10),
             ]) : [],
         ],
 

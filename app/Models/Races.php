@@ -132,6 +132,20 @@ class Races extends Model
     }
 
     /**
+     * Next race (by round) for the given season that still allows predictions.
+     * Used when "Start predicting" has no race_id: redirect to this race.
+     */
+    public static function nextAvailableForPredictions(?int $season = null): ?self
+    {
+        $season = $season ?? (int) config('f1.current_season');
+
+        return static::where('season', $season)
+            ->orderBy('round')
+            ->get()
+            ->first(fn (self $race): bool => $race->allowsPredictions());
+    }
+
+    /**
      * Get the race's full name.
      */
     public function getFullNameAttribute(): string

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Predictions;
 
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class DraggableDriverList extends Component
@@ -75,6 +76,12 @@ class DraggableDriverList extends Component
     public function toggleDnf(string $driverId): void
     {
         $this->dispatch('toggle-dnf', driverId: $driverId);
+    }
+
+    #[On('dnf-updated')]
+    public function handleDnfUpdated(array $dnfPredictions): void
+    {
+        $this->dnfPredictions = $dnfPredictions;
     }
 
     public function render()

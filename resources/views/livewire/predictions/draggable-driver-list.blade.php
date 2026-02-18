@@ -136,7 +136,7 @@
                                         <button
                                             type="button"
                                             @click.stop="toggleDnf(slotDriverId(index))"
-                                            :class="hasDnf(slotDriverId(index)) ? 'bg-amber-600 text-white' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500'"
+                                            :class="hasDnf(slotDriverId(index)) ? 'bg-zinc-200 dark:bg-zinc-300 text-red-600 dark:text-red-500' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500'"
                                             class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold"
                                             :title="hasDnf(slotDriverId(index)) ? 'Predicted DNF' : 'Predict DNF'"
                                         >

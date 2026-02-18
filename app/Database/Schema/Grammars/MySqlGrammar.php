@@ -12,8 +12,7 @@ class MySqlGrammar extends BaseMySqlGrammar
 {
     /**
      * Compile the query to determine if the given table exists.
-     * Uses SHOW TABLES to bypass information_schema (avoids Railway "near '10'" errors
-     * that occur with information_schema + schema values from PHP).
+     * Uses SHOW TABLES (no information_schema). Table name quoted inline.
      */
     public function compileTableExists($schema, $table): string
     {
