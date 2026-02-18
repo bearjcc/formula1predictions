@@ -1,15 +1,15 @@
-<x-layouts.layout title="Home" headerSubtitle="F1 Predictions">
+<x-layouts.layout title="Home" :hideHeader="true">
     <!-- Hero Section -->
     <div class="relative overflow-hidden bg-gradient-to-br from-red-500 via-red-400 to-red-600 dark:from-red-700 dark:via-red-600 dark:to-red-800">
         <div class="absolute inset-0 bg-black/10"></div>
         <div class="relative px-6 py-12 sm:px-6 sm:py-16 lg:px-8">
             <div class="mx-auto max-w-2xl text-center">
-                <h1 class="text-5xl font-bold text-white mb-6 text-shadow">
-                    🏎️ F1 Predictions
+                <h1 class="text-5xl font-bold text-white mb-6 text-shadow flex items-center justify-center gap-3">
+                    <img src="/images/logo.png" alt="" class="h-12 w-auto brightness-0 invert" aria-hidden="true" />
+                    F1 Predictions
                 </h1>
                 <p class="text-xl text-white mb-8 text-shadow">
-                    Predict Formula 1 race outcomes and compete with friends. 
-                    Track your accuracy, climb the leaderboard, and prove your F1 expertise.
+                    Predict F1 race outcomes. Track your accuracy and see where you rank.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="{{ auth()->check() ? route('predict.create') : route('login') }}" wire:navigate
@@ -96,7 +96,7 @@
                             </div>
                         </div>
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
-                            See how your predictions stack up against others. Track your accuracy and climb the prediction leaderboard.
+                            See how your predictions stack up and track your accuracy.
                         </p>
                         <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" wire:navigate
                             class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
@@ -186,7 +186,7 @@
             <div class="text-center mb-8">
                 <h2 class="text-heading-1 mb-4">Why F1 Predictions?</h2>
                 <p class="text-lg text-zinc-700 dark:text-zinc-300">
-                    Join the ultimate F1 prediction community
+                    Make predictions, get scored, and track how you're doing
                 </p>
             </div>
 
@@ -195,9 +195,9 @@
                     <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
                         <x-mary-icon name="o-star" class="w-8 h-8 text-red-600 dark:text-red-400" />
                     </div>
-                    <h3 class="text-heading-3 mb-2">Test Your Knowledge</h3>
+                    <h3 class="text-heading-3 mb-2">Make Predictions</h3>
                     <p class="text-body text-zinc-700 dark:text-zinc-300">
-                        Prove your F1 expertise by predicting race outcomes, qualifying results, and championship standings.
+                        Predict race outcomes, qualifying results, and championship standings.
                     </p>
                 </div>
 
@@ -205,9 +205,9 @@
                     <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
                         <x-mary-icon name="o-users" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 class="text-heading-3 mb-2">Compete with Friends</h3>
+                    <h3 class="text-heading-3 mb-2">Compare Rankings</h3>
                     <p class="text-body text-zinc-700 dark:text-zinc-300">
-                        Challenge your friends and family to see who has the best F1 prediction skills.
+                        See how your predictions stack up. Share the leaderboard with friends if you want.
                     </p>
                 </div>
 
@@ -231,7 +231,7 @@
                 Ready to Start Predicting?
             </h2>
             <p class="text-xl text-white mb-8 text-shadow">
-                Join thousands of F1 fans making predictions and competing for the top spot.
+                Make predictions, get scored automatically, and see where you rank.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="{{ auth()->check() ? route('predict.create') : route('register') }}" wire:navigate

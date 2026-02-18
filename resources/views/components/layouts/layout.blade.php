@@ -1,4 +1,4 @@
-@props(['title' => null, 'headerSubtitle' => null])
+@props(['title' => null, 'headerSubtitle' => null, 'hideHeader' => false])
 <!DOCTYPE html>
 @php
   $appearance = session('appearance', config('f1.default_appearance', 'system'));
@@ -15,6 +15,7 @@
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
                 <div class="flex items-center justify-between">
                     <a href="{{ route('home') }}" class="flex items-center space-x-2 text-zinc-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 transition-colors" wire:navigate>
+                        <img src="/images/logo.png" alt="" class="h-8 w-auto flex-shrink-0" />
                         <h2 class="text-lg font-semibold">F1 Predictor</h2>
                     </a>
                     <!-- Close button for mobile -->
@@ -138,6 +139,7 @@
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col w-full lg:w-auto">
+            @if(!$hideHeader)
             <!-- Header -->
             <header class="bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 p-4">
                 <div class="flex items-center justify-between">
@@ -192,6 +194,14 @@
                     </div>
                 </div>
             </header>
+            @else
+            <!-- Mobile menu button when header is hidden (e.g. homepage) -->
+            <div class="lg:hidden fixed top-4 left-4 z-30">
+                <button type="button" id="open-sidebar" class="p-2 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-600" aria-label="{{ __('Open menu') }}">
+                    <x-mary-icon name="o-bars-3" class="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+                </button>
+            </div>
+            @endif
 
             <!-- Page Content -->
             <main class="flex-1 p-4 lg:p-6 overflow-auto">
