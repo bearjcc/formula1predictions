@@ -27,12 +27,14 @@ class DatabaseManager extends BaseDatabaseManager
         $connections = $this->app['config']['database.connections'] ?? [];
         $rawConfig = Arr::get($connections, $name, []);
         $explicitDb = $rawConfig['database'] ?? null;
+        error_log('[DB_CFG] configuration name='.$name.' explicitDb='.var_export($explicitDb, true).' type='.gettype($explicitDb));
 
         $config = parent::configuration($name);
 
         $driver = $config['driver'] ?? null;
         if (in_array($driver, ['mysql', 'mariadb'], true)) {
             $parsedDb = $config['database'] ?? null;
+            error_log('[DB_CFG] after parent: parsedDb='.var_export($parsedDb, true).' type='.gettype($parsedDb).' is_int='.(is_int($parsedDb) ? '1' : '0'));
             // When URL path is numeric (e.g. /10), parseStringsToNativeTypes yields int.
             // Integer database name causes MySQL "near '10'" syntax errors. Prefer explicit.
             if (is_int($parsedDb) && $explicitDb !== null && $explicitDb !== '') {

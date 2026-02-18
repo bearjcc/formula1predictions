@@ -31,8 +31,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Use custom MySqlConnection that uses PDO::query() for SHOW TABLES (avoids prepare).
+        \Illuminate\Database\Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
+            return new \App\Database\MySqlConnection($connection, $database, $prefix, $config);
+        });
+        \Illuminate\Database\Connection::resolverFor('mariadb', function ($connection, $database, $prefix, $config) {
+            return new \App\Database\MySqlConnection($connection, $database, $prefix, $config);
+        });
         // Replace db manager so mysql database config is always cast to string.
-        // Laravel's ConfigurationUrlParser can parse "10" as int, causing "near '10'" SQL errors.
         $this->app->singleton('db', function ($app) {
             return new \App\Database\DatabaseManager($app, $app['db.factory']);
         });
@@ -122,17 +128,31 @@ class AppServiceProvider extends ServiceProvider
     private function forceExplicitDatabaseWhenSet(): void
     {
         $mysql = config('database.connections.mysql');
+        error_log('[DB_FIX] forceExplicitDatabaseWhenSet: mysql is_array='.(is_array($mysql) ? '1' : '0').' has_url='.(! empty($mysql['url'] ?? null) ? '1' : '0'));
+
         if (! is_array($mysql) || empty($mysql['url'])) {
+            error_log('[DB_FIX] skip: no url');
+
             return;
         }
         $explicitDb = $mysql['database'] ?? null;
+        error_log('[DB_FIX] explicitDb='.var_export($explicitDb, true).' type='.gettype($explicitDb));
+
         if ($explicitDb === null || $explicitDb === '') {
+            error_log('[DB_FIX] skip: no explicit database');
+
             return;
         }
         $parsed = parse_url($mysql['url']);
         if ($parsed === false || ! isset($parsed['host'])) {
+            error_log('[DB_FIX] skip: url parse failed');
+
             return;
         }
+        $path = $parsed['path'] ?? '';
+        $dbFromPath = $path && $path !== '/' ? substr($path, 1) : null;
+        error_log('[DB_FIX] url path='.var_export($path, true).' dbFromPath='.var_export($dbFromPath, true).' json_decode='.var_export(@json_decode((string) $dbFromPath), true));
+
         $replace = [
             'url' => null,
             'host' => $parsed['host'] ?? ($mysql['host'] ?? '127.0.0.1'),
@@ -142,5 +162,6 @@ class AppServiceProvider extends ServiceProvider
             'database' => (string) $explicitDb,
         ];
         config(['database.connections.mysql' => array_merge($mysql, $replace)]);
+        error_log('[DB_FIX] applied: database='.$replace['database']);
     }
 }

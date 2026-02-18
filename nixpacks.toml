@@ -13,4 +13,4 @@ cmds = ["npm run build", "mkdir -p storage/framework/{sessions,views,cache,testi
 # app:ensure-admin-user creates admin from ADMIN_EMAIL/ADMIN_PASSWORD if not exist (idempotent)
 # f1:ensure-season-data loads current year races/drivers/teams if missing
 [start]
-cmd = "php artisan config:clear && php artisan config:cache && php artisan migrate --force && php artisan app:ensure-admin-user && php artisan f1:ensure-season-data && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
+cmd = "php scripts/db-raw-diagnose.php && php artisan config:clear && php artisan config:cache && php artisan db:diagnose && php artisan migrate --force && php artisan app:ensure-admin-user && php artisan f1:ensure-season-data && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
