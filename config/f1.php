@@ -28,6 +28,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Points Positions by Season (DNF toggle eligibility)
+    |--------------------------------------------------------------------------
+    |
+    | Number of finishing positions that score points. Drivers outside these
+    | positions (e.g. 13-22 in 2025, 11-22 in 2026) can be toggled as DNF.
+    | Slot index (0-based) >= this value is DNF-eligible.
+    |
+    */
+    'points_positions_by_season' => [
+        2025 => 12,
+        2026 => 10,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Appearance (theme)
     |--------------------------------------------------------------------------
     |

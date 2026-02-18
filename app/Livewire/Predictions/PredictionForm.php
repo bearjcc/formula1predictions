@@ -25,9 +25,6 @@ class PredictionForm extends Component
     #[Rule('required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25')]
     public ?int $raceRound = null;
 
-    #[Rule('nullable|string|max:1000')]
-    public ?string $notes = null;
-
     // Race prediction data
     public array $driverOrder = [];
 
@@ -75,8 +72,6 @@ class PredictionForm extends Component
             $this->type = $existingPrediction->type ?? 'race';
             $this->season = $existingPrediction->season ?? config('f1.current_season');
             $this->raceRound = $existingPrediction->race_round;
-            $this->notes = $existingPrediction->notes;
-
             if (in_array($this->type, ['race', 'sprint'], true) && $this->season && $this->raceRound !== null) {
                 $this->race = Races::where('season', $this->season)->where('round', $this->raceRound)->first();
             }
@@ -106,12 +101,12 @@ class PredictionForm extends Component
 
     public function loadData(): void
     {
-        // For driver order, we use driverId (string) to match F1 API
+        // Use driver_id (F1 API string) when present, else fallback to id for compatibility
         $this->drivers = Drivers::where('is_active', true)
             ->get()
             ->map(function ($driver) {
                 return [
-                    'id' => $driver->driverId, // Using driverId string
+                    'id' => $driver->driver_id ?? (string) $driver->id,
                     'name' => $driver->name,
                     'surname' => $driver->surname,
                     'nationality' => $driver->nationality,
@@ -121,6 +116,7 @@ class PredictionForm extends Component
                     ],
                 ];
             })
+            ->values()
             ->toArray();
 
         $this->teams = Teams::where('is_active', true)
@@ -135,10 +131,7 @@ class PredictionForm extends Component
             })
             ->toArray();
 
-        if (empty($this->driverOrder) && in_array($this->type, ['race', 'sprint'], true) && ! empty($this->drivers)) {
-            $this->driverOrder = collect($this->drivers)->pluck('id')->toArray();
-        }
-
+        // Race/sprint: do not pre-fill driver order; user builds it by dragging from pool
         if (empty($this->teamOrder) && in_array($this->type, ['preseason', 'midseason']) && ! empty($this->teams)) {
             $this->teamOrder = collect($this->teams)->pluck('id')->toArray();
         }
@@ -226,6 +219,12 @@ class PredictionForm extends Component
         $this->fastestLapDriverId = $driverId;
     }
 
+    #[On('toggle-dnf')]
+    public function handleToggleDnf(string $driverId): void
+    {
+        $this->toggleDnfDriver($driverId);
+    }
+
     #[On('team-order-updated')]
     public function handleTeamOrderUpdated(array $order): void
     {
@@ -291,10 +290,40 @@ class PredictionForm extends Component
             'type' => 'required|string|in:race,sprint,preseason,midseason',
             'season' => 'required|integer|min:2020|max:2030',
             'raceRound' => 'required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25',
-            'notes' => 'nullable|string|max:1000',
-            'driverOrder' => 'required_if:type,race,sprint|array|min:1|max:'.config('f1.max_drivers', 22),
+            'driverOrder' => [
+                'required_if:type,race,sprint',
+                'array',
+                'min:1',
+                'max:'.config('f1.max_drivers', 22),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! in_array($this->type, ['race', 'sprint'], true)) {
+                        return;
+                    }
+                    if (empty(array_filter($value ?? []))) {
+                        $fail(__('At least one driver must be placed in the prediction.'));
+                    }
+                },
+            ],
             'driverOrder.*' => [
+                'nullable',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+                    $exists = is_numeric($value)
+                        ? \App\Models\Drivers::where('id', (int) $value)->exists()
+                        : \App\Models\Drivers::where('driver_id', (string) $value)->exists();
+                    if (! $exists) {
+                        $fail(__('The selected driver is invalid.'));
+                    }
+                },
+            ],
+            'dnfPredictions' => [
+                ValidationRule::when($this->type === 'race', 'array|max:12', 'nullable'),
+            ],
+            'dnfPredictions.*' => [
                 'required',
+                'string',
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     $exists = is_numeric($value)
                         ? \App\Models\Drivers::where('id', (int) $value)->exists()
@@ -343,7 +372,6 @@ class PredictionForm extends Component
                 'race_round' => $this->raceRound,
                 'race_id' => $this->race?->id ?? $this->editingPrediction->race_id,
                 'prediction_data' => $predictionData,
-                'notes' => $this->notes,
             ]);
             $this->editingPrediction->submit();
 
@@ -358,7 +386,6 @@ class PredictionForm extends Component
                 'race_round' => $this->raceRound,
                 'race_id' => $this->race?->id,
                 'prediction_data' => $predictionData,
-                'notes' => $this->notes,
             ]);
             $prediction->submit();
 

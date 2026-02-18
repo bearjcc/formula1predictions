@@ -47,24 +47,12 @@
                     'season' => $season,
                     'raceRound' => $raceRound ?? 1,
                     'driverOrder' => $driverOrder,
-                    'fastestLapDriverId' => $fastestLapDriverId
+                    'fastestLapDriverId' => $fastestLapDriverId,
+                    'type' => $type,
+                    'dnfPredictions' => $dnfPredictions,
                 ], key('driver-list-' . ($race?->id ?? 'create')))
             </div>
 
-            @if($type === 'race' && !empty($drivers))
-                <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
-                    <h4 class="font-bold text-zinc-900 dark:text-zinc-100 mb-1">DNF wager (optional)</h4>
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Select drivers you predict will not finish. +10 per correct, -10 per incorrect.</p>
-                    <div class="flex flex-wrap gap-3">
-                        @foreach($drivers as $driver)
-                            <label class="inline-flex items-center gap-2 cursor-pointer rounded-lg px-3 py-2 border transition-colors {{ in_array($driver['id'], $dnfPredictions) ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-600' : 'border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/50' }}">
-                                <input type="checkbox" wire:click.prevent="toggleDnfDriver('{{ $driver['id'] }}')" @checked(in_array($driver['id'], $dnfPredictions)) class="rounded border-zinc-300 dark:border-zinc-600">
-                                <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $driver['name'] }} {{ $driver['surname'] }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         @else
             <div class="space-y-6 {{ $isLocked ? 'pointer-events-none opacity-80' : '' }}">
                 @if(!empty($teams))

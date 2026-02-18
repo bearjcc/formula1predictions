@@ -119,6 +119,7 @@ class ScoringService
         }
 
         $score = 0;
+        $predictedOrder = array_filter($predictedOrder, fn ($id) => $id !== null && $id !== '');
         $totalDrivers = count($predictedOrder);
         $correctCount = 0;
 
@@ -169,6 +170,7 @@ class ScoringService
         }
 
         $predictedOrder = $prediction->getPredictedDriverOrder();
+        $predictedOrder = array_filter($predictedOrder, fn ($id) => $id !== null && $id !== '');
         $actualResults = $this->processRaceResults($race->getResultsArray());
 
         if (empty($actualResults)) {
