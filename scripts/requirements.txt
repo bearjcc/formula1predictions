@@ -1,0 +1,2 @@
+# For scripts/prepare-favicon.py (favicon and logo generation)
+Pillow>=10.0.0

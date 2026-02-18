@@ -13,6 +13,7 @@ php artisan test --filter=testName
 composer run test:coverage   # optional, needs pcov
 vendor/bin/pint --dirty     # run before finalizing
 npm run build               # after UI changes (or npm run dev / composer run dev)
+pip install -r scripts/requirements.txt && python scripts/prepare-favicon.py   # regenerate favicon/logo from scripts/source/venice-f1-car.png
 ```
 
 **First admin (deploy):**
