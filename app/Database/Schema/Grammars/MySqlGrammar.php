@@ -5,48 +5,35 @@ namespace App\Database\Schema\Grammars;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar as BaseMySqlGrammar;
 
 /**
- * MySQL schema grammar that avoids SYSTEM VERSIONED in table-existence checks,
- * avoids schema() so migrations work on Railway/MySQL, and uses alias `has_table`
- * instead of reserved `exists` to prevent parser syntax errors on some MySQL/MariaDB.
+ * MySQL schema grammar that avoids SYSTEM VERSIONED and works around Railway/MySQL
+ * "near '10'" errors. Uses database() so no schema value is passed from PHP.
  */
 class MySqlGrammar extends BaseMySqlGrammar
 {
     /**
      * Compile the query to determine if the given table exists.
-     * Uses the connection's database name (quoted) instead of schema() so
-     * the query never embeds a raw integer or triggers MySQL syntax errors.
-     * Forces schema/database to string so numeric values (e.g. from misparsed DB_URL) become '10' not 10.
+     * Uses database() instead of a schema literal to avoid value corruption.
      */
     public function compileTableExists($schema, $table): string
     {
-        $schemaValue = ($schema !== null && $schema !== '')
-            ? (string) $schema
-            : $this->connection->getDatabaseName();
+        $tableQuoted = $this->quoteString((string) $table);
 
-        return sprintf(
-            'select exists (select 1 from information_schema.tables where '
-            ."table_schema = %s and table_name = %s and table_type = 'BASE TABLE') as `has_table`",
-            $this->quoteString((string) $schemaValue),
-            $this->quoteString((string) $table)
-        );
+        return 'select (select count(*) from information_schema.tables '
+            ."where table_schema = database() and table_name = {$tableQuoted} "
+            ."and table_type = 'BASE TABLE') > 0 as `has_table`";
     }
 
     /**
      * Compile the query to determine the tables.
-     * Uses quoted schema/database name (never schema()) to avoid "near '10'" on Railway/MySQL.
+     * Uses database() to avoid schema value issues.
      */
     public function compileTables($schema): string
     {
-        $schemaValue = ($schema !== null && $schema !== '')
-            ? (string) $schema
-            : (string) $this->connection->getDatabaseName();
-
-        return sprintf(
-            'select table_name as `name`, table_schema as `schema`, (data_length + index_length) as `size`, '
-            .'table_comment as `comment`, engine as `engine`, table_collation as `collation` '
-            ."from information_schema.tables where table_type = 'BASE TABLE' and table_schema = %s "
-            .'order by table_schema, table_name',
-            $this->quoteString($schemaValue)
-        );
+        return 'select table_name as `name`, table_schema as `schema`, '
+            .'(data_length + index_length) as `size`, table_comment as `comment`, '
+            .'engine as `engine`, table_collation as `collation` '
+            .'from information_schema.tables '
+            ."where table_type = 'BASE TABLE' and table_schema = database() "
+            .'order by table_schema, table_name';
     }
 }
