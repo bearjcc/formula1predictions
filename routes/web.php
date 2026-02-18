@@ -18,6 +18,10 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+Route::get('/scoring', function () {
+    return view('scoring');
+})->name('scoring');
+
 // Dev and testing demo routes
 if (app()->environment(['local', 'testing'])) {
     Route::get('/components', function () {
@@ -51,6 +55,11 @@ Route::middleware(['auth'])->group(function () {
         if ($request->filled('race_id')) {
             $raceId = (int) $request->input('race_id');
             $race = Races::find($raceId);
+        } else {
+            $nextRace = Races::nextAvailableForPredictions();
+            if ($nextRace !== null) {
+                return redirect()->route('predict.create', ['race_id' => $nextRace->id]);
+            }
         }
 
         return view('predictions.create-livewire', compact('race'));

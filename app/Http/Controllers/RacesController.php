@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreRacesRequest;
-use App\Http\Requests\UpdateRacesRequest;
-use App\Models\Races;
 use App\Services\F1ApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +13,7 @@ class RacesController extends Controller
     ) {}
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource (API).
      */
     public function index(Request $request, int $year)
     {
@@ -32,23 +29,7 @@ class RacesController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreRacesRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
+     * Display the specified resource (API).
      */
     public function show(Request $request, int $year, int $round)
     {
@@ -61,30 +42,6 @@ class RacesController extends Controller
 
             return response()->json(['error' => 'Unable to load race results. Please try again later.'], 500);
         }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Races $races)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateRacesRequest $request, Races $races)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Races $races)
-    {
-        //
     }
 
     /**

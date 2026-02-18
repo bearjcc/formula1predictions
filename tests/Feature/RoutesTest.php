@@ -81,6 +81,11 @@ describe('invalid years return 404', function () {
 });
 
 describe('non-year-specific routes return 200', function () {
+    it('route /scoring responds with 200', function () {
+        /** @var \Tests\TestCase $this */
+        $this->get(route('scoring'))->assertOk();
+    });
+
     it('route /countries responds with 200', function () {
         /** @var \Tests\TestCase $this */
         $this->get('/countries')->assertOk();
@@ -143,6 +148,7 @@ describe('route naming works correctly', function () {
     });
 
     it('can generate correct URLs for non-year-specific routes', function () {
+        expect(route('scoring'))->toContain('/scoring');
         expect(route('countries'))->toContain('/countries');
         expect(route('team', ['slug' => 'mercedes']))->toContain('/team/mercedes');
         expect(route('driver', ['slug' => 'lewis-hamilton']))->toContain('/driver/lewis-hamilton');

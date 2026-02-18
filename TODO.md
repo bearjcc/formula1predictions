@@ -94,10 +94,18 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: app/Services/NotificationService.php
   - NotificationService loads ALL users into memory with User::all(). Use chunking or pagination.
 
-- [ ] **F1-061: Remove empty scaffold controllers (dead code)**
+- [x] **F1-061: Remove empty scaffold controllers (dead code)** _(done 2026-02-18)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
-  - Affected: DriversController.php, TeamsController.php, etc.
-  - 6 empty scaffold controllers (dead code). Remove or implement.
+  - Done: Removed TeamsController, StandingsController, DriversController, CountriesController, CircuitsController and their 10 form requests (Store/Update for each).
+
+- [x] **F1-107: Orphan views (repo map)** _(done 2026-02-18)_
+  - Added `GET /scoring` and sidebar link "How scoring works". Merged title/description into create-livewire and edit-livewire; removed predictions/create, predictions/edit, predict/create, predict/edit.
+
+- [x] **F1-108: Orphan components (repo map)** _(done 2026-02-18)_
+  - Removed components/prediction-form.blade.php, components/layouts/auth/card.blade.php, components/layouts/auth/split.blade.php, components/placeholder-pattern.blade.php, components/layouts/app.blade.php.
+
+- [x] **F1-109: RacesController form requests (with F1-102)** _(done 2026-02-18)_
+  - Removed RacesController create/store/edit/update/destroy and deleted StoreRacesRequest.php, UpdateRacesRequest.php.
 
 - [x] **F1-083: Fix races page theming and 500s for current season** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: medium | Owner: agent
@@ -136,10 +144,9 @@ Longer-horizon ideas and exploratory improvements.
     - All layouts (main, auth, settings) use the same color tokens and background/text utilities.
     - Add a small feature test (or Dusk/browser test later) to ensure dark-mode pages render without obvious conflicting background/text colors.
 
-- [ ] **F1-062: Remove hardcoded mockup data from edit prediction view**
+- [x] **F1-062: Remove hardcoded mockup data from edit prediction view** _(done 2026-02-18)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
-  - Affected: resources/views/predictions/edit.blade.php (L204)
-  - Hardcoded mockup data in edit prediction view. Remove.
+  - Done: Orphan predictions/edit.blade.php was removed in F1-107; edit flow uses edit-livewire only.
 
 - [ ] **F1-063: Remove console.log debug statements from production JS**
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
@@ -253,9 +260,13 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: resources/views/standings/drivers.blade.php, standings/teams.blade.php, resources/views/leaderboard/index.blade.php
   - DESIGN_SYSTEM.md specifies zinc as the neutral palette, but these files use `bg-gray-100`, `text-gray-800`, `dark:bg-gray-900`, `text-gray-400` etc. Replace all `gray-*` with corresponding `zinc-*` classes.
 
-- [ ] **F1-097: Fix predict/create dark mode visibility** _(found 2026-02-10 audit)_
+- [ ] **F1-100: Repo map and orphan audit** _(done 2026-02-18)_
+  - Type: docs | Priority: P3 | Risk: none | Owner: agent
+  - Done: Created docs/REPO-MAP-AND-ORPHANS.md with full route-to-view map and list of orphan views, controllers, and form requests. Optional follow-up: remove orphans or add route for public scoring page.
+
+- [x] **F1-097: Fix predict/create dark mode visibility** _(done 2026-02-18)_
   - Type: bug | Priority: P2 | Risk: low | Owner: agent
-  - Affected: resources/views/predict/create.blade.php (lines 181-199)
+  - Done: Orphan predict/create.blade.php removed in F1-107; create flow uses predictions/create-livewire only.
   - Three color-coded info boxes use `bg-zinc-50`, `bg-blue-50`, `bg-amber-50` with no `dark:` variants. In dark mode these are completely invisible (nearly white boxes on dark background). Add appropriate dark mode variants: e.g. `dark:bg-zinc-700`, `dark:bg-blue-900/30`, `dark:bg-amber-900/30`.
 
 - [ ] **F1-098: Replace daisyUI modal in delete-user-form** _(found 2026-02-10 audit)_
@@ -271,7 +282,7 @@ Longer-horizon ideas and exploratory improvements.
 
 - [ ] **F1-100: Update focus ring colors to F1 brand** _(found 2026-02-10 audit)_
   - Type: UI | Priority: P3 | Risk: low | Owner: agent
-  - Affected: resources/views/livewire/auth/login.blade.php, resources/views/predict/create.blade.php, resources/views/components/prediction-form.blade.php
+  - Affected: resources/views/livewire/auth/login.blade.php (predict/create and components/prediction-form were removed in F1-107/F1-108).
   - Multiple files use `focus:ring-indigo-500` or `focus:ring-blue-500` for focus indicators. DESIGN_SYSTEM.md specifies F1 brand red as primary. Update to `focus:ring-red-600 dark:focus:ring-red-500`.
 
 - [ ] **F1-101: Remove dead duplicate leaderboard routes** _(found 2026-02-10 audit)_
@@ -279,11 +290,9 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: routes/web.php (lines 87-95)
   - `/leaderboard/livewire` and `/leaderboard/user/{user}/livewire` are duplicate routes with Livewire wrappers. The non-Livewire versions (`leaderboard.index`, `leaderboard.user-stats`) are the primary routes linked in navigation. Remove the dead duplicates.
 
-- [ ] **F1-102: Clean up RacesController empty CRUD methods** _(found 2026-02-10 audit)_
+- [x] **F1-102: Clean up RacesController empty CRUD methods** _(done 2026-02-18)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
-  - Affected: app/Http/Controllers/RacesController.php
-  - `create()`, `store()`, `edit()`, `update()`, `destroy()` are empty stub methods (contain only `//` comment). No routes use them. Remove or implement.
-  - Related: F1-061 (empty scaffold controllers).
+  - Done: Removed create(), store(), edit(), update(), destroy() from RacesController; deleted StoreRacesRequest and UpdateRacesRequest (F1-109).
 
 - [x] **F1-103: Harden admin password default in config** _(done 2026-02-10)_
   - Type: security | Priority: P2 | Risk: medium | Owner: agent
