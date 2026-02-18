@@ -31,7 +31,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Replace db manager so mysql database config is always cast to string.
+        // Laravel's ConfigurationUrlParser can parse "10" as int, causing "near '10'" SQL errors.
+        $this->app->singleton('db', function ($app) {
+            return new \App\Database\DatabaseManager($app, $app['db.factory']);
+        });
     }
 
     /**
