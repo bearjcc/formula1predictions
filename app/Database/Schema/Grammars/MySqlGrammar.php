@@ -12,15 +12,14 @@ class MySqlGrammar extends BaseMySqlGrammar
 {
     /**
      * Compile the query to determine if the given table exists.
-     * Uses database() instead of a schema literal to avoid value corruption.
+     * Uses SHOW TABLES to bypass information_schema (avoids Railway "near '10'" errors
+     * that occur with information_schema + schema values from PHP).
      */
     public function compileTableExists($schema, $table): string
     {
         $tableQuoted = $this->quoteString((string) $table);
 
-        return 'select (select count(*) from information_schema.tables '
-            ."where table_schema = database() and table_name = {$tableQuoted} "
-            ."and table_type = 'BASE TABLE') > 0 as `has_table`";
+        return "show tables like {$tableQuoted}";
     }
 
     /**
