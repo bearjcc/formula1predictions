@@ -1,4 +1,4 @@
-<x-layouts.layout title="Dashboard" headerSubtitle="Your personalized Formula 1 prediction dashboard">
+<x-layouts.layout title="Dashboard" headerSubtitle="Your prediction overview">
     {{-- #region Page Header --}}
     <div class="mb-8 flex justify-end">
         <div class="flex items-center gap-3">

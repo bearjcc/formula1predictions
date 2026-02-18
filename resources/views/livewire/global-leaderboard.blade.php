@@ -81,7 +81,7 @@
                         </div>
                         <div class="stat-title">Avg Accuracy</div>
                         <div class="stat-value text-accent">{{ $proStats['avg_accuracy'] }}%</div>
-                        <div class="stat-desc">Community average</div>
+                        <div class="stat-desc">Across all users</div>
                     </div>
 
                     <div class="stat">

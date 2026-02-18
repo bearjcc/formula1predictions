@@ -12,7 +12,7 @@
                         <x-app-logo-icon class="size-8 fill-current text-white" />
                     </span>
                     <span class="text-xl font-bold text-zinc-900 dark:text-white">{{ config('app.name') }}</span>
-                    <span class="text-sm text-zinc-600 dark:text-zinc-400">Predict race outcomes. Compete with friends.</span>
+                    <span class="text-sm text-zinc-600 dark:text-zinc-400">Predict race outcomes.</span>
                 </a>
                 <div class="flex flex-col gap-6">
                     {{ $slot }}

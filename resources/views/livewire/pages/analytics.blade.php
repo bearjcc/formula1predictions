@@ -1,4 +1,4 @@
-@layoutData(['title' => 'Analytics Dashboard', 'headerSubtitle' => 'Comprehensive data visualization and insights for Formula 1 predictions'])
+@layoutData(['title' => 'Analytics Dashboard', 'headerSubtitle' => 'Charts and data for your predictions'])
 
 <div>
     {{-- #region Page Header --}}
