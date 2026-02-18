@@ -45,8 +45,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Use MySQL grammar that checks only BASE TABLE (avoids SYSTEM VERSIONED) so
         // migrations work on Railway and other MySQL/MariaDB where the default query can error.
-        if (config('database.default') === 'mysql') {
-            $connection = $this->app->make('db')->connection();
+        // Set for 'mysql' whenever that connection exists so migrate (and any mysql use) gets it
+        // even if default was cached as non-mysql at build time.
+        if (array_key_exists('mysql', config('database.connections', []))) {
+            $connection = $this->app->make('db')->connection('mysql');
             $connection->setSchemaGrammar(new \App\Database\Schema\Grammars\MySqlGrammar($connection));
         }
 
