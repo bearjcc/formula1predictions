@@ -24,8 +24,17 @@ class DatabaseManager extends BaseDatabaseManager
         $config = parent::configuration($name);
 
         $driver = $config['driver'] ?? null;
-        if (in_array($driver, ['mysql', 'mariadb'], true) && isset($config['database'])) {
-            $config['database'] = (string) $config['database'];
+        if (in_array($driver, ['mysql', 'mariadb'], true)) {
+            // When DB_URL is set, URL parser overwrites DB_DATABASE. If the URL path is numeric
+            // (e.g. /10), json_decode yields int and causes "near '10'" SQL errors. When the
+            // merged database is an integer, prefer explicit DB_DATABASE from config.
+            $parsedDb = $config['database'] ?? null;
+            $explicitDb = $this->app['config']->get("database.connections.{$name}.database");
+            if (is_int($parsedDb) && $explicitDb !== null && $explicitDb !== '') {
+                $config['database'] = (string) $explicitDb;
+            } elseif (isset($config['database'])) {
+                $config['database'] = (string) $config['database'];
+            }
         }
 
         return $config;
