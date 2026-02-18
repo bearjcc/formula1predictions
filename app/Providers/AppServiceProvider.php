@@ -47,6 +47,11 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // When DB_URL and DB_DATABASE are both set, strip url from mysql config and
+        // inject parsed connection params so ConfigurationUrlParser never overwrites
+        // database with a numeric value (Railway "near '10'" fix).
+        $this->forceExplicitDatabaseWhenSet();
+
         // Use MySQL grammar that checks only BASE TABLE (avoids SYSTEM VERSIONED) so
         // migrations work on Railway and other MySQL/MariaDB where the default query can error.
         // Set for 'mysql' whenever that connection exists so migrate (and any mysql use) gets it
@@ -108,5 +113,34 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('create-predictions', function (User $user) {
             return true; // All authenticated users can create predictions
         });
+    }
+
+    /**
+     * When DB_DATABASE is set, replace mysql config url with parsed params so
+     * ConfigurationUrlParser never overwrites database (fixes Railway "near '10'").
+     */
+    private function forceExplicitDatabaseWhenSet(): void
+    {
+        $mysql = config('database.connections.mysql');
+        if (! is_array($mysql) || empty($mysql['url'])) {
+            return;
+        }
+        $explicitDb = $mysql['database'] ?? null;
+        if ($explicitDb === null || $explicitDb === '') {
+            return;
+        }
+        $parsed = parse_url($mysql['url']);
+        if ($parsed === false || ! isset($parsed['host'])) {
+            return;
+        }
+        $replace = [
+            'url' => null,
+            'host' => $parsed['host'] ?? ($mysql['host'] ?? '127.0.0.1'),
+            'port' => $parsed['port'] ?? ($mysql['port'] ?? '3306'),
+            'username' => isset($parsed['user']) ? rawurldecode($parsed['user']) : ($mysql['username'] ?? 'root'),
+            'password' => isset($parsed['pass']) ? rawurldecode($parsed['pass']) : ($mysql['password'] ?? ''),
+            'database' => (string) $explicitDb,
+        ];
+        config(['database.connections.mysql' => array_merge($mysql, $replace)]);
     }
 }
