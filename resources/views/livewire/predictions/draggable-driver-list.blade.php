@@ -31,6 +31,10 @@
             },
 
             toggleDnf(driverId) {
+                if (!driverId) return;
+                const id = String(driverId);
+                const has = this.dnfPredictions.map(String).includes(id);
+                this.dnfPredictions = has ? this.dnfPredictions.filter(x => String(x) !== id) : [...this.dnfPredictions, id];
                 $wire.toggleDnf(driverId);
             },
 
@@ -122,7 +126,7 @@
                             <span class="flex-shrink-0 w-7 text-zinc-500 dark:text-zinc-400 text-sm font-medium" x-text="index + 1 + '.'"></span>
                             <template x-if="slotDriverId(index)">
                                 <div
-                                    class="flex-1 flex items-center gap-2 cursor-move select-none group rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800/80 py-1.5 px-2"
+                                    class="flex-1 flex items-center gap-2 cursor-move select-none group rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800/80 py-1.5 px-2 min-w-0"
                                     draggable="true"
                                     @dragstart="dragStartRace($event, slotDriverId(index), 'slot', index)"
                                     @dragend="dragEndRace()"
@@ -131,19 +135,19 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                                     </span>
                                     <span class="flex-1 min-w-0 font-medium text-zinc-900 dark:text-zinc-100 truncate" x-text="getDriverById(slotDriverId(index))?.name + ' ' + getDriverById(slotDriverId(index))?.surname"></span>
-                                    <span class="text-[10px] uppercase text-zinc-400" x-text="getDriverById(slotDriverId(index))?.team?.team_name || ''"></span>
-                                    <template x-if="isDnfEligible(index) && slotDriverId(index)">
-                                        <button
-                                            type="button"
-                                            @click.stop="toggleDnf(slotDriverId(index))"
-                                            :class="hasDnf(slotDriverId(index)) ? 'bg-zinc-200 dark:bg-zinc-300 text-red-600 dark:text-red-500' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500'"
-                                            class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold"
-                                            :title="hasDnf(slotDriverId(index)) ? 'Predicted DNF' : 'Predict DNF'"
-                                        >
-                                            DNF
-                                        </button>
-                                    </template>
+                                    <span class="text-[10px] uppercase text-zinc-400 flex-shrink-0" x-text="getDriverById(slotDriverId(index))?.team?.team_name || ''"></span>
                                 </div>
+                            </template>
+                            <template x-if="isDnfEligible(index) && slotDriverId(index)">
+                                <button
+                                    type="button"
+                                    @click="toggleDnf(slotDriverId(index))"
+                                    :class="hasDnf(slotDriverId(index)) ? 'bg-zinc-200 dark:bg-zinc-300 text-red-600 dark:text-red-500' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500'"
+                                    class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer"
+                                    :title="hasDnf(slotDriverId(index)) ? 'Predicted DNF' : 'Predict DNF'"
+                                >
+                                    DNF
+                                </button>
                             </template>
                             <template x-if="!slotDriverId(index)">
                                 <div class="flex-1 flex items-center rounded border border-dashed border-zinc-300 dark:border-zinc-600 py-2 px-3 text-zinc-400 dark:text-zinc-500 text-sm italic">
