@@ -53,12 +53,12 @@ if (app()->environment(['local', 'testing'])) {
 }
 
 Route::get('dashboard', App\Http\Controllers\DashboardController::class)
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('dashboard');
 
-Route::get('/analytics', App\Livewire\Pages\Analytics::class)->middleware(['auth', 'verified'])->name('analytics');
+Route::get('/analytics', App\Livewire\Pages\Analytics::class)->middleware(['auth'])->name('analytics');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
@@ -152,7 +152,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 //     ->name('stripe.webhook');
 
 // F1 API Routes
-Route::prefix('api/f1')->middleware(['auth', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('api/f1')->middleware(['auth', 'throttle:api'])->group(function () {
     Route::get('/races/{year}', [RacesController::class, 'index'])->name('f1.races');
     Route::get('/races/{year}/{round}', [RacesController::class, 'show'])->name('f1.race');
     Route::delete('/cache/{year}', [RacesController::class, 'clearCache'])->name('f1.clear-cache')->middleware('admin');

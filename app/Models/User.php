@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Auth\MustVerifyEmail;
-use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,10 +9,10 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Billable;
 
-class User extends Authenticatable implements MustVerifyEmailContract
+class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Billable, HasFactory, MustVerifyEmail, Notifiable;
+    use Billable, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.

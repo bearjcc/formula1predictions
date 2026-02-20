@@ -1,73 +1,24 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\URL;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('email verification screen can be rendered', function () {
+// Email verification is disabled (no mail server). Verification-specific tests skipped.
+// Re-enable and restore tests below when verification is turned back on.
+
+test('any authenticated user can access dashboard without email verification', function () {
     $user = User::factory()->unverified()->create();
-
-    $response = $this->actingAs($user)->get('/verify-email');
-
-    $response->assertStatus(200);
-});
-
-test('email can be verified', function () {
-    $user = User::factory()->unverified()->create();
-
-    Event::fake();
-
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
-
-    $response = $this->actingAs($user)->get($verificationUrl);
-
-    Event::assertDispatched(Verified::class);
-
-    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
-});
-
-test('email is not verified with invalid hash', function () {
-    $user = User::factory()->unverified()->create();
-
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1('wrong-email')]
-    );
-
-    $this->actingAs($user)->get($verificationUrl);
-
-    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
-});
-
-test('unverified user is redirected to verification notice when accessing verified route', function () {
-    $user = User::factory()->unverified()->create();
-
-    $response = $this->actingAs($user)->get(route('dashboard'));
-
-    $response->assertRedirect(route('verification.notice'));
-});
-
-test('unverified user is redirected from predict create', function () {
-    $user = User::factory()->unverified()->create();
-
-    $response = $this->actingAs($user)->get(route('predict.create'));
-
-    $response->assertRedirect(route('verification.notice'));
-});
-
-test('verified user can access dashboard', function () {
-    $user = User::factory()->create(); // default state has email_verified_at set
 
     $response = $this->actingAs($user)->get(route('dashboard'));
 
     $response->assertOk();
+});
+
+test('any authenticated user can access predict create without email verification', function () {
+    $user = User::factory()->unverified()->create();
+
+    $response = $this->actingAs($user)->get(route('predict.create'));
+
+    $response->assertSuccessful();
 });
