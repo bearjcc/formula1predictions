@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use App\Mail\ResetPasswordMail;
+use App\Mail\VerifyEmailMail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Billable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Billable, HasFactory, Notifiable;
+    use Billable, HasFactory, Notifiable, \Illuminate\Auth\MustVerifyEmail;
 
     /**
      * The attributes that are mass assignable.
@@ -222,6 +226,29 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    /**
+     * Send the email verification notification using our styled mailable.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        Mail::to($this->getEmailForVerification())->send(new VerifyEmailMail($this));
+    }
+
+    /**
+     * Send the password reset notification only when the email is verified.
+     * Uses our styled mailable. Unverified users do not receive a reset link.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        if (! $this->hasVerifiedEmail()) {
+            return;
+        }
+
+        Mail::to($this->getEmailForPasswordReset())->send(new ResetPasswordMail($this, $token));
     }
 
     /**
