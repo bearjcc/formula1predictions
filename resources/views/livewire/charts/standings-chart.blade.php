@@ -1,4 +1,5 @@
 <div>
+    <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Race Result Distribution</h3>
     <div class="mb-4">
         <label for="chart-type-{{ $chartId }}" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
             Chart Type:

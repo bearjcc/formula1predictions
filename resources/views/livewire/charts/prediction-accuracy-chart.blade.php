@@ -2,7 +2,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Prediction Accuracy Analytics
+                Prediction Type Analysis
             </h3>
             <p class="text-sm text-zinc-600 dark:text-zinc-400">
                 {{ $season }} Season

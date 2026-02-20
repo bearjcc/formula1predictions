@@ -34,7 +34,7 @@
                                     <div class="font-bold text-zinc-900 dark:text-zinc-100">
                                         {{ $driver ? "{$driver->name} {$driver->surname}" : $driverId }}
                                     </div>
-                                    <div class="text-xs text-zinc-500 uppercase tracking-wider">
+                                    <div class="text-xs text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
                                         {{ $driver->team->team_name ?? 'Individual' }}
                                     </div>
                                 </div>
@@ -52,23 +52,23 @@
         <!-- Sidebar Stats -->
         <div class="space-y-6">
             <div class="bg-zinc-900 text-white rounded-lg p-6 shadow-xl border border-zinc-800">
-                <h3 class="text-lg font-bold mb-4 uppercase tracking-widest text-zinc-500">Summary</h3>
+                <h3 class="text-lg font-bold mb-4 uppercase tracking-widest text-zinc-300 dark:text-zinc-200">Summary</h3>
                 <div class="space-y-6">
                     <div>
-                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Status</p>
+                        <p class="text-xs font-bold text-zinc-300 dark:text-zinc-200 uppercase tracking-widest mb-1">Status</p>
                         <p class="text-xl font-bold">{{ ucfirst($prediction->status) }}</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Score</p>
-                        <p class="text-3xl font-black text-green-500">{{ $prediction->status === 'scored' ? number_format($prediction->score) : 'Pending' }}</p>
+                        <p class="text-xs font-bold text-zinc-300 dark:text-zinc-200 uppercase tracking-widest mb-1">Score</p>
+                        <p class="text-3xl font-black text-green-400 dark:text-green-300">{{ $prediction->status === 'scored' ? number_format($prediction->score) : 'Pending' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Accuracy</p>
+                        <p class="text-xs font-bold text-zinc-300 dark:text-zinc-200 uppercase tracking-widest mb-1">Accuracy</p>
                         <p class="text-xl font-bold">{{ $prediction->status === 'scored' ? number_format($prediction->accuracy, 1) . '%' : 'Pending' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Submitted</p>
-                        <p class="text-sm font-medium text-zinc-300">
+                        <p class="text-xs font-bold text-zinc-300 dark:text-zinc-200 uppercase tracking-widest mb-1">Submitted</p>
+                        <p class="text-sm font-medium text-zinc-300 dark:text-zinc-200">
                             {{ $prediction->submitted_at ? $prediction->submitted_at->format('M j, Y H:i') : '-' }} (UTC)
                         </p>
                     </div>
@@ -77,7 +77,7 @@
 
             @if($prediction->notes)
                 <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
-                    <h3 class="font-bold text-sm uppercase tracking-widest text-zinc-500 mb-4">Notes</h3>
+                    <h3 class="font-bold text-sm uppercase tracking-widest text-zinc-600 dark:text-zinc-400 mb-4">Notes</h3>
                     <p class="text-zinc-600 dark:text-zinc-300 italic whitespace-pre-line">{{ $prediction->notes }}</p>
                 </div>
             @endif

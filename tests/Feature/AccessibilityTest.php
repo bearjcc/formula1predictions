@@ -124,9 +124,12 @@ test('form accessibility', function () {
  */
 function assertAccessibilityCompliance(string $content, string $page): void
 {
-    // Check for alt text on images
-    if (str_contains($content, '<img')) {
-        expect($content)->toContain('alt=', "Images on {$page} should have alt text");
+    // Check for alt text on images (every img must have alt attribute)
+    if (preg_match_all('/<img\s[^>]*>/', $content, $imgMatches)) {
+        foreach ($imgMatches[0] as $tag) {
+            $hasAlt = str_contains($tag, 'alt=') || str_contains($tag, "alt='");
+            expect($hasAlt)->toBeTrue("Images on {$page} should have alt text");
+        }
     }
 
     // Check for proper heading structure (some pages might not have h1)

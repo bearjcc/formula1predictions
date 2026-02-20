@@ -136,9 +136,30 @@ php artisan test tests/Feature/ScoringServiceTest.php
 php artisan test --filter=testName
 ```
 
-If `php artisan test` times out (e.g. on some Windows setups), run `.\scripts\test-batches.ps1` (PowerShell) or use the two-batch commands in [AGENTS.md](AGENTS.md) Commands.
+If `php artisan test` times out (e.g. on some Windows setups), run `.\scripts\test-batches.ps1` (PowerShell) or `./scripts/test-batches.sh` (Unix/CI), or use the two-batch commands in [AGENTS.md](AGENTS.md) Commands.
 
 Coverage (optional): `composer run test:coverage` (requires pcov).
+
+### CI
+
+GitHub Actions runs on push and pull request to `main` and `master` (see [.github/workflows/ci.yml](.github/workflows/ci.yml)): two-batch tests via `scripts/test-batches.sh`, then `npm run build`. Optional: `vendor/bin/pint --dirty --test` (continue-on-error).
+
+---
+
+## Railway deployment
+
+- **Web:** Default start command (e.g. `php artisan serve` or your process) runs the app; `f1:ensure-season-data` runs at startup to preload current season data if missing.
+- **Queue worker:** Run as a **separate Railway service** with start command `php artisan queue:work`. Do not run the worker in the same process as the web app.
+- **Cron / scheduler:** Either (1) a dedicated service running `./railway/run-cron.sh` (loop: `schedule:run` every 60s), or (2) Railway’s cron feature pointing at a URL or command that runs the scheduler. See [railway/run-cron.sh](railway/run-cron.sh).
+- **Email:** For production, configure a mail driver and `MAIL_FROM_ADDRESS` (and `MAIL_FROM_NAME`) so verification and other transactional emails are sent; otherwise they are logged (`MAIL_MAILER=log`).
+
+### Supervisor (self-hosted queue worker)
+
+For self-hosted or VPS deployments using [Supervisor](https://supervisord.org/) to run the Laravel queue worker:
+
+- **Config:** [deployment/supervisord.conf](deployment/supervisord.conf) defines a `laravel-worker` program running `php artisan queue:work` (database queue; one process, autorestart, logs under `deployment/logs/`).
+- **Place:** Copy the file to your server (e.g. `/etc/supervisor/conf.d/formula1predictions.conf`) and set `directory=` (and optional `user=`) to your app root, or run `supervisord -c deployment/supervisord.conf` from the app root after editing paths. Create `deployment/logs/` so Supervisor can write logs.
+- **Run:** `supervisorctl reread && supervisorctl update && supervisorctl start laravel-worker:*` (or `supervisord -c deployment/supervisord.conf` if using the file as the main config).
 
 ---
 

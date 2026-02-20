@@ -35,7 +35,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 }; ?>
 
 <div class="mt-4 flex flex-col gap-6">
-    <p class="text-center">
+    <p class="text-center text-zinc-700 dark:text-zinc-300">
         {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}
     </p>
 

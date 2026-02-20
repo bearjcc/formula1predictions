@@ -82,11 +82,13 @@ test('chart data service can get user prediction accuracy trends', function () {
     $service = app(ChartDataService::class);
 
     $user = User::factory()->create(['name' => 'John Doe']);
-    $race = Races::factory()->create(['season' => 2024]);
+    $race1 = Races::factory()->create(['season' => 2024, 'round' => 1]);
+    $race2 = Races::factory()->create(['season' => 2024, 'round' => 2]);
 
-    $prediction1 = Prediction::factory()->create([
+    Prediction::factory()->create([
         'user_id' => $user->id,
-        'race_id' => $race->id,
+        'race_id' => $race1->id,
+        'race_round' => 1,
         'season' => 2024,
         'type' => 'race',
         'accuracy' => 85.5,
@@ -94,9 +96,10 @@ test('chart data service can get user prediction accuracy trends', function () {
         'submitted_at' => now()->subDays(7),
     ]);
 
-    $prediction2 = Prediction::factory()->create([
+    Prediction::factory()->create([
         'user_id' => $user->id,
-        'race_id' => $race->id,
+        'race_id' => $race2->id,
+        'race_round' => 2,
         'season' => 2024,
         'type' => 'race',
         'accuracy' => 92.0,
@@ -119,30 +122,37 @@ test('chart data service can get prediction accuracy comparison', function () {
 
     $user1 = User::factory()->create(['name' => 'John Doe']);
     $user2 = User::factory()->create(['name' => 'Jane Smith']);
-    $race = Races::factory()->create(['season' => 2024]);
+    $race1 = Races::factory()->create(['season' => 2024, 'round' => 1]);
+    $race2 = Races::factory()->create(['season' => 2024, 'round' => 2]);
 
-    // User 1 predictions
+    // User 1 predictions (two races to satisfy unique user_id + type + season + race_round)
     Prediction::factory()->create([
         'user_id' => $user1->id,
-        'race_id' => $race->id,
+        'race_id' => $race1->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'accuracy' => 80.0,
         'score' => 90,
     ]);
 
     Prediction::factory()->create([
         'user_id' => $user1->id,
-        'race_id' => $race->id,
+        'race_id' => $race2->id,
+        'race_round' => 2,
         'season' => 2024,
+        'type' => 'race',
         'accuracy' => 90.0,
         'score' => 100,
     ]);
 
-    // User 2 predictions
+    // User 2 prediction
     Prediction::factory()->create([
         'user_id' => $user2->id,
-        'race_id' => $race->id,
+        'race_id' => $race1->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'accuracy' => 95.0,
         'score' => 105,
     ]);
@@ -177,22 +187,28 @@ test('chart data service can get race prediction accuracy by race', function () 
         'results' => [['driver_id' => 1, 'position' => 1]],
     ]);
 
-    // Predictions for race 1
+    // Predictions for race 1 (different users to satisfy unique user_id + type + season + race_round)
     Prediction::factory()->create([
         'race_id' => $race1->id,
+        'race_round' => 1,
+        'season' => 2024,
         'type' => 'race',
         'accuracy' => 85.0,
     ]);
 
     Prediction::factory()->create([
         'race_id' => $race1->id,
+        'race_round' => 1,
+        'season' => 2024,
         'type' => 'race',
         'accuracy' => 95.0,
     ]);
 
-    // Predictions for race 2
+    // Prediction for race 2
     Prediction::factory()->create([
         'race_id' => $race2->id,
+        'race_round' => 2,
+        'season' => 2024,
         'type' => 'race',
         'accuracy' => 90.0,
     ]);
@@ -273,26 +289,33 @@ test('chart data service returns getPredictorLuckAndVariance with expected struc
 
     $user1 = User::factory()->create(['name' => 'Alice']);
     $user2 = User::factory()->create(['name' => 'Bob']);
-    $race = Races::factory()->create(['season' => 2024]);
+    $race1 = Races::factory()->create(['season' => 2024, 'round' => 1]);
+    $race2 = Races::factory()->create(['season' => 2024, 'round' => 2]);
 
     Prediction::factory()->create([
         'user_id' => $user1->id,
-        'race_id' => $race->id,
+        'race_id' => $race1->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'accuracy' => 80.0,
         'score' => 20,
     ]);
     Prediction::factory()->create([
         'user_id' => $user1->id,
-        'race_id' => $race->id,
+        'race_id' => $race2->id,
+        'race_round' => 2,
         'season' => 2024,
+        'type' => 'race',
         'accuracy' => 80.0,
         'score' => 24,
     ]);
     Prediction::factory()->create([
         'user_id' => $user2->id,
-        'race_id' => $race->id,
+        'race_id' => $race1->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'accuracy' => 100.0,
         'score' => 25,
     ]);
@@ -356,12 +379,14 @@ test('chart data service can get head-to-head comparison', function () {
 
     $user1 = User::factory()->create(['name' => 'User One']);
     $user2 = User::factory()->create(['name' => 'User Two']);
-    $race = Races::factory()->create(['season' => 2024]);
+    $race = Races::factory()->create(['season' => 2024, 'round' => 1]);
 
     Prediction::factory()->create([
         'user_id' => $user1->id,
         'race_id' => $race->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'status' => 'scored',
         'score' => 20,
         'accuracy' => 80,
@@ -369,7 +394,9 @@ test('chart data service can get head-to-head comparison', function () {
     Prediction::factory()->create([
         'user_id' => $user2->id,
         'race_id' => $race->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'status' => 'scored',
         'score' => 18,
         'accuracy' => 72,
@@ -416,21 +443,27 @@ test('chart data service can get head-to-head score progression', function () {
     Prediction::factory()->create([
         'user_id' => $user1->id,
         'race_id' => $race1->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'status' => 'scored',
         'score' => 10,
     ]);
     Prediction::factory()->create([
         'user_id' => $user1->id,
         'race_id' => $race2->id,
+        'race_round' => 2,
         'season' => 2024,
+        'type' => 'race',
         'status' => 'scored',
         'score' => 15,
     ]);
     Prediction::factory()->create([
         'user_id' => $user2->id,
         'race_id' => $race1->id,
+        'race_round' => 1,
         'season' => 2024,
+        'type' => 'race',
         'status' => 'scored',
         'score' => 8,
     ]);

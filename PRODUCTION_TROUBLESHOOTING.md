@@ -31,6 +31,26 @@ A redeploy should have been triggered. After it completes, test login and page l
 | **sessions table** | Run `php artisan migrate` to ensure the `sessions` table exists (it's in the users migration). |
 | **ADMIN_EMAIL, ADMIN_PASSWORD** | Set in Railway Variables. `app:ensure-admin-user` runs on each deploy—it creates/updates the admin. If these are wrong or missing, no admin exists. |
 
+### Redeploy after changing variables
+
+Railway treats variable changes as **staged**. You must **Deploy** (or redeploy) after adding or editing variables; the running app does not see new values until a new deployment runs.
+
+### Verify env vars reach the app (opt-in)
+
+To confirm Railway is injecting ADMIN_* and other vars at runtime:
+
+1. In Railway **Variables**, add:
+   - `RAILWAY_ENV_DEBUG=1`
+   - `RAILWAY_DUMMY_VAR=connected` (or any value you like)
+2. **Deploy** so the new variables are applied.
+3. Open `https://your-app.up.railway.app/railway-env-check` in the browser (or use curl). You should see JSON like:
+   - `admin_email_set: true`, `admin_password_set: true` if ADMIN_EMAIL and ADMIN_PASSWORD are set
+   - `railway_dummy_var: "connected"` proving env vars are reaching the app
+   - `config_admin_email_set` / `config_admin_password_set` show whether Laravel config cache has them (both should be true after a deploy that runs config:cache at start)
+4. Remove `RAILWAY_ENV_DEBUG` (and optionally `RAILWAY_DUMMY_VAR`) when done; the route returns 404 when RAILWAY_ENV_DEBUG is not set.
+
+If `admin_email_set` or `admin_password_set` is false, the variables are not in the runtime environment: check variable names (exact: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`), that they are on the **app** service (not only the MySQL service), and that you redeployed after setting them.
+
 ### Verify in Railway Dashboard
 
 1. **Variables tab:** Confirm `SESSION_DRIVER=database`, `APP_URL=https://your-actual-domain`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
@@ -160,6 +180,8 @@ railway run php artisan config:show session
 railway run php artisan migrate:status
 railway run php artisan app:ensure-admin-user
 ```
+
+To verify env vars in the browser: set `RAILWAY_ENV_DEBUG=1` and `RAILWAY_DUMMY_VAR=ok` in Variables, redeploy, then open `/railway-env-check`. See "Verify env vars reach the app" above.
 
 ---
 

@@ -225,10 +225,16 @@ test('promote admin command is idempotent when user already admin', function () 
 
 test('ensure admin user command skips when ADMIN_EMAIL not set', function () {
     config(['admin.promotable_admin_email' => null]);
+    $prev = getenv('ADMIN_EMAIL');
+    putenv('ADMIN_EMAIL=');
 
-    $this->artisan('app:ensure-admin-user')
-        ->expectsOutputToContain('ADMIN_EMAIL is not set')
-        ->assertExitCode(0);
+    try {
+        $this->artisan('app:ensure-admin-user')
+            ->expectsOutputToContain('ADMIN_EMAIL is not set')
+            ->assertExitCode(0);
+    } finally {
+        putenv($prev !== false ? 'ADMIN_EMAIL='.$prev : 'ADMIN_EMAIL');
+    }
 });
 
 test('ensure admin user command skips when ADMIN_PASSWORD not set and user must be created', function () {
@@ -236,12 +242,18 @@ test('ensure admin user command skips when ADMIN_PASSWORD not set and user must 
         'admin.promotable_admin_email' => 'new-admin@example.com',
         'admin.admin_password' => null,
     ]);
+    $prev = getenv('ADMIN_PASSWORD');
+    putenv('ADMIN_PASSWORD=');
 
-    $this->artisan('app:ensure-admin-user')
-        ->expectsOutputToContain('ADMIN_PASSWORD is not set')
-        ->assertExitCode(0);
+    try {
+        $this->artisan('app:ensure-admin-user')
+            ->expectsOutputToContain('ADMIN_PASSWORD is not set')
+            ->assertExitCode(0);
 
-    expect(User::where('email', 'new-admin@example.com')->exists())->toBeFalse();
+        expect(User::where('email', 'new-admin@example.com')->exists())->toBeFalse();
+    } finally {
+        putenv($prev !== false ? 'ADMIN_PASSWORD='.$prev : 'ADMIN_PASSWORD');
+    }
 });
 
 test('ensure admin user command creates admin when user does not exist', function () {

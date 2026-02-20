@@ -113,4 +113,16 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Feedback recipient
+    |--------------------------------------------------------------------------
+    |
+    | When set (e.g. MAIL_FEEDBACK_TO), feedback form submissions are emailed
+    | to this address. Leave null to only store feedback in the database.
+    |
+    */
+
+    'feedback_to' => env('MAIL_FEEDBACK_TO'),
+
 ];

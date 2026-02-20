@@ -47,3 +47,27 @@ test('email is not verified with invalid hash', function () {
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
+
+test('unverified user is redirected to verification notice when accessing verified route', function () {
+    $user = User::factory()->unverified()->create();
+
+    $response = $this->actingAs($user)->get(route('dashboard'));
+
+    $response->assertRedirect(route('verification.notice'));
+});
+
+test('unverified user is redirected from predict create', function () {
+    $user = User::factory()->unverified()->create();
+
+    $response = $this->actingAs($user)->get(route('predict.create'));
+
+    $response->assertRedirect(route('verification.notice'));
+});
+
+test('verified user can access dashboard', function () {
+    $user = User::factory()->create(); // default state has email_verified_at set
+
+    $response = $this->actingAs($user)->get(route('dashboard'));
+
+    $response->assertOk();
+});

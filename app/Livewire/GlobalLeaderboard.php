@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Prediction;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -18,7 +17,7 @@ class GlobalLeaderboard extends Component
     public string $type = 'all'; // all, race, preseason
 
     #[Url]
-    public string $sortBy = 'total_score'; // total_score, avg_score, accuracy, predictions
+    public string $sortBy = 'total_score'; // total_score, avg_score, avg_accuracy, predictions_count
 
     #[Url]
     public int $page = 1;
@@ -199,7 +198,7 @@ class GlobalLeaderboard extends Component
     public function render()
     {
         $total = count($this->leaderboard);
-        $currentPage = Paginator::resolveCurrentPage('page');
+        $currentPage = max(1, $this->page);
         $slice = array_slice($this->leaderboard, ($currentPage - 1) * $this->perPage, $this->perPage);
         $paginated = new LengthAwarePaginator(
             $slice,

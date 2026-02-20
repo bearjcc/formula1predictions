@@ -5,7 +5,7 @@
         <div class="relative px-6 py-12 sm:px-6 sm:py-16 lg:px-8">
             <div class="mx-auto max-w-2xl text-center">
                 <h1 class="text-5xl font-bold text-white mb-6 text-shadow flex items-center justify-center gap-3">
-                    <img src="/images/logo.png" alt="" class="h-12 w-auto brightness-0 invert" aria-hidden="true" />
+                    <img src="/images/logo.png" alt="F1 Predictions" class="h-12 w-auto brightness-0 invert" aria-hidden="true" />
                     F1 Predictions
                 </h1>
                 <p class="text-xl text-white mb-8 text-shadow">

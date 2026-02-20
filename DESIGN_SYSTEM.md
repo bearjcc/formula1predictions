@@ -140,7 +140,7 @@ This design system ensures consistent, accessible, and visually appealing compon
 ## Dark Mode Support
 
 ### Automatic Detection
-The design system automatically adapts to user's dark mode preference using CSS custom properties.
+The design system automatically adapts to user's dark mode preference using CSS custom properties. Appearance is set via `data-appearance` on `<html>` and a blocking script in `partials.head` so there is no flash (see [Auth layout design](docs/AUTH_LAYOUT_DESIGN.md) for the shared pattern).
 
 ### Manual Toggle
 ```html

@@ -151,7 +151,7 @@
                                                         <span class="badge badge-warning badge-sm">⭐ Supporter</span>
                                                     @endif
                                                 </div>
-                                                <div class="text-sm opacity-50">{{ $user['predictions_count'] }} predictions</div>
+                                                <div class="text-sm text-zinc-600 dark:text-zinc-400">{{ $user['predictions_count'] }} predictions</div>
                                                 @if(!empty($user['badges']))
                                                     <div class="flex gap-1 mt-1">
                                                         @foreach(array_slice($user['badges'], 0, 3) as $badge)
@@ -207,7 +207,7 @@
                         </svg>
                     </div>
                     <p class="text-lg text-zinc-600 dark:text-zinc-400">No predictions found for the selected criteria.</p>
-                    <p class="text-sm text-zinc-500">Try selecting a different season or type.</p>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Try selecting a different season or type.</p>
                 </div>
             @endif
         </div>

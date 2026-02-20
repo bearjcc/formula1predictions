@@ -57,7 +57,7 @@
                                                 @if($user->rank == 1)
                                                     <span class="text-yellow-500">🥇</span>
                                                 @elseif($user->rank == 2)
-                                                    <span class="text-gray-400">🥈</span>
+                                                    <span class="text-zinc-600 dark:text-zinc-300">🥈</span>
                                                 @elseif($user->rank == 3)
                                                     <span class="text-amber-600">🥉</span>
                                                 @endif
@@ -80,7 +80,7 @@
                                             </div>
                                             <div>
                                                 <div class="font-bold">{{ $user->name }}</div>
-                                                <div class="text-sm opacity-50">{{ $user->predictions_count }} predictions</div>
+                                                <div class="text-sm text-zinc-600 dark:text-zinc-400">{{ $user->predictions_count }} predictions</div>
                                             </div>
                                         </div>
                                     </td>

@@ -1,4 +1,4 @@
-<x-layouts.layout title="Components" headerSubtitle="Explore all available Mary UI components and their variants">
+<x-layouts.layout title="Mary UI Components Demo" headerSubtitle="Explore all available Mary UI components and their variants">
     <div class="space-y-12">
         <!-- Buttons Section -->
         <section class="space-y-6">

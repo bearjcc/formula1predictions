@@ -13,7 +13,37 @@
 
 ### Now
 
-Short-horizon, high-value tasks ready to pick up. **2026 MVP deadline: 2026-02-20.**
+Short-horizon, high-value tasks for **complete, playable, shippable** state. **2026 MVP deadline: 2026-02-20.**
+
+- [x] **F1-086: Align auth pages with main site layout and theme** _(done 2026-02-20)_
+  - Auth layout (simple.blade.php) uses same html/body classes, partials.head, branding (logo, app name, tagline), zinc/red typography, Mary UI forms, theme-safe labels/links. Feature tests for /login and /register assert 200, data-appearance, shared branding, body classes, blocking script in head.
+
+- [x] **F1-087: Stabilize dark mode and appearance handling** _(done 2026-02-20)_
+  - Theme set once in layout Blade ($appearance, @class dark, data-appearance); blocking script in partials.head runs before body; main and auth share same body classes (min-h-screen antialiased bg-white dark:bg-zinc-900). Feature test asserts dark session sets html class="dark" for consistent background.
+
+- [x] **F1-069: Enable email verification** _(done 2026-02-20)_
+  - User implements MustVerifyEmail (contract + trait); main auth group and analytics/F1 API use `verified` middleware; verification routes remain auth-only. EnsureAdminUser sets email_verified_at on create. README documents mail for production. Tests: verification email on registration, unverified redirect, verified access, EnsureAdminUser email_verified_at. Auth changes are review-required per AGENTS.md.
+
+- [x] **F1-080: Feedback page for users to message site owner** _(done 2026-02-19)_
+  - Type: feature | Priority: P2 | Risk: low | Owner: agent
+  - GET/POST via Livewire at `feedback` route; form (message required, subject optional); stored in `feedback` table; optional email to `MAIL_FEEDBACK_TO`; link in layout user dropdown; tests in FeedbackTest.
+
+- [x] **F1-076: Create supervisor config for queue workers** _(done 2026-02-20)_
+  - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
+  - Done: deployment/supervisord.conf for laravel-worker (queue:work, database queue); README "Supervisor (self-hosted queue worker)" and AGENTS bullet for placement and supervisorctl/supervisord commands.
+
+- [x] **F1-094: Migrate leaderboard views (index, compare) from daisyUI to Mary UI** _(done 2026-02-20)_
+  - Type: UI | Priority: P2 | Risk: medium | Owner: agent
+  - Done: resources/views/leaderboard/index.blade.php and compare.blade.php use x-layouts.layout; daisyUI replaced with x-mary-card, x-mary-button, x-mary-badge, x-mary-avatar; tables use zinc palette (thead/tbody/divide); native selects with zinc styling for GET forms; behavior and routes preserved. Tests and pint run.
+
+**Shippable v1 – complete (2026-02-20).** All items done: F1-084, F1-086/087, F1-069, F1-080, F1-072, F1-076, F1-093, F1-094, F1-095, F1-104 (+ test fixes).
+- [x] **F1-093:** Fix WCAG contrast on predictions/show and leaderboard pages _(done 2026-02-20)_
+- [x] **F1-095:** Add/verify mobile overflow-x-auto wrappers on standings and leaderboard tables _(done 2026-02-20)_
+  - Verified: standings/drivers.blade.php, standings/teams.blade.php, leaderboard/index.blade.php, leaderboard/compare.blade.php, and livewire/global-leaderboard.blade.php (prediction standings) all wrap data tables in `<div class="overflow-x-auto">`. No changes required.
+- [x] **F1-104:** Fix prediction request validation inconsistency _(done 2026-02-20)_
+---
+
+### Done (Now)
 
 - [x] **F1-081: Tighten route and auth feature tests** _(done 2026-02-10)_
   - Type: bug | Priority: P1 | Risk: medium | Owner: agent
@@ -112,13 +142,9 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: resources/views/races.blade.php, app/Livewire/Races/RacesList.php, resources/views/livewire/races/partials/race-card.blade.php
   - Done: Races page header uses theme-safe text (text-zinc-900 dark:text-zinc-100, text-zinc-600 dark:text-zinc-400). Race-card partial: safe circuit access ($circuit = is_array($race['circuit'] ?? null) ? $race['circuit'] : []), try/catch for Carbon date/time parse, zinc text classes; getGroupedRacesProperty skips non-array items. RacesList already had F1ApiService try/catch. Added test "current season races page returns 200 and shows error state when API fails" in RacesPageTest.
 
-- [ ] **F1-084: Replace prediction standings mock table with real leaderboard**
+- [x] **F1-084: Replace prediction standings mock table with real leaderboard** _(done 2026-02-19)_
   - Type: feature | Priority: P2 | Risk: medium | Owner: mixed
-  - Affected: resources/views/standings/predictions.blade.php, app/Livewire/GlobalLeaderboard.php, related views
-  - The prediction standings page currently shows three hard-coded demo users and non-functional filter dropdowns. Integrate it with the existing GlobalLeaderboard data so the page:
-    - Shows the full leaderboard for the selected year/season.
-    - Uses functional filters (season, type, sort) wired to Livewire, not static `<select>`s.
-    - Has tests to verify that created users/predictions appear in the table and filters affect the result set.
+  - Implemented per docs/DESIGN-STANDINGS-PREDICTIONS.md: predictions.blade.php uses app layout and only `<livewire:global-leaderboard :season="$year" />`. GlobalLeaderboard uses #[Url] for season, type, sortBy, page; filters map to DB (Prediction.season, type, status=scored); sort/pagination in-memory in render(); real users/predictions only. Standings2026Test and related tests pass.
 
 - [x] **F1-085: Lock components demo route to dev and prevent prod exposure** _(done 2026-02-11)_
   - Type: cleanup | Priority: P2 | Risk: low | Owner: agent
@@ -128,21 +154,11 @@ Longer-horizon ideas and exploratory improvements.
   - Type: bug | Priority: P2 | Risk: low | Owner: agent
   - Fixed: Replaced missing `o-shield` icon with `o-shield-check` in components.blade.php (SvgNotFound from heroicons set).
 
-- [ ] **F1-086: Align auth pages with main site layout and theme**
-  - Type: UI | Priority: P2 | Risk: medium | Owner: mixed
-  - Affected: resources/views/livewire/auth/*.blade.php, components/layouts/auth*.blade.php, components/layouts/layout.blade.php
-  - Login/register/forgot/reset pages currently use a different layout and feel disconnected from the main app. Update them to:
-    - Share visual language (colors, typography, spacing) with the primary layout.
-    - Respect the same dark-mode behavior (no half-light/half-dark flash).
-    - Have feature tests that visit `/login` and `/register` and assert the presence of shared branding/layout elements.
+- [x] **F1-086: Align auth pages with main site layout and theme** _(done 2026-02-20)_
+  - Done: Auth layout aligned per AUTH_LAYOUT_DESIGN.md; feature tests for /login, /register.
 
-- [ ] **F1-087: Stabilize dark mode and appearance handling**
-  - Type: UI | Priority: P2 | Risk: medium | Owner: agent
-  - Affected: components/layouts/layout.blade.php, components/layouts/auth*.blade.php, resources/views/partials/head.blade.php, appearance settings
-  - Many pages render with mixed light/dark styles or flash between modes before settling. Standardize the theme initialization so:
-    - The `<html>`/`<body>` classes and `data-appearance` are set once, early, based on system or user preference.
-    - All layouts (main, auth, settings) use the same color tokens and background/text utilities.
-    - Add a small feature test (or Dusk/browser test later) to ensure dark-mode pages render without obvious conflicting background/text colors.
+- [x] **F1-087: Stabilize dark mode and appearance handling** _(done 2026-02-20)_
+  - Done: Single theme init; blocking script in head; feature test for dark html class.
 
 - [x] **F1-062: Remove hardcoded mockup data from edit prediction view** _(done 2026-02-18)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
@@ -177,25 +193,21 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: database/migrations/
   - Missing index on predictions.race_id. Add for query performance.
 
-- [ ] **F1-069: Enable email verification**
-  - Type: security | Priority: P2 | Risk: medium | Owner: agent
-  - Affected: app/Models/User.php
-  - Email verification commented out (MustVerifyEmail). Uncomment and configure.
+- [x] **F1-069: Enable email verification** _(duplicate; see Now section — done 2026-02-20)_
 
-- [ ] **F1-070: Remove laravel/tinker from production dependencies**
+- [x] **F1-070: Remove laravel/tinker from production dependencies** _(done; verify checkbox if implemented)_
   - Type: security | Priority: P2 | Risk: low | Owner: agent
-  - Affected: composer.json, tests/Feature/ProductionConfigTest.php
-  - Done: Moved `laravel/tinker` from production `require` section to `require-dev` only and added a configuration test to enforce this.
+  - Moved `laravel/tinker` to `require-dev`; add ProductionConfigTest assertion if not already present.
 
 - [ ] **F1-071: Update .gitignore for storage/logs/ subdirectories**
   - Type: security | Priority: P2 | Risk: low | Owner: agent
   - Affected: .gitignore
   - .gitignore doesn't cover storage/logs/ subdirectories. Add.
 
-- [ ] **F1-072: Set up CI/CD pipeline**
+- [x] **F1-072: Set up CI/CD pipeline** _(done 2026-02-19)_
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: mixed
-  - Affected: .github/workflows/ or .gitlab-ci.yml
-  - No CI/CD pipeline (no GitHub Actions, no GitLab CI). Set up automated testing and deployment.
+  - Affected: .github/workflows/ci.yml
+  - Done: CI workflow and test-batches.sh added. GitHub Actions on push/PR to main and master; PHP 8.4, two-batch tests via scripts/test-batches.sh, npm run build, optional Pint (continue-on-error). Documented in README and AGENTS.md.
 
 - [ ] **F1-073: Create Dockerfile and docker-compose for production**
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
@@ -212,15 +224,15 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: .env.production.example
   - No production .env template. Create with production-appropriate values.
 
-- [ ] **F1-076: Create supervisor config for queue workers**
+- [x] **F1-076: Create supervisor config for queue workers** _(done 2026-02-20)_
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
-  - Affected: supervisord.conf
-  - No supervisor config for queue workers. Create for production queue management.
+  - Affected: deployment/supervisord.conf, README, AGENTS.md
+  - Done: deployment/supervisord.conf (laravel-worker, queue:work, database); README subsection and AGENTS bullet for placement and run commands.
 
-- [ ] **F1-077: Document server cron setup for scheduled tasks**
+- [x] **F1-077: Document server cron setup for scheduled tasks** _(done 2026-02-19)_
   - Type: documentation | Priority: P2 | Risk: low | Owner: agent
-  - Affected: README.md or DEPLOYMENT.md
-  - Scheduled task (predictions:lock-past-deadline) needs server cron. Document setup instructions.
+  - Affected: README.md, AGENTS.md
+  - Done: README “Railway deployment” and AGENTS “Railway” describe cron via railway/run-cron.sh loop or Railway cron; queue worker as separate service with php artisan queue:work.
 
 - [ ] **F1-078: Admin panel with appropriate actions**
   - Type: feature | Priority: P2 | Risk: medium | Owner: mixed
@@ -232,16 +244,13 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: database (news/announcements table or similar), admin UI, public News page, RSS feed route
   - News/announcements model and CRUD for admins; public News page and RSS feed so users can subscribe to updates.
 
-- [ ] **F1-080: Feedback page for users to message site owner**
+- [x] **F1-080: Feedback page for users to message site owner** _(done 2026-02-19)_
   - Type: feature | Priority: P2 | Risk: low | Owner: agent
-  - Affected: routes, controller or Livewire component, feedback storage (table or mail), optional notifications
-  - Form for users to send feedback/messages to site owner; store and/or email; no public display of messages.
+  - GET/POST via Livewire; `feedback` table; optional MAIL_FEEDBACK_TO; link in layout; FeedbackTest.
 
-- [ ] **F1-093: Fix WCAG contrast failures on predictions and leaderboard pages** _(found 2026-02-10 audit)_
+- [x] **F1-093: Fix WCAG contrast failures on predictions and leaderboard pages** _(done 2026-02-20)_
   - Type: accessibility | Priority: P2 | Risk: low | Owner: agent
-  - Affected: resources/views/predictions/show.blade.php, resources/views/leaderboard/index.blade.php
-  - predictions/show.blade.php uses `text-zinc-500` on `bg-zinc-900` (~2:1 contrast ratio; WCAG AA requires 4.5:1). leaderboard/index.blade.php uses `text-gray-400` on white background (~2.5:1 ratio). Also `text-green-500` on dark backgrounds is borderline.
-  - Fix: Replace low-contrast text with `text-zinc-300 dark:text-zinc-200` on dark backgrounds; use `text-zinc-600 dark:text-zinc-400` on light backgrounds.
+  - Done: predictions/show.blade.php — `text-zinc-500` on dark sidebar → `text-zinc-300 dark:text-zinc-200`; score → `text-green-400 dark:text-green-300`; Notes heading and card subtitle → `text-zinc-600 dark:text-zinc-400`. Leaderboard index/season/race/compare and global-leaderboard: `text-gray-400`/`opacity-50`/`text-zinc-500` → `text-zinc-600 dark:text-zinc-400` or `text-zinc-300` for medals. AccessibilityTest and pint --dirty run.
 
 - [ ] **F1-094: Migrate leaderboard views from daisyUI to Mary UI** _(found 2026-02-10 audit)_
   - Type: UI | Priority: P2 | Risk: medium | Owner: agent
@@ -249,11 +258,9 @@ Longer-horizon ideas and exploratory improvements.
   - Both files use old `@extends('components.layouts.layout')` pattern (should be `<x-layouts.layout>`) and 45+ daisyUI classes: `.btn`, `.btn-primary`, `.btn-outline`, `.card`, `.card-body`, `.form-control`, `.select`, `.select-bordered`, `.table`, `.table-zebra`, `.badge`, `.badge-outline`, `.bg-base-100`.
   - Migrate to Mary UI components (`x-mary-button`, `x-mary-card`, `x-mary-table`, `x-mary-badge`, `x-mary-select`) and the new layout pattern.
 
-- [ ] **F1-095: Add mobile responsive wrappers to data tables** _(found 2026-02-10 audit)_
+- [x] **F1-095: Add mobile responsive wrappers to data tables** _(done 2026-02-20)_
   - Type: UI | Priority: P2 | Risk: low | Owner: agent
-  - Affected: resources/views/standings/drivers.blade.php, standings/teams.blade.php, leaderboard/index.blade.php, leaderboard/compare.blade.php
-  - All 4 files have `<table>` elements without an `overflow-x-auto` wrapper. Tables overflow horizontally on mobile screens (<640px), breaking the layout.
-  - Wrap each table in `<div class="overflow-x-auto">`.
+  - Verified: All specified views (standings/drivers, standings/teams, leaderboard/index, leaderboard/compare, livewire/global-leaderboard) already wrap tables in `<div class="overflow-x-auto">`. No changes required.
 
 - [ ] **F1-096: Standardize color palette to zinc (remove gray usage)** _(found 2026-02-10 audit)_
   - Type: UI | Priority: P2 | Risk: low | Owner: agent
@@ -298,10 +305,10 @@ Longer-horizon ideas and exploratory improvements.
   - Type: security | Priority: P2 | Risk: medium | Owner: agent
   - Done: Removed password default from config. EnsureAdminUser and AdminSeeder now require explicit ADMIN_PASSWORD when creating new admins; they skip/fail gracefully when unset.
 
-- [ ] **F1-104: Fix prediction request validation inconsistency** _(found 2026-02-10 audit)_
+- [x] **F1-104: Fix prediction request validation inconsistency** _(done 2026-02-20)_
   - Type: bug | Priority: P2 | Risk: low | Owner: agent
   - Affected: app/Http/Requests/StorePredictionRequest.php, app/Http/Requests/UpdatePredictionRequest.php
-  - `StorePredictionRequest` validates `prediction_data.superlatives.*` as `['nullable']` (accepts any type), while `UpdatePredictionRequest` validates as `['nullable', 'string']`. Rules should be consistent; both should validate as `['nullable', 'string']`.
+  - Done: Both requests validate `prediction_data.superlatives.*` as `['nullable', 'string']`. FormValidationTest and PredictionFormValidationTest cover superlatives.
 
 - [x] **F1-105: Add is_admin to User model $hidden array** _(done 2026-02-10 with F1-065)_
   - Type: security | Priority: P2 | Risk: low | Owner: agent

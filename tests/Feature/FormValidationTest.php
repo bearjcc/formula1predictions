@@ -169,6 +169,66 @@ test('store prediction request validates notes field maximum length', function (
     expect($validator->errors()->has('notes'))->toBeTrue();
 });
 
+test('store prediction request accepts valid string superlatives', function () {
+    $drivers = Drivers::factory()->count(20)->create();
+    $request = new StorePredictionRequest;
+    $request->merge([
+        'type' => 'preseason',
+        'season' => 2024,
+        'prediction_data' => [
+            'team_order' => Teams::factory()->count(10)->create()->pluck('id')->toArray(),
+            'driver_championship' => $drivers->pluck('id')->toArray(),
+            'superlatives' => [
+                'most_podiums_team' => '1',
+                'most_podiums_driver' => '2',
+                'most_dnfs_team' => '3',
+                'most_dnfs_driver' => '4',
+            ],
+        ],
+    ]);
+    $validator = Validator::make($request->all(), $request->rules(), $request->messages());
+    expect($validator->passes())->toBeTrue();
+});
+
+test('store prediction request rejects non-string superlative values', function () {
+    $drivers = Drivers::factory()->count(20)->create();
+    $teams = Teams::factory()->count(10)->create();
+    $request = new StorePredictionRequest;
+    $request->merge([
+        'type' => 'preseason',
+        'season' => 2024,
+        'prediction_data' => [
+            'team_order' => $teams->pluck('id')->toArray(),
+            'driver_championship' => $drivers->pluck('id')->toArray(),
+            'superlatives' => [
+                'most_podiums_team' => $teams->first()->id,
+            ],
+        ],
+    ]);
+    $validator = Validator::make($request->all(), $request->rules(), $request->messages());
+    expect($validator->fails())->toBeTrue();
+    expect($validator->errors()->has('prediction_data.superlatives.most_podiums_team'))->toBeTrue();
+});
+
+test('update prediction request validates superlatives as nullable string', function () {
+    $drivers = Drivers::factory()->count(20)->create();
+    $request = new UpdatePredictionRequest;
+    $request->merge([
+        'type' => 'preseason',
+        'season' => 2024,
+        'prediction_data' => [
+            'team_order' => Teams::factory()->count(10)->create()->pluck('id')->toArray(),
+            'driver_championship' => $drivers->pluck('id')->toArray(),
+            'superlatives' => [
+                'most_podiums_driver' => 'Lewis Hamilton',
+                'most_dnfs_team' => null,
+            ],
+        ],
+    ]);
+    $validator = Validator::make($request->all(), $request->rules(), $request->messages());
+    expect($validator->passes())->toBeTrue();
+});
+
 test('update prediction request validates correctly', function () {
     $user = User::factory()->create();
     $drivers = Drivers::factory()->count(20)->create();

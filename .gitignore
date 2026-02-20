@@ -31,6 +31,7 @@ yarn-error.log
 # Log files
 /laravel.log
 storage/logs/*.log
+deployment/logs/
 
 # Windows artifacts
 nul

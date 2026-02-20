@@ -39,7 +39,7 @@
                                                 @if($user->rank == 1)
                                                     <span class="text-yellow-500">🥇</span>
                                                 @elseif($user->rank == 2)
-                                                    <span class="text-gray-400">🥈</span>
+                                                    <span class="text-zinc-600 dark:text-zinc-300">🥈</span>
                                                 @elseif($user->rank == 3)
                                                     <span class="text-amber-600">🥉</span>
                                                 @endif

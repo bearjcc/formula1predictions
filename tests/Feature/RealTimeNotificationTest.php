@@ -119,7 +119,8 @@ test('notification dropdown component shows correct unread count', function () {
 
     $this->actingAs($user);
 
-    $response = $this->get('/');
+    // Visit a page that renders the layout header (home uses hideHeader=true so dropdown is not in DOM)
+    $response = $this->get(route('scoring'));
     $response->assertStatus(200);
 
     // The component should be present and show 1 unread notification

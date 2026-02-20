@@ -7,7 +7,7 @@
 <head>
     @include('partials.head')
 </head>
-<body class="min-h-screen bg-white dark:bg-zinc-900">
+<body class="min-h-screen antialiased bg-white dark:bg-zinc-900">
     <div class="flex h-screen">
         <!-- Sidebar - Hidden on mobile, shown on desktop -->
         <div id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
@@ -15,7 +15,7 @@
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
                 <div class="flex items-center justify-between">
                     <a href="{{ route('home') }}" class="flex items-center space-x-2 text-zinc-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 transition-colors" wire:navigate>
-                        <img src="/images/logo.png" alt="" class="h-8 w-auto flex-shrink-0" />
+                        <img src="/images/logo.png" alt="F1 Predictor logo" class="h-8 w-auto flex-shrink-0" />
                         <h2 class="text-lg font-semibold">F1 Predictor</h2>
                     </a>
                     <!-- Close button for mobile -->
@@ -109,6 +109,7 @@
                         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52 mb-2">
                             <li><a href="{{ route('settings.profile') }}" wire:navigate><x-mary-icon name="o-user" class="w-4 h-4" /> {{ __('Profile') }}</a></li>
                             <li><a href="{{ route('settings.appearance') }}" wire:navigate><x-mary-icon name="o-swatch" class="w-4 h-4" /> {{ __('Appearance') }}</a></li>
+                            <li><a href="{{ route('feedback') }}" wire:navigate><x-mary-icon name="o-chat-bubble-left-right" class="w-4 h-4" /> {{ __('Feedback') }}</a></li>
                             <li><hr class="my-1 border-zinc-200 dark:border-zinc-700"></li>
                             <li>
                                 <form action="{{ route('logout') }}" method="POST" class="w-full">
@@ -178,6 +179,7 @@
                                 <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52">
                                     @auth
                                         <li><a href="{{ route('settings.profile') }}" wire:navigate>{{ __('Profile') }}</a></li>
+                                        <li><a href="{{ route('feedback') }}" wire:navigate>{{ __('Feedback') }}</a></li>
                                         <li>
                                             <form action="{{ route('logout') }}" method="POST">
                                                 @csrf

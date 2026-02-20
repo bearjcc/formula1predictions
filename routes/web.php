@@ -22,6 +22,25 @@ Route::get('/scoring', function () {
     return view('scoring');
 })->name('scoring');
 
+// Opt-in Railway env check: set RAILWAY_ENV_DEBUG=1 and RAILWAY_DUMMY_VAR=anything in Railway,
+// redeploy, then GET /railway-env-check to verify env vars reach the app. Remove RAILWAY_ENV_DEBUG after use.
+Route::get('/railway-env-check', function () {
+    if (! getenv('RAILWAY_ENV_DEBUG')) {
+        abort(404);
+    }
+
+    return response()->json([
+        'ok' => true,
+        'message' => 'Env check (only visible when RAILWAY_ENV_DEBUG is set)',
+        'admin_email_set' => ! empty(getenv('ADMIN_EMAIL')),
+        'admin_password_set' => ! empty(getenv('ADMIN_PASSWORD')),
+        'admin_name_set' => ! empty(getenv('ADMIN_NAME')),
+        'railway_dummy_var' => getenv('RAILWAY_DUMMY_VAR') ?: null,
+        'config_admin_email_set' => ! empty(config('admin.promotable_admin_email')),
+        'config_admin_password_set' => ! empty(config('admin.admin_password')),
+    ], 200, ['Content-Type' => 'application/json']);
+})->name('railway-env-check');
+
 // Dev and testing demo routes
 if (app()->environment(['local', 'testing'])) {
     Route::get('/components', function () {
@@ -37,9 +56,9 @@ Route::get('dashboard', App\Http\Controllers\DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/analytics', App\Livewire\Pages\Analytics::class)->middleware(['auth'])->name('analytics');
+Route::get('/analytics', App\Livewire\Pages\Analytics::class)->middleware(['auth', 'verified'])->name('analytics');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
@@ -48,6 +67,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Notifications route
     Volt::route('notifications', 'pages.notifications.index')->name('notifications.index');
+
+    // Feedback (authenticated only; no public listing)
+    Volt::route('feedback', 'pages.feedback')->name('feedback');
 
     Route::get('predict/create', function (Request $request) {
         $race = null;
@@ -130,7 +152,7 @@ Route::middleware(['auth'])->group(function () {
 //     ->name('stripe.webhook');
 
 // F1 API Routes
-Route::prefix('api/f1')->middleware(['auth', 'throttle:api'])->group(function () {
+Route::prefix('api/f1')->middleware(['auth', 'verified', 'throttle:api'])->group(function () {
     Route::get('/races/{year}', [RacesController::class, 'index'])->name('f1.races');
     Route::get('/races/{year}/{round}', [RacesController::class, 'show'])->name('f1.race');
     Route::delete('/cache/{year}', [RacesController::class, 'clearCache'])->name('f1.clear-cache')->middleware('admin');

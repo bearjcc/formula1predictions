@@ -14,9 +14,11 @@ class EnsureAdminUser extends Command
 
     public function handle(): int
     {
-        $email = config('admin.promotable_admin_email');
-        $name = config('admin.admin_name') ?? 'Admin';
-        $password = config('admin.admin_password');
+        // Prefer config (from config/admin.php); fallback to getenv() so admin vars
+        // are read at runtime even if config was cached before Railway injected them.
+        $email = config('admin.promotable_admin_email') ?: getenv('ADMIN_EMAIL') ?: null;
+        $name = config('admin.admin_name') ?: getenv('ADMIN_NAME') ?: 'Admin';
+        $password = config('admin.admin_password') ?: getenv('ADMIN_PASSWORD') ?: null;
         $madeChanges = false;
 
         if (empty($email)) {

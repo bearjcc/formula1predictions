@@ -39,8 +39,7 @@ class StorePredictionRequest extends FormRequest
             'prediction_data.driver_championship' => ['required_if:type,preseason,midseason', 'array', 'min:1', 'max:'.config('f1.max_drivers', 22)],
             'prediction_data.driver_championship.*' => ['required_if:type,preseason,midseason', 'integer', 'exists:drivers,id'],
             'prediction_data.superlatives' => ['nullable', 'array'],
-            // Accept IDs or strings for superlatives to support references by ID
-            'prediction_data.superlatives.*' => ['nullable'],
+            'prediction_data.superlatives.*' => ['nullable', 'string'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

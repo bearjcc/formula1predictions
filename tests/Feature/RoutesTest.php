@@ -204,6 +204,31 @@ test('current season races page shows loading state with no races', function () 
     $response->assertSeeLivewire('races.races-list');
 });
 
+// region Railway env check (opt-in diagnostic)
+describe('railway-env-check route', function () {
+    it('returns 404 when RAILWAY_ENV_DEBUG is not set', function () {
+        $response = $this->get('/railway-env-check');
+        $response->assertNotFound();
+    });
+
+    it('returns JSON with env flags when RAILWAY_ENV_DEBUG is set', function () {
+        putenv('RAILWAY_ENV_DEBUG=1');
+        putenv('RAILWAY_DUMMY_VAR=test-value');
+
+        try {
+            $response = $this->get('/railway-env-check');
+            $response->assertOk();
+            $response->assertJsonStructure(['ok', 'admin_email_set', 'admin_password_set', 'railway_dummy_var', 'config_admin_email_set', 'config_admin_password_set']);
+            $response->assertJsonPath('ok', true);
+            $response->assertJsonPath('railway_dummy_var', 'test-value');
+        } finally {
+            putenv('RAILWAY_ENV_DEBUG=');
+            putenv('RAILWAY_DUMMY_VAR=');
+        }
+    });
+});
+// endregion
+
 // region Dev/demo routes (F1-085): only registered in local/testing; smoke test in testing env
 describe('components demo page', function () {
     it('returns 200 in testing environment', function () {
