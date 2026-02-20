@@ -48,6 +48,7 @@
             },
 
             insertDriverAt(driverId, dropIndex) {
+                if (driverId == null || dropIndex < 0 || dropIndex >= this.maxSlots) return;
                 const max = this.maxSlots;
                 const slots = Array.from({ length: max }, (_, i) => this.driverOrder[i] ?? null);
                 for (let i = 0; i < max; i++) {
@@ -77,13 +78,16 @@
 
             dropRace(e, dropIndex) {
                 e.preventDefault();
+                e.stopPropagation();
                 this.dragOverIndex = null;
-                let payload = { driverId: this.draggedDriverId, fromIndex: null };
+                let driverId = null;
                 try {
                     const data = JSON.parse(e.dataTransfer.getData('application/json') || '{}');
-                    if (data.driverId != null) payload = data;
+                    if (data.driverId != null) driverId = data.driverId;
                 } catch (_) {}
-                this.insertDriverAt(payload.driverId, dropIndex);
+                if (driverId == null) driverId = this.draggedDriverId;
+                if (driverId == null) return;
+                this.insertDriverAt(driverId, dropIndex);
                 this.draggedDriverId = null;
                 this.draggedFromIndex = null;
             },
@@ -119,9 +123,9 @@
                                 'opacity-40': draggedDriverId && draggedFromIndex === index
                             }"
                             class="flex items-center gap-2 p-2 sm:p-3 min-h-[52px] border-zinc-100 dark:border-zinc-700/50 transition-colors"
-                            @dragover="dragOverRace($event, index)"
+                            @dragover.prevent="dragOverRace($event, index)"
                             @dragleave="dragLeaveRace()"
-                            @drop="dropRace($event, index)"
+                            @drop.prevent="dropRace($event, index)"
                         >
                             <span class="flex-shrink-0 w-7 text-zinc-500 dark:text-zinc-400 text-sm font-medium" x-text="index + 1 + '.'"></span>
                             <template x-if="slotDriverId(index)">
@@ -150,7 +154,12 @@
                                 </button>
                             </template>
                             <template x-if="!slotDriverId(index)">
-                                <div class="flex-1 flex items-center rounded border border-dashed border-zinc-300 dark:border-zinc-600 py-2 px-3 text-zinc-400 dark:text-zinc-500 text-sm italic">
+                                <div
+                                    class="flex-1 flex items-center rounded border border-dashed border-zinc-300 dark:border-zinc-600 py-2 px-3 text-zinc-400 dark:text-zinc-500 text-sm italic min-h-[2.5rem]"
+                                    @dragover.prevent="dragOverRace($event, index)"
+                                    @dragleave="dragLeaveRace()"
+                                    @drop.prevent="dropRace($event, index)"
+                                >
                                     Drop here
                                 </div>
                             </template>
