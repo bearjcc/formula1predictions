@@ -94,7 +94,7 @@ If deploy fails during `php artisan migrate` with a MySQL syntax error on `infor
 | **APP_KEY** | Must be set. Run `php artisan key:generate --show` locally and add to Railway Variables. |
 | **Database** | MySQL vars (`DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`) must point to your Railway MySQL service. Use `${{MySQL.MYSQLHOST}}` etc. if using variable references. |
 | **APP_DEBUG** | Keep `false` in production. Turn on temporarily only to capture error details, then turn off. |
-| **Build vs runtime env** | `nixpacks.toml` runs `config:cache` at build time. Railway build may not have access to secrets. The start command runs `config:cache` again at runtime—ensure all required vars are in Railway Variables (not just in a local `.env`). |
+| **Build vs runtime env** | Railway uses Railpack; the repo's custom `start-container.sh` runs `config:cache` at runtime so `ADMIN_*` and other secrets in Railway Variables are used. Ensure all required vars are in Railway Variables (not just in a local `.env`). |
 
 ### View errors
 
@@ -115,10 +115,11 @@ If deploy fails during `php artisan migrate` with a MySQL syntax error on `infor
 
 ### Quick fix for deploy
 
-Add to `nixpacks.toml` start command (before `serve`):
+Add to `start-container.sh` (after the existing `f1:ensure-season-data` line, before `optimize:clear`):
 
 ```
-php artisan f1:ensure-season-data 2025 && php artisan f1:ensure-season-data 2026
+php artisan f1:ensure-season-data 2025
+php artisan f1:ensure-season-data 2026
 ```
 
 (adjust years as needed)

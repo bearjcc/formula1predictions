@@ -18,7 +18,7 @@
 
 **Production env**
 
-- `ADMIN_EMAIL` set; run admin seeder or EnsureAdminUser so an admin exists.
+- `ADMIN_EMAIL` set; on Railway, the custom `start-container.sh` (Railpack) runs `app:ensure-admin-user` at startup; otherwise run admin seeder or `php artisan app:ensure-admin-user`.
 - Queue worker: separate process (e.g. Railway service or Supervisor) running `php artisan queue:work`.
 - Cron/scheduler: `schedule:run` via Railway cron or `railway/run-cron.sh` loop.
 - Mail: production mail driver and `MAIL_FROM_*` so verification and feedback emails send (not just log).

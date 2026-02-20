@@ -46,19 +46,14 @@ php artisan app:promote-admin
 
 ### Railway / Production Deployment
 
-Set these environment variables in Railway secrets:
+Set these environment variables in Railway:
 ```
 ADMIN_EMAIL=your-admin@example.com
 ADMIN_PASSWORD=your-secure-password-here
 ADMIN_NAME=Your Name
 ```
 
-Then run the seeder (this can be done in Railway's deploy hooks):
-```bash
-php artisan db:seed --class=AdminSeeder
-```
-
-The seeder will create or update the admin user automatically. **Important:** Change your password after first login.
+The custom `start-container.sh` (used by Railpack on deploy) runs `app:ensure-admin-user` at startup, which creates or updates the admin user from these variables. **Important:** Change your password after first login.
 
 ### Demo bots (testing / demonstration)
 
@@ -148,7 +143,9 @@ GitHub Actions runs on push and pull request to `main` and `master` (see [.githu
 
 ## Railway deployment
 
-- **Web:** Default start command (e.g. `php artisan serve` or your process) runs the app; `f1:ensure-season-data` runs at startup to preload current season data if missing.
+Deployment uses [Railpack](https://railpack.com/) (PHP/FrankenPHP). A custom `start-container.sh` in the repo root runs migrate, `config:cache`, `app:ensure-admin-user`, `f1:ensure-season-data`, then starts the server.
+
+- **Web:** Railpack runs the app via the custom start script; admin user creation and season data preload run at startup.
 - **Queue worker:** Run as a **separate Railway service** with start command `php artisan queue:work`. Do not run the worker in the same process as the web app.
 - **Cron / scheduler:** Either (1) a dedicated service running `./railway/run-cron.sh` (loop: `schedule:run` every 60s), or (2) Railway’s cron feature pointing at a URL or command that runs the scheduler. See [railway/run-cron.sh](railway/run-cron.sh).
 - **Email:** For production, configure a mail driver and `MAIL_FROM_ADDRESS` (and `MAIL_FROM_NAME`) so verification and other transactional emails are sent; otherwise they are logged (`MAIL_MAILER=log`).
