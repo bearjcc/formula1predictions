@@ -24,7 +24,7 @@ test('team detail page displays real team data', function () {
         'team_principal' => 'Christian Horner',
     ]);
 
-    $response = $this->get('/team/red-bull-racing');
+    $response = $this->get('/constructor/red-bull-racing');
 
     $response->assertOk();
     $response->assertSee('Red Bull Racing');
@@ -44,7 +44,7 @@ test('team detail page shows associated drivers', function () {
         'driver_number' => 16,
     ]);
 
-    $response = $this->get('/team/ferrari');
+    $response = $this->get('/constructor/ferrari');
 
     $response->assertOk();
     $response->assertSee('Charles Leclerc');
@@ -52,7 +52,7 @@ test('team detail page shows associated drivers', function () {
 });
 
 test('team detail page returns 404 for non-existent slug', function () {
-    $response = $this->get('/team/non-existent-team');
+    $response = $this->get('/constructor/non-existent-team');
     $response->assertNotFound();
 });
 
@@ -219,7 +219,7 @@ test('team detail page does not show hardcoded Red Bull data for other teams', f
         'nationality' => 'British',
     ]);
 
-    $response = $this->get('/team/mclaren');
+    $response = $this->get('/constructor/mclaren');
 
     $response->assertOk();
     $response->assertSee('McLaren');

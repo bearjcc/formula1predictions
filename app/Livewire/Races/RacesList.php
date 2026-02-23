@@ -97,6 +97,21 @@ class RacesList extends Component
         $this->redirect(route('predict.create', ['race_id' => $race->id]));
     }
 
+    /**
+     * Preseason prediction deadline and first race name for the current year.
+     *
+     * @return array{deadline: \Carbon\Carbon|null, first_race_name: string|null}
+     */
+    public function getPreseasonInfoProperty(): array
+    {
+        $firstRace = Races::getFirstRaceOfSeason($this->year);
+
+        return [
+            'deadline' => Races::getPreseasonDeadlineForSeason($this->year),
+            'first_race_name' => $firstRace?->race_name,
+        ];
+    }
+
     /** @return array{past: array, next: array|null, future: array} */
     public function getGroupedRacesProperty(): array
     {

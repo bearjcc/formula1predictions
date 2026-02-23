@@ -28,7 +28,7 @@ test('home page card links resolve to valid routes', function () {
     $response->assertSee(route('races', ['year' => $year]), false);
     $response->assertSee(route('standings', ['year' => $year]), false);
     $response->assertSee(route('standings.predictions', ['year' => $year]), false);
-    $response->assertSee(route('standings.teams', ['year' => $year]), false);
+    $response->assertSee(route('standings.constructors', ['year' => $year]), false);
     $response->assertSee(route('standings.drivers', ['year' => $year]), false);
     // Countries card intentionally hidden (F1-106)
 });

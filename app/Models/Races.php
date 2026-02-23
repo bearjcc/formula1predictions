@@ -267,6 +267,25 @@ class Races extends Model
     }
 
     /**
+     * Preseason prediction deadline for a season: same as the first race's prediction deadline.
+     * Returns null if no first race or no qualifying_start.
+     */
+    public static function getPreseasonDeadlineForSeason(int $season): ?\Carbon\Carbon
+    {
+        $firstRace = static::where('season', $season)->orderBy('round')->first();
+
+        return $firstRace?->getRacePredictionDeadline();
+    }
+
+    /**
+     * First race of the season (by round). Used for preseason deadline and display.
+     */
+    public static function getFirstRaceOfSeason(int $season): ?self
+    {
+        return static::where('season', $season)->orderBy('round')->first();
+    }
+
+    /**
      * Get the race results as an array.
      */
     public function getResultsArray(): array

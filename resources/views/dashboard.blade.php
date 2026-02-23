@@ -64,6 +64,22 @@
         {{-- Upcoming Races --}}
         <x-mary-card class="lg:col-span-2 p-6">
             <h3 class="text-heading-3 mb-4">Upcoming Races</h3>
+            @if($preseasonDeadline && !$hasPreseasonPrediction)
+                <div class="mb-4 p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg flex items-center justify-between gap-3">
+                    <div>
+                        <h4 class="font-semibold">Preseason prediction</h4>
+                        <p class="text-sm text-auto-muted mt-1">
+                            Due at same time as first race.
+                            @if($firstRace)
+                                Closes {{ $preseasonDeadline->diffForHumans() }}
+                            @endif
+                        </p>
+                    </div>
+                    <x-mary-button variant="outline" size="sm" icon="o-pencil-square" link="{{ route('predict.preseason', ['year' => $season]) }}" wire:navigate>
+                        Make prediction
+                    </x-mary-button>
+                </div>
+            @endif
             @if($upcomingRaces->isNotEmpty())
                 <div class="space-y-4">
                     @foreach($upcomingRaces as $race)
@@ -152,7 +168,7 @@
                             <x-mary-icon name="{{ $prediction->status === 'scored' ? 'o-check' : 'o-clock' }}" class="w-5 h-5 {{ $prediction->status === 'scored' ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400' }}" />
                         </div>
                         <div class="flex-1">
-                            <h4 class="font-semibold">{{ ucfirst($prediction->type) }} - {{ $prediction->race?->race_name ?? 'Unknown race' }}</h4>
+                            <h4 class="font-semibold">{{ ucfirst($prediction->type) }} - {{ $prediction->race?->race_name ?? ($prediction->type === 'preseason' ? $prediction->season . ' Season' : 'Unknown race') }}</h4>
                             <p class="text-sm text-auto-muted">
                                 {{ $prediction->season }} Season
                                 @if($prediction->status === 'scored' && $prediction->score !== null)

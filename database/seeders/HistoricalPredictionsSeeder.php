@@ -142,15 +142,15 @@ class HistoricalPredictionsSeeder extends Seeder
             }
 
             // Process driver names (for race predictions)
-            if ($currentRace && ! in_array($currentSection, ['team championship order', 'superlatives', 'drivers', 'teammates', 'driver championship', 'teams', 'predictions'])) {
+            if ($currentRace && ! in_array($currentSection, ['team championship order', 'constructor championship order', 'superlatives', 'drivers', 'teammates', 'driver championship', 'teams', 'predictions'])) {
                 $driverName = $this->normalizeDriverName($line);
                 if ($driverName) {
                     $driverOrder[] = $driverName;
                 }
             }
 
-            // Process preseason sections
-            if ($currentSection === 'team championship order') {
+            // Process preseason sections (accept both F1 terms)
+            if ($currentSection === 'team championship order' || $currentSection === 'constructor championship order') {
                 $teamName = $this->normalizeTeamName($line);
                 if ($teamName) {
                     $teamOrder[] = $teamName;

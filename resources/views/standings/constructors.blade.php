@@ -1,7 +1,6 @@
-<x-layouts.layout :title="$year . ' Team Standings'" :headerSubtitle="'Current constructor championship standings for the ' . $year . ' Formula 1 season'">
+<x-layouts.layout :title="$year . ' Constructor Standings'" :headerSubtitle="'Current constructor championship standings for the ' . $year . ' Formula 1 season'">
     <x-standings-tabs :year="$year" />
 
-    <!-- Team Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
             <h3 class="text-heading-3">Constructor Championship Standings</h3>
@@ -15,7 +14,7 @@
                             Position
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            Team
+                            Constructor
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                             Drivers
@@ -92,7 +91,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                                {{ __('No team standings data for this season yet. Standings are updated from our database after each race.') }}
+                                {{ __('No constructor standings data for this season yet. Standings are updated from our database after each race.') }}
                             </td>
                         </tr>
                     @endforelse

@@ -91,10 +91,10 @@ describe('non-year-specific routes return 200', function () {
         $this->get('/countries')->assertOk();
     });
 
-    it('route /team/{slug} responds with 200', function () {
+    it('route /constructor/{slug} responds with 200', function () {
         /** @var \Tests\TestCase $this */
         \App\Models\Teams::factory()->create(['team_name' => 'Mercedes']);
-        $this->get('/team/mercedes')->assertOk();
+        $this->get('/constructor/mercedes')->assertOk();
     });
 
     it('route /driver/{slug} responds with 200', function () {
@@ -141,7 +141,7 @@ describe('route naming works correctly', function () {
         expect(route('races', ['year' => '2023']))->toContain('/2023/races');
         expect(route('standings', ['year' => '2023']))->toContain('/2023/standings');
         expect(route('standings.drivers', ['year' => '2023']))->toContain('/2023/standings/drivers');
-        expect(route('standings.teams', ['year' => '2023']))->toContain('/2023/standings/teams');
+        expect(route('standings.constructors', ['year' => '2023']))->toContain('/2023/standings/constructors');
         expect(route('standings.predictions', ['year' => '2023']))->toContain('/2023/standings/predictions');
         expect(route('standings.predictions.user', ['year' => '2023', 'username' => 'bearjcc']))->toContain('/2023/standings/predictions/bearjcc');
         expect(route('race', ['year' => '2023', 'id' => '123']))->toContain('/2023/race/123');
@@ -150,7 +150,7 @@ describe('route naming works correctly', function () {
     it('can generate correct URLs for non-year-specific routes', function () {
         expect(route('scoring'))->toContain('/scoring');
         expect(route('countries'))->toContain('/countries');
-        expect(route('team', ['slug' => 'mercedes']))->toContain('/team/mercedes');
+        expect(route('constructor', ['slug' => 'mercedes']))->toContain('/constructor/mercedes');
         expect(route('driver', ['slug' => 'lewis-hamilton']))->toContain('/driver/lewis-hamilton');
         expect(route('circuit', ['slug' => 'silverstone']))->toContain('/circuit/silverstone');
         expect(route('country', ['slug' => 'belgium']))->toContain('/country/belgium');

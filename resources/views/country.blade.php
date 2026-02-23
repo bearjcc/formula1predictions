@@ -28,7 +28,7 @@
                     </div>
                     <div class="text-center">
                         <h3 class="text-xl font-bold text-green-600 dark:text-green-400">{{ $country->teams_count ?? 0 }}</h3>
-                        <p class="text-sm text-zinc-600 dark:text-zinc-400">Teams</p>
+                        <p class="text-sm text-zinc-600 dark:text-zinc-400">Constructors</p>
                     </div>
                     <div class="text-center">
                         <h3 class="text-xl font-bold text-green-600 dark:text-green-400">{{ $country->circuits_count ?? 0 }}</h3>
@@ -62,7 +62,7 @@
                     <p class="font-medium">{{ $country->drivers_count ?? 0 }}</p>
                 </div>
                 <div class="flex justify-between">
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Teams</p>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Constructors</p>
                     <p class="font-medium">{{ $country->teams_count ?? 0 }}</p>
                 </div>
                 <div class="flex justify-between">
@@ -86,7 +86,7 @@
                         </div>
                         <div class="flex-1">
                             <h4 class="font-semibold">{{ $driver->full_name }}</h4>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $driver->team?->team_name ?? 'No team' }}</p>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $driver->team?->team_name ?? 'No constructor' }}</p>
                         </div>
                         <a href="{{ route('driver', $driver->slug) }}">
                             <x-mary-button variant="outline" size="sm" icon="o-eye">

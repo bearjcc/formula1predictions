@@ -90,17 +90,20 @@ class NotificationService
 
     /**
      * Send preseason prediction deadline reminder to all users.
+     * Uses the first race of the season when available so the reminder matches that deadline.
      */
     public function sendPreseasonDeadlineReminder(int $season): void
     {
         $users = User::all();
 
-        // Create a dummy race object for the notification
-        $race = new Races([
-            'season' => $season,
-            'race_name' => "{$season} Season",
-            'round' => 0,
-        ]);
+        $race = Races::getFirstRaceOfSeason($season);
+        if ($race === null) {
+            $race = new Races([
+                'season' => $season,
+                'race_name' => "{$season} Season",
+                'round' => 0,
+            ]);
+        }
 
         Notification::send($users, new PredictionDeadlineReminder($race, 'preseason'));
     }

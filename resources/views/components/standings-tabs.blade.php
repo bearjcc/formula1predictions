@@ -12,10 +12,10 @@
                wire:navigate>
                 {{ __('Driver Standings') }}
             </a>
-            <a href="{{ route('standings.teams', ['year' => $year]) }}"
-               class="{{ $tabClass }} {{ request()->routeIs('standings.teams') ? $activeClass : $inactiveClass }}"
+            <a href="{{ route('standings.constructors', ['year' => $year]) }}"
+               class="{{ $tabClass }} {{ request()->routeIs('standings.constructors') ? $activeClass : $inactiveClass }}"
                wire:navigate>
-                {{ __('Team Standings') }}
+                {{ __('Constructor Standings') }}
             </a>
             <a href="{{ route('standings.predictions', ['year' => $year]) }}"
                class="{{ $tabClass }} {{ request()->routeIs('standings.predictions*') ? $activeClass : $inactiveClass }}"

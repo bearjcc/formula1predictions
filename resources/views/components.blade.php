@@ -175,7 +175,7 @@
                                 </a>
                                 <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                                     <x-mary-icon name="o-users" class="w-4 h-4" />
-                                    <span>Team</span>
+                                    <span>Constructor</span>
                                 </a>
                             </div>
                         </div>

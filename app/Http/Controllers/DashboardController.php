@@ -23,6 +23,12 @@ class DashboardController extends Controller
         $leaderboard = $this->getLeaderboardTop($season, 5);
         $recentPredictions = $this->getRecentPredictions($user, 5);
         $userRank = $this->getUserRank($user, $season);
+        $preseasonDeadline = Races::getPreseasonDeadlineForSeason($season);
+        $firstRace = Races::getFirstRaceOfSeason($season);
+        $hasPreseasonPrediction = $user->predictions()
+            ->where('season', $season)
+            ->where('type', 'preseason')
+            ->exists();
 
         return view('dashboard', compact(
             'stats',
@@ -30,7 +36,10 @@ class DashboardController extends Controller
             'leaderboard',
             'recentPredictions',
             'userRank',
-            'season'
+            'season',
+            'preseasonDeadline',
+            'firstRace',
+            'hasPreseasonPrediction'
         ));
     }
 

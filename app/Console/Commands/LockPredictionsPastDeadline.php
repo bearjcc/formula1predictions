@@ -3,13 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Models\Prediction;
+use App\Models\Races;
 use Illuminate\Console\Command;
 
 class LockPredictionsPastDeadline extends Command
 {
     protected $signature = 'predictions:lock-past-deadline';
 
-    protected $description = 'Lock all submitted race/sprint predictions past their deadline (1 hour before qualifying/sprint qualifying).';
+    protected $description = 'Lock all submitted race/sprint/preseason predictions past their deadline.';
 
     public function handle(): int
     {
@@ -38,6 +39,18 @@ class LockPredictionsPastDeadline extends Command
             if ($pastDeadline && $prediction->lock()) {
                 $locked++;
                 $this->line("Locked prediction {$prediction->id} ({$prediction->type}) for race {$race->race_name}");
+            }
+        }
+
+        $preseasonSubmitted = Prediction::where('status', 'submitted')
+            ->where('type', 'preseason')
+            ->get();
+
+        foreach ($preseasonSubmitted as $prediction) {
+            $deadline = Races::getPreseasonDeadlineForSeason($prediction->season);
+            if ($deadline !== null && $now->gte($deadline) && $prediction->lock()) {
+                $locked++;
+                $this->line("Locked preseason prediction {$prediction->id} for season {$prediction->season}");
             }
         }
 

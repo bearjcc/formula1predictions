@@ -1138,22 +1138,12 @@ test('savePredictionScore updates core fields consistently', function () {
     expect($prediction->scored_at)->not->toBeNull();
 });
 
-test('preseason prediction perfect score when order matches final standings', function () {
+test('preseason prediction constructor order uses preseason points table', function () {
     $user = User::factory()->create();
     $season = 2024;
-    $d1 = Drivers::factory()->create(['driver_id' => 'preseason_d1']);
-    $d2 = Drivers::factory()->create(['driver_id' => 'preseason_d2']);
     $t1 = Teams::factory()->create(['team_id' => 'preseason_t1']);
     $t2 = Teams::factory()->create(['team_id' => 'preseason_t2']);
 
-    Standings::factory()->create([
-        'season' => $season, 'type' => 'drivers', 'round' => null,
-        'entity_id' => 'preseason_d1', 'position' => 1,
-    ]);
-    Standings::factory()->create([
-        'season' => $season, 'type' => 'drivers', 'round' => null,
-        'entity_id' => 'preseason_d2', 'position' => 2,
-    ]);
     Standings::factory()->create([
         'season' => $season, 'type' => 'constructors', 'round' => null,
         'entity_id' => 'preseason_t1', 'position' => 1,
@@ -1169,7 +1159,6 @@ test('preseason prediction perfect score when order matches final standings', fu
         'season' => $season,
         'prediction_data' => [
             'team_order' => [$t1->id, $t2->id],
-            'driver_championship' => [$d1->id, $d2->id],
         ],
         'status' => 'submitted',
     ]);
@@ -1177,25 +1166,24 @@ test('preseason prediction perfect score when order matches final standings', fu
     $service = app(ScoringService::class);
     $score = $service->calculateChampionshipPredictionScore($prediction, $season);
 
-    expect($score)->toBe(150);
+    expect($score)->toBe(20);
 });
 
-test('preseason prediction partial score when order differs', function () {
+test('preseason prediction constructor diff 1 gives 8 points per position', function () {
     $user = User::factory()->create();
     $season = 2024;
-    $d1 = Drivers::factory()->create(['driver_id' => 'ps_d1']);
-    $d2 = Drivers::factory()->create(['driver_id' => 'ps_d2']);
+    $t1 = Teams::factory()->create(['team_id' => 'ps_t1']);
+    $t2 = Teams::factory()->create(['team_id' => 'ps_t2']);
 
-    Standings::factory()->create(['season' => $season, 'type' => 'drivers', 'round' => null, 'entity_id' => 'ps_d1', 'position' => 1]);
-    Standings::factory()->create(['season' => $season, 'type' => 'drivers', 'round' => null, 'entity_id' => 'ps_d2', 'position' => 2]);
+    Standings::factory()->create(['season' => $season, 'type' => 'constructors', 'round' => null, 'entity_id' => 'ps_t1', 'position' => 2]);
+    Standings::factory()->create(['season' => $season, 'type' => 'constructors', 'round' => null, 'entity_id' => 'ps_t2', 'position' => 1]);
 
     $prediction = Prediction::factory()->create([
         'user_id' => $user->id,
         'type' => 'preseason',
         'season' => $season,
         'prediction_data' => [
-            'team_order' => [],
-            'driver_championship' => [$d2->id, $d1->id],
+            'team_order' => [$t1->id, $t2->id],
         ],
         'status' => 'submitted',
     ]);
@@ -1203,14 +1191,12 @@ test('preseason prediction partial score when order differs', function () {
     $service = app(ScoringService::class);
     $score = $service->calculateChampionshipPredictionScore($prediction, $season);
 
-    expect($score)->toBe(36);
+    expect($score)->toBe(16);
 });
 
 test('scoreChampionshipPredictions bulk scores preseason predictions', function () {
     $user = User::factory()->create();
     $season = 2024;
-    $d1 = Drivers::factory()->create(['driver_id' => 'bulk_d1']);
-    Standings::factory()->create(['season' => $season, 'type' => 'drivers', 'round' => null, 'entity_id' => 'bulk_d1', 'position' => 1]);
     $t1 = Teams::factory()->create(['team_id' => 'bulk_t1']);
     Standings::factory()->create(['season' => $season, 'type' => 'constructors', 'round' => null, 'entity_id' => 'bulk_t1', 'position' => 1]);
 
@@ -1220,7 +1206,6 @@ test('scoreChampionshipPredictions bulk scores preseason predictions', function 
         'season' => $season,
         'prediction_data' => [
             'team_order' => [$t1->id],
-            'driver_championship' => [$d1->id],
         ],
         'status' => 'submitted',
     ]);
@@ -1230,4 +1215,87 @@ test('scoreChampionshipPredictions bulk scores preseason predictions', function 
 
     expect($results['scored_predictions'])->toBe(1);
     expect($results['failed_predictions'])->toBe(0);
+});
+
+test('preseason teammate battle correct adds 5 points', function () {
+    $user = User::factory()->create();
+    $season = 2024;
+    $t1 = Teams::factory()->create(['team_id' => 'tb_t1']);
+    $d1 = Drivers::factory()->create(['driver_id' => 'tb_d1', 'team_id' => $t1->id]);
+    $d2 = Drivers::factory()->create(['driver_id' => 'tb_d2', 'team_id' => $t1->id]);
+
+    Standings::factory()->create(['season' => $season, 'type' => 'constructors', 'round' => null, 'entity_id' => 'tb_t1', 'position' => 1]);
+    Standings::factory()->create(['season' => $season, 'type' => 'drivers', 'round' => null, 'entity_id' => 'tb_d1', 'position' => 1]);
+    Standings::factory()->create(['season' => $season, 'type' => 'drivers', 'round' => null, 'entity_id' => 'tb_d2', 'position' => 2]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'preseason',
+        'season' => $season,
+        'prediction_data' => [
+            'team_order' => [$t1->id],
+            'teammate_battles' => [$t1->id => $d1->id],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculateChampionshipPredictionScore($prediction, $season);
+
+    expect($score)->toBe(15);
+});
+
+test('preseason red flags and safety cars score by error when actuals set', function () {
+    $user = User::factory()->create();
+    $season = 2024;
+    config(['f1.season_actuals' => [2024 => ['red_flags' => 10, 'safety_cars' => 12]]]);
+    $t1 = Teams::factory()->create(['team_id' => 'rf_t1']);
+    Standings::factory()->create(['season' => $season, 'type' => 'constructors', 'round' => null, 'entity_id' => 'rf_t1', 'position' => 1]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'preseason',
+        'season' => $season,
+        'prediction_data' => [
+            'team_order' => [$t1->id],
+            'red_flags' => 10,
+            'safety_cars' => 11,
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculateChampionshipPredictionScore($prediction, $season);
+
+    expect($score)->toBeGreaterThanOrEqual(25);
+});
+
+test('midseason prediction still uses driver and team order with perfect bonus', function () {
+    $user = User::factory()->create();
+    $season = 2024;
+    $d1 = Drivers::factory()->create(['driver_id' => 'mid_d1']);
+    $d2 = Drivers::factory()->create(['driver_id' => 'mid_d2']);
+    $t1 = Teams::factory()->create(['team_id' => 'mid_t1']);
+    $t2 = Teams::factory()->create(['team_id' => 'mid_t2']);
+
+    Standings::factory()->create(['season' => $season, 'type' => 'drivers', 'round' => null, 'entity_id' => 'mid_d1', 'position' => 1]);
+    Standings::factory()->create(['season' => $season, 'type' => 'drivers', 'round' => null, 'entity_id' => 'mid_d2', 'position' => 2]);
+    Standings::factory()->create(['season' => $season, 'type' => 'constructors', 'round' => null, 'entity_id' => 'mid_t1', 'position' => 1]);
+    Standings::factory()->create(['season' => $season, 'type' => 'constructors', 'round' => null, 'entity_id' => 'mid_t2', 'position' => 2]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'midseason',
+        'season' => $season,
+        'prediction_data' => [
+            'team_order' => [$t1->id, $t2->id],
+            'driver_championship' => [$d1->id, $d2->id],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculateChampionshipPredictionScore($prediction, $season);
+
+    expect($score)->toBeGreaterThanOrEqual(100);
 });

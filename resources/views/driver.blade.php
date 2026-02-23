@@ -76,9 +76,9 @@
             </div>
         </x-mary-card>
 
-        <!-- Current Team -->
+        <!-- Constructor -->
         <x-mary-card>
-            <h3 class="text-xl font-bold mb-4">Current Team</h3>
+            <h3 class="text-xl font-bold mb-4">Constructor</h3>
             @if($driver->team)
                 <div class="flex items-center space-x-4">
                     <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
@@ -92,14 +92,14 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ route('team', $driver->team->slug) }}">
+                    <a href="{{ route('constructor', $driver->team->slug) }}">
                         <x-mary-button variant="outline" size="sm" icon="o-eye">
-                            View Team
+                            View Constructor
                         </x-mary-button>
                     </a>
                 </div>
             @else
-                <p class="text-zinc-500 dark:text-zinc-400">No team assigned.</p>
+                <p class="text-zinc-500 dark:text-zinc-400">No constructor assigned.</p>
             @endif
         </x-mary-card>
     </div>

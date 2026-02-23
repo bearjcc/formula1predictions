@@ -81,6 +81,12 @@ class Prediction extends Model
             return $this->race->allowsPredictions();
         }
 
+        if ($this->type === 'preseason') {
+            $deadline = Races::getPreseasonDeadlineForSeason($this->season);
+
+            return $deadline !== null && now()->lt($deadline);
+        }
+
         return true;
     }
 
@@ -211,11 +217,11 @@ class Prediction extends Model
     }
 
     /**
-     * Get predicted team order for preseason/midseason.
+     * Get predicted constructor order for preseason/midseason.
      *
      * @return list<int>
      */
-    public function getTeamOrder(): array
+    public function getConstructorOrder(): array
     {
         $raw = $this->getPredictionDataArray()['team_order'] ?? [];
 
@@ -232,5 +238,46 @@ class Prediction extends Model
         $raw = $this->getPredictionDataArray()['driver_championship'] ?? [];
 
         return is_array($raw) ? array_map('intval', array_values($raw)) : [];
+    }
+
+    /**
+     * Get teammate battle predictions for preseason: team_id => driver_id (predicted to finish higher).
+     *
+     * @return array<int, int>
+     */
+    public function getTeammateBattles(): array
+    {
+        $raw = $this->getPredictionDataArray()['teammate_battles'] ?? [];
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($raw as $teamId => $driverId) {
+            $out[(int) $teamId] = (int) $driverId;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Get predicted number of red flags for the season (preseason). Null if not set.
+     */
+    public function getRedFlags(): ?int
+    {
+        $v = $this->getPredictionDataArray()['red_flags'] ?? null;
+
+        return $v === null ? null : (int) $v;
+    }
+
+    /**
+     * Get predicted number of safety cars for the season (preseason). Null if not set.
+     */
+    public function getSafetyCars(): ?int
+    {
+        $v = $this->getPredictionDataArray()['safety_cars'] ?? null;
+
+        return $v === null ? null : (int) $v;
     }
 }

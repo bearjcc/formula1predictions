@@ -14,12 +14,12 @@ Single reference for how the app is wired (routes, views, Livewire) and which fi
 | `GET /{year}/races` | Closure | `races` (contains `@livewire('races.races-list')`) |
 | `GET /{year}/standings` | Closure | `standings` |
 | `GET /{year}/standings/drivers` | Closure | `standings.drivers` |
-| `GET /{year}/standings/teams` | Closure | `standings.teams` |
+| `GET /{year}/standings/constructors` | Closure | `standings.constructors` |
 | `GET /{year}/standings/predictions` | Closure | `standings.predictions` (contains `<livewire:global-leaderboard>`) |
 | `GET /{year}/standings/predictions/{username}` | Closure | `standings.predictions` |
 | `GET /{year}/race/{id}` | Closure | `race` |
 | `GET /countries` | `App\Livewire\Pages\CountriesIndex` | `livewire.pages.countries-index` |
-| `GET /team/{slug}` | Closure | `team` |
+| `GET /constructor/{slug}` | Closure | `constructor` |
 | `GET /driver/{slug}` | Closure | `driver` |
 | `GET /circuit/{slug}` | Closure | `circuit` |
 | `GET /country/{slug}` | Closure | `country` |

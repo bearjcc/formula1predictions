@@ -149,3 +149,75 @@ test('getSprintPredictionDeadline returns null when sprint_qualifying_start is n
 
     expect($race->getSprintPredictionDeadline())->toBeNull();
 });
+
+test('lock predictions past deadline locks preseason when first race deadline passed', function () {
+    $qualifyingStart = Carbon::now()->addMinutes(20);
+    Races::factory()->create([
+        'season' => 2025,
+        'round' => 1,
+        'date' => Carbon::now()->addDays(1),
+        'status' => 'upcoming',
+        'qualifying_start' => $qualifyingStart,
+    ]);
+
+    $preseason = Prediction::factory()->create([
+        'user_id' => $this->user->id,
+        'type' => 'preseason',
+        'season' => 2025,
+        'race_id' => null,
+        'race_round' => null,
+        'status' => 'submitted',
+    ]);
+
+    $this->artisan('predictions:lock-past-deadline')
+        ->assertSuccessful();
+
+    $preseason->refresh();
+    expect($preseason->status)->toBe('locked');
+});
+
+test('preseason prediction is not editable when first race deadline passed', function () {
+    $deadline = Carbon::now()->subHour();
+    $qualifyingStart = $deadline->copy()->addHour();
+    Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'date' => Carbon::now()->addDay(),
+        'status' => 'upcoming',
+        'qualifying_start' => $qualifyingStart,
+    ]);
+
+    $preseason = Prediction::factory()->create([
+        'user_id' => $this->user->id,
+        'type' => 'preseason',
+        'season' => 2026,
+        'status' => 'submitted',
+    ]);
+
+    Carbon::setTestNow($deadline->copy()->addMinute());
+    expect($preseason->fresh()->isEditable())->toBeFalse();
+    Carbon::setTestNow();
+});
+
+test('preseason prediction is editable when before first race deadline', function () {
+    $deadline = Carbon::now()->addHours(2);
+    $qualifyingStart = $deadline->copy()->addHour();
+    Races::factory()->create([
+        'season' => 2027,
+        'round' => 1,
+        'date' => Carbon::now()->addDays(2),
+        'status' => 'upcoming',
+        'qualifying_start' => $qualifyingStart,
+    ]);
+
+    $preseason = Prediction::factory()->create([
+        'user_id' => $this->user->id,
+        'type' => 'preseason',
+        'season' => 2027,
+        'status' => 'submitted',
+    ]);
+
+    Carbon::setTestNow($deadline->copy()->subMinute());
+    expect($preseason->fresh()->isEditable())->toBeTrue();
+    Carbon::setTestNow();
+});

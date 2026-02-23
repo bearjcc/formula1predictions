@@ -65,10 +65,28 @@
 
         <x-mary-card class="mb-8">
             <h2 class="text-heading-2 mb-4">Season (preseason &amp; midseason)</h2>
-            <p class="text-sm text-auto-muted mb-2">Driver and constructor championship order vs final standings. Same diff table as race (0→25 … 9→1, 10→0, 11+ negative).</p>
-            <ul class="text-sm text-auto-muted space-y-1 list-disc list-inside">
-                <li>Perfect season (every driver and team exact): +50.</li>
+            <p class="text-sm text-auto-muted mb-3">Preseason is due at the same time as the first race prediction (1 hour before first qualifying).</p>
+            <h3 class="text-lg font-semibold mb-2">Preseason</h3>
+            <p class="text-sm text-auto-muted mb-2">Constructor championship order (position diff vs final standings):</p>
+            <div class="overflow-x-auto mb-4 max-w-xs">
+                <table class="w-full text-sm border border-zinc-200 dark:border-zinc-600 rounded-lg overflow-hidden">
+                    <thead class="bg-zinc-100 dark:bg-zinc-800">
+                        <tr><th class="px-3 py-2 text-left font-semibold">Diff</th><th class="px-3 py-2 text-left font-semibold">Points</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-600 text-auto-muted">
+                        @foreach([0=>10, 1=>8, 2=>6, 3=>4, 4=>2, 5=>0, 6=>-2, 7=>-4, 8=>-6, 9=>-8, 10=>-10] as $d => $pts)
+                        <tr><td class="px-3 py-2">{{ $d }}</td><td class="px-3 py-2">{{ $pts }}</td></tr>
+                        @endforeach
+                        <tr><td class="px-3 py-2">10+</td><td class="px-3 py-2">-10</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <ul class="text-sm text-auto-muted space-y-1 list-disc list-inside mb-4">
+                <li>Teammate battles: for each constructor, pick who finishes higher in the championship. +5 per correct.</li>
+                <li>Red flags (season total) and safety cars (season total): points by prediction error: diff 0 = 15, diff 1 = 10, diff 2 = 5, diff 3+ = 0. Actuals set by admin at season end.</li>
             </ul>
+            <h3 class="text-lg font-semibold mb-2">Midseason</h3>
+            <p class="text-sm text-auto-muted mb-2">Driver and constructor championship order vs final standings. Same diff table as race (0→25 … 10→0, 11+ negative). Perfect season (every driver and constructor exact): +50.</p>
         </x-mary-card>
 
         <x-mary-card>

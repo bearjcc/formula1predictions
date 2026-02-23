@@ -427,8 +427,8 @@ class HtmlToMarkdown2023Converter
     {
         $markdown = "## Preseason\n\n";
 
-        // Team Championship Order
-        $markdown .= "### Team Championship Order\n";
+        // Constructor Championship Order
+        $markdown .= "### Constructor Championship Order\n";
         foreach ($data['team_championship_order'] as $team) {
             $markdown .= "{$team}\n";
         }

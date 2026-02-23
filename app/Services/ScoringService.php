@@ -214,7 +214,8 @@ class ScoringService
 
     /**
      * Calculate score for a preseason or midseason championship prediction.
-     * Uses same position-diff table as race scoring. Scored against final season standings.
+     * Preseason: constructor order (preseason points table), teammate battles (+5 each), red flags/safety cars (if actuals set).
+     * Midseason: team + driver order (race position table), +50 perfect bonus.
      */
     public function calculateChampionshipPredictionScore(Prediction $prediction, int $season): int
     {
@@ -222,14 +223,33 @@ class ScoringService
             return 0;
         }
 
-        $driverStandings = Standings::getDriverStandings($season, null);
         $constructorStandings = Standings::getConstructorStandings($season, null);
+
+        if ($prediction->type === 'preseason') {
+            $score = $this->scorePreseasonConstructorOrder(
+                $prediction->getConstructorOrder(),
+                $constructorStandings
+            );
+            $score += $this->scoreTeammateBattles($prediction->getTeammateBattles(), $season);
+            $actuals = config("f1.season_actuals.{$season}", []);
+            $score += $this->scoreCountPrediction(
+                $prediction->getRedFlags(),
+                $actuals['red_flags'] ?? null
+            );
+            $score += $this->scoreCountPrediction(
+                $prediction->getSafetyCars(),
+                $actuals['safety_cars'] ?? null
+            );
+
+            return $score;
+        }
+
+        $driverStandings = Standings::getDriverStandings($season, null);
 
         if ($driverStandings->isEmpty() && $constructorStandings->isEmpty()) {
             return 0;
         }
 
-        // Pre-load lookup maps to avoid N+1 queries inside scoreChampionshipOrder
         $driverLookup = Drivers::pluck('driver_id', 'id');
         $teamLookup = Teams::pluck('team_id', 'id');
 
@@ -240,7 +260,7 @@ class ScoringService
         );
 
         $teamScore = $this->scoreChampionshipOrder(
-            $prediction->getTeamOrder(),
+            $prediction->getConstructorOrder(),
             $constructorStandings,
             fn (int $localId) => $teamLookup[$localId] ?? null
         );
@@ -254,6 +274,133 @@ class ScoringService
         }
 
         return $score;
+    }
+
+    /**
+     * Preseason constructor order: diff 0->10, 1->8, 2->6, 3->4, 4->2, 5->0, 6->-2, 7->-4, 8->-6, 9->-8, 10->-10, 10+ -> -10.
+     */
+    private function getPreseasonConstructorPositionScore(int $diff): int
+    {
+        return match (min($diff, 10)) {
+            0 => 10,
+            1 => 8,
+            2 => 6,
+            3 => 4,
+            4 => 2,
+            5 => 0,
+            6 => -2,
+            7 => -4,
+            8 => -6,
+            9 => -8,
+            default => -10,
+        };
+    }
+
+    /**
+     * Score preseason constructor order using preseason points table.
+     *
+     * @param  array<int>  $predictedTeamIds
+     * @param  \Illuminate\Database\Eloquent\Collection<int, \App\Models\Standings>  $constructorStandings
+     */
+    private function scorePreseasonConstructorOrder(
+        array $predictedTeamIds,
+        \Illuminate\Database\Eloquent\Collection $constructorStandings
+    ): int {
+        $teamLookup = Teams::pluck('team_id', 'id');
+        $entityToPosition = $constructorStandings->keyBy('entity_id')->map(fn ($s) => $s->position - 1)->all();
+        $score = 0;
+
+        foreach ($predictedTeamIds as $position => $localId) {
+            $entityId = $teamLookup[$localId] ?? null;
+            if ($entityId === null) {
+                continue;
+            }
+
+            $actualPosition = $entityToPosition[$entityId] ?? null;
+            if ($actualPosition === null) {
+                continue;
+            }
+
+            $diff = abs($position - $actualPosition);
+            $score += $this->getPreseasonConstructorPositionScore($diff);
+        }
+
+        return $score;
+    }
+
+    /**
+     * Score teammate battles: +5 per correct prediction (which driver finishes higher in championship).
+     *
+     * @param  array<int, int>  $teammateBattles  team_id => driver_id (predicted to finish higher)
+     */
+    private function scoreTeammateBattles(array $teammateBattles, int $season): int
+    {
+        if (empty($teammateBattles)) {
+            return 0;
+        }
+
+        $driverStandings = Standings::getDriverStandings($season, null);
+        $driverIdToPosition = [];
+        $driverLookup = Drivers::pluck('driver_id', 'id');
+        foreach ($driverStandings as $row) {
+            $driverIdToPosition[$row->entity_id] = $row->position;
+        }
+
+        $score = 0;
+        $teams = Teams::whereIn('id', array_keys($teammateBattles))->with('drivers')->get();
+
+        foreach ($teams as $team) {
+            $predictedDriverId = $teammateBattles[$team->id] ?? null;
+            if ($predictedDriverId === null) {
+                continue;
+            }
+
+            $predictedEntityId = $driverLookup[$predictedDriverId] ?? null;
+            if ($predictedEntityId === null) {
+                continue;
+            }
+
+            $teammateIds = $team->drivers->pluck('id')->all();
+            $teammateEntityIds = $team->drivers->pluck('driver_id', 'id')->all();
+            $positions = [];
+            foreach ($teammateEntityIds as $localId => $entityId) {
+                $pos = $driverIdToPosition[$entityId] ?? null;
+                if ($pos !== null) {
+                    $positions[$localId] = $pos;
+                }
+            }
+
+            if (count($positions) < 2) {
+                continue;
+            }
+
+            $higherLocalId = array_search(min($positions), $positions, true);
+            if ((int) $higherLocalId === (int) $predictedDriverId) {
+                $score += 5;
+            }
+        }
+
+        return $score;
+    }
+
+    /**
+     * Score a count prediction (red flags or safety cars) by error: 0->15, 1->10, 2->5, 3+->0.
+     * Returns 0 if actual is null (not set).
+     */
+    private function scoreCountPrediction(?int $predicted, ?int $actual): int
+    {
+        if ($actual === null || $predicted === null) {
+            return 0;
+        }
+
+        $diff = abs($predicted - $actual);
+
+        return match ($diff) {
+            0 => 15,
+            1 => 10,
+            2 => 5,
+            default => 0,
+        };
     }
 
     /**

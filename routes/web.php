@@ -87,6 +87,16 @@ Route::middleware(['auth'])->group(function () {
         return view('predictions.create-livewire', compact('race'));
     })->name('predict.create');
 
+    Route::get('predict/preseason', function (Request $request) {
+        $year = (int) $request->input('year', config('f1.current_season'));
+
+        return view('predictions.create-livewire', [
+            'race' => null,
+            'preseason' => true,
+            'year' => $year,
+        ]);
+    })->name('predict.preseason');
+
     Route::get('predictions/{prediction}/edit', function ($prediction) {
         return view('predictions.edit-livewire', compact('prediction'));
     })->name('predictions.edit');
@@ -208,8 +218,8 @@ Route::middleware(['validate.year'])->group(function () {
         return view('standings.drivers', ['year' => $season, 'driverRows' => $driverRows]);
     })->name('standings.drivers');
 
-    // team standings
-    Route::get('/{year}/standings/teams', function ($year) {
+    // constructor standings
+    Route::get('/{year}/standings/constructors', function ($year) {
         $season = (int) $year;
         $teamStandings = Standings::getConstructorStandings($season, null);
         $standingsByEntityId = $teamStandings->keyBy('entity_id');
@@ -241,8 +251,12 @@ Route::middleware(['validate.year'])->group(function () {
             return array_merge(['position' => $index + 1], $row);
         })->all();
 
-        return view('standings.teams', ['year' => $season, 'teamRows' => $teamRows]);
-    })->name('standings.teams');
+        return view('standings.constructors', ['year' => $season, 'teamRows' => $teamRows]);
+    })->name('standings.constructors');
+
+    Route::get('/{year}/standings/teams', function ($year) {
+        return redirect()->route('standings.constructors', ['year' => $year], 301);
+    });
 
     // prediction standings
     Route::get('/{year}/standings/predictions', function ($year) {
@@ -264,12 +278,14 @@ Route::middleware(['validate.year'])->group(function () {
 // non year specific routes
 Route::get('/countries', App\Livewire\Pages\CountriesIndex::class)->name('countries');
 
-Route::get('/team/{slug}', function ($slug) {
-    $team = Teams::with('drivers')->get()->first(fn ($t) => $t->slug === $slug);
-    abort_unless($team, 404);
+Route::get('/constructor/{slug}', function ($slug) {
+    $constructor = Teams::with('drivers')->get()->first(fn ($t) => $t->slug === $slug);
+    abort_unless($constructor, 404);
 
-    return view('team', ['team' => $team]);
-})->name('team');
+    return view('constructor', ['constructor' => $constructor]);
+})->name('constructor');
+
+Route::redirect('/team/{slug}', '/constructor/{slug}', 301);
 
 Route::get('/driver/{slug}', function ($slug) {
     $driver = Drivers::with('team')->get()->first(fn ($d) => $d->slug === $slug);

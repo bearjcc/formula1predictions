@@ -4,7 +4,7 @@
             {{ $title }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-            Drag teams to reorder your predictions.
+            Drag constructors to reorder your predictions.
         </p>
     </div>
 
@@ -55,7 +55,7 @@
         <!-- Team List -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h4 class="font-medium text-gray-900 dark:text-white">Team Order (Drag to Reorder)</h4>
+                <h4 class="font-medium text-gray-900 dark:text-white">Constructor order (drag to reorder)</h4>
             </div>
             
             <div class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -104,7 +104,7 @@
         <!-- Summary -->
         <x-prediction-summary>
             <x-slot:summary>
-                <p>Total Teams: <span class="font-medium" x-text="teamOrder.length"></span></p>
+                <p>Total constructors: <span class="font-medium" x-text="teamOrder.length"></span></p>
             </x-slot:summary>
             <x-slot:top3>
                 <template x-for="(teamId, index) in teamOrder.slice(0, 3)" :key="teamId">
@@ -122,7 +122,7 @@
                 <div class="text-sm text-blue-800 dark:text-blue-200">
                     <p class="font-medium">How to use:</p>
                     <ul class="mt-1 space-y-1">
-                        <li>• Drag teams up or down to reorder your predictions</li>
+                        <li>• Drag constructors up or down to reorder your predictions</li>
                         <li>• Your prediction will be automatically saved</li>
                     </ul>
                 </div>
