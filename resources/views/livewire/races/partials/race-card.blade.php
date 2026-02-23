@@ -56,10 +56,18 @@
             </div>
 
             @if(!empty($circuit['circuitLength']))
+                @php
+                    $lengthKm = (float) $circuit['circuitLength'];
+                    if ($lengthKm > 100) {
+                        $lengthKm = $lengthKm / 1000;
+                    }
+                    $lengthFormatted = number_format($lengthKm, 1) . ' km';
+                    $lapsFormatted = isset($race['laps']) && $race['laps'] !== null && $race['laps'] !== '' ? (int) $race['laps'] . ' laps' : null;
+                @endphp
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div class="flex items-center space-x-2">
                         <x-mary-icon name="o-map" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                        <span class="text-zinc-700 dark:text-zinc-300">Length: {{ $circuit['circuitLength'] }}</span>
+                        <span class="text-zinc-700 dark:text-zinc-300">Length: {{ $lengthFormatted }}@if($lapsFormatted), {{ $lapsFormatted }}@endif</span>
                     </div>
                     <div class="flex items-center space-x-2">
                         <x-mary-icon name="o-clock" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />

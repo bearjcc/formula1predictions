@@ -205,6 +205,7 @@ class F1ApiService
             'time' => $race->time ? $race->time->format('H:i:s') : '00:00:00',
             'raceName' => $race->race_name,
             'circuit' => $circuit,
+            'laps' => $race->laps,
             'status' => $race->status,
             'results' => $race->getResultsArray(),
         ];
