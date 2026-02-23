@@ -49,7 +49,7 @@ return [
         ],
         'button' => [
             'variants' => [
-                'primary' => 'bg-red-600 hover:bg-red-700 text-white',
+                'primary' => 'bg-red-600 hover:bg-red-700 text-white dark:bg-red-600 dark:hover:bg-red-500',
                 'secondary' => 'bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-600',
                 'outline' => 'border border-zinc-300 dark:border-zinc-600 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700',
             ],

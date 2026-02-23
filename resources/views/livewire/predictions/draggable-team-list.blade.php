@@ -1,9 +1,9 @@
 <div class="w-full">
     <div class="mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {{ $title }}
         </h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-sm text-zinc-600 dark:text-zinc-400">
             Drag constructors to reorder your predictions.
         </p>
     </div>
@@ -60,12 +60,12 @@
         class="space-y-2"
     >
         <!-- Team List -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h4 class="font-medium text-gray-900 dark:text-white">Constructor order (drag to reorder)</h4>
+        <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700">
+            <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
+                <h4 class="font-medium text-zinc-900 dark:text-zinc-100">Constructor order (drag to reorder)</h4>
             </div>
             
-            <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
                 <template x-for="(teamId, index) in teamOrder" :key="teamId">
                     <div 
                         x-show="getTeamById(teamId)"
@@ -76,10 +76,9 @@
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-95"
                         :class="{
-                            'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700': draggedOverIndex === index,
-                            'bg-gray-50 dark:bg-gray-700': draggedOverIndex === index
+                            'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700': draggedOverIndex === index
                         }"
-                        class="p-4 cursor-move hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                        class="p-4 cursor-move hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150"
                         draggable="true"
                         @dragstart="dragStart(index)"
                         @dragover="dragOver($event, index)"
@@ -90,16 +89,16 @@
                             <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-4 min-w-0">
                                 <!-- Position Number -->
-                                <div class="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="index + 1"></span>
+                                <div class="flex-shrink-0 w-8 h-8 bg-zinc-100 dark:bg-zinc-600 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300" x-text="index + 1"></span>
                                 </div>
                                 <!-- Constructor color bar -->
                                 <span x-show="getConstructorColor(getTeamById(teamId)?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getTeamById(teamId)?.team_name) ? 'background-color: ' + getConstructorColor(getTeamById(teamId)?.team_name) : ''" aria-hidden="true"></span>
                                 <!-- Team Info -->
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400" x-text="getTeamById(teamId)?.nationality"></span>
+                                        <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
+                                        <span class="text-xs text-zinc-500 dark:text-zinc-400" x-text="getTeamById(teamId)?.nationality"></span>
                                     </div>
                                 </div>
                             </div>

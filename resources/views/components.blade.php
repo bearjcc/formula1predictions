@@ -117,7 +117,7 @@
                     <div tabindex="0" role="button">
                         <x-mary-button>Click to open</x-mary-button>
                     </div>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52">
                         <li><a>Item 1</a></li>
                         <li><a>Item 2</a></li>
                         <li><hr class="dropdown-divider"></li>
@@ -129,7 +129,7 @@
                     <div tabindex="0" role="button">
                         <x-mary-button variant="outline" icon="o-chevron-down">With Icon</x-mary-button>
                     </div>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52">
                         <li><a class="flex items-center space-x-2"><x-mary-icon name="o-user" class="w-4 h-4" /><span>Profile</span></a></li>
                         <li><a class="flex items-center space-x-2"><x-mary-icon name="o-cog" class="w-4 h-4" /><span>Settings</span></a></li>
                         <li><hr class="dropdown-divider"></li>

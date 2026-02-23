@@ -5,6 +5,7 @@
     var a = document.documentElement.getAttribute('data-appearance') || 'system';
     var d = a === 'dark' || (a === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', d);
+    document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
   })();
 </script>
 <title>{{ $title ?? config('app.name') }}</title>

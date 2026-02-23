@@ -3,7 +3,7 @@
 @php
   $appearance = session('appearance', config('f1.default_appearance', 'system'));
 @endphp
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}" data-theme="{{ $appearance === 'dark' ? 'dark' : 'light' }}">
 <head>
     @include('partials.head')
 </head>
@@ -100,7 +100,7 @@
                                 <x-mary-avatar class="w-8 h-8" placeholder="{{ strtoupper(substr(Auth::user()->name, 0, 2)) }}" />
                                 <span class="text-sm font-medium truncate max-w-[120px]">{{ Auth::user()->name }}</span>
                             </div>
-                            <x-mary-icon name="o-chevron-up" class="w-4 h-4 text-zinc-500" />
+                            <x-mary-icon name="o-chevron-up" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                         </div>
                         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52 mb-2">
                             <li><a href="{{ route('settings.profile') }}" wire:navigate><x-mary-icon name="o-user" class="w-4 h-4" /> {{ __('Profile') }}</a></li>
