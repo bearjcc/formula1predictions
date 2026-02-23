@@ -42,8 +42,16 @@
                     </span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <x-mary-icon name="o-flag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                    <span class="text-zinc-700 dark:text-zinc-300">{{ $circuit['country'] ?? 'TBA' }}</span>
+                    @php
+                        $countryName = $circuit['country'] ?? null;
+                        $countryCode = $countryName ? (config('country_flags.'.$countryName) ?? null) : null;
+                    @endphp
+                    @if($countryCode)
+                        <span class="fi fi-{{ $countryCode }} fis inline-block w-4 h-4 rounded-sm align-middle bg-cover" aria-hidden="true"></span>
+                    @else
+                        <x-mary-icon name="o-flag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                    @endif
+                    <span class="text-zinc-700 dark:text-zinc-300">{{ $countryName ?? 'TBA' }}</span>
                 </div>
             </div>
 
