@@ -9,9 +9,6 @@
                 <x-mary-button variant="outline" size="sm" icon="o-calendar">
                     Calendar View
                 </x-mary-button>
-                <x-mary-button variant="primary" size="sm" icon="o-plus">
-                    Add Race
-                </x-mary-button>
             </div>
         </div>
     </div>
