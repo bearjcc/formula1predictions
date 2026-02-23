@@ -134,6 +134,7 @@ class User extends Authenticatable
             'championshiporderbot@example.com',
             'circuitbot@example.com',
             'smartbot@example.com',
+            'lastyearorderbot@example.com',
         ], true);
     }
 
