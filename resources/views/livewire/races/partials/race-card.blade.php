@@ -14,7 +14,7 @@
         <div class="flex-1">
             <div class="flex items-center space-x-3 mb-3">
                 <x-mary-badge variant="outline" class="{{ $badgeClass }}">
-                    {{ ucfirst($status) }}
+                    {{ $race['round'] ?? '?' }}
                 </x-mary-badge>
                 <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{{ $race['raceName'] ?? 'Race' }}</h3>
             </div>
