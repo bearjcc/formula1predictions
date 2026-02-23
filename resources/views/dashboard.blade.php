@@ -2,9 +2,6 @@
     {{-- #region Page Header --}}
     <div class="mb-8 flex justify-end">
         <div class="flex items-center gap-3">
-            <x-mary-button variant="outline" size="sm" icon="o-chart-bar" link="{{ route('analytics') }}" wire:navigate>
-                View Stats
-            </x-mary-button>
             <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
                 Make Prediction
             </x-mary-button>
@@ -185,9 +182,6 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <x-mary-button variant="primary" size="lg" icon="o-plus" class="h-20" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
                 Make Prediction
-            </x-mary-button>
-            <x-mary-button variant="outline" size="lg" icon="o-chart-bar" class="h-20" link="{{ route('analytics') }}" wire:navigate>
-                View Statistics
             </x-mary-button>
             <x-mary-button variant="outline" size="lg" icon="o-trophy" class="h-20" link="{{ route('leaderboard.index', ['season' => $season]) }}" wire:navigate>
                 Leaderboard
