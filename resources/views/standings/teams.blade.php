@@ -1,4 +1,6 @@
 <x-layouts.layout :title="$year . ' Team Standings'" :headerSubtitle="'Current constructor championship standings for the ' . $year . ' Formula 1 season'">
+    <x-standings-tabs :year="$year" />
+
     <!-- Team Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
