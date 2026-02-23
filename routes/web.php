@@ -215,7 +215,15 @@ Route::middleware(['validate.year'])->group(function () {
             return array_merge(['position' => $index + 1], $row);
         })->all();
 
-        return view('standings.drivers', ['year' => $season, 'driverRows' => $driverRows]);
+        $seasonStarted = Races::seasonHasStarted($season);
+        $seasonEnded = Races::seasonHasEnded($season);
+
+        return view('standings.drivers', [
+            'year' => $season,
+            'driverRows' => $driverRows,
+            'seasonStarted' => $seasonStarted,
+            'seasonEnded' => $seasonEnded,
+        ]);
     })->name('standings.drivers');
 
     // constructor standings
@@ -251,7 +259,15 @@ Route::middleware(['validate.year'])->group(function () {
             return array_merge(['position' => $index + 1], $row);
         })->all();
 
-        return view('standings.constructors', ['year' => $season, 'teamRows' => $teamRows]);
+        $seasonStarted = Races::seasonHasStarted($season);
+        $seasonEnded = Races::seasonHasEnded($season);
+
+        return view('standings.constructors', [
+            'year' => $season,
+            'teamRows' => $teamRows,
+            'seasonStarted' => $seasonStarted,
+            'seasonEnded' => $seasonEnded,
+        ]);
     })->name('standings.constructors');
 
     Route::get('/{year}/standings/teams', function ($year) {

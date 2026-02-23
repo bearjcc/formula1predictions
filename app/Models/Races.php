@@ -132,6 +132,27 @@ class Races extends Model
     }
 
     /**
+     * Whether the season has started (at least one race completed).
+     */
+    public static function seasonHasStarted(int $season): bool
+    {
+        return static::where('season', $season)->completed()->exists();
+    }
+
+    /**
+     * Whether the season has ended (all scheduled races completed; positions are final/clinched).
+     */
+    public static function seasonHasEnded(int $season): bool
+    {
+        $total = static::where('season', $season)->count();
+        if ($total === 0) {
+            return false;
+        }
+
+        return static::where('season', $season)->completed()->count() === $total;
+    }
+
+    /**
      * Next race (by round) for the given season that still allows predictions.
      * Used when "Start predicting" has no race_id: redirect to this race.
      */

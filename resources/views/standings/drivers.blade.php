@@ -35,21 +35,14 @@
                     @forelse($driverRows as $row)
                         <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    @if($row['position'] === 1)
-                                        <x-mary-badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                            {{ $row['position'] }}
-                                        </x-mary-badge>
-                                    @elseif($row['position'] === 2)
-                                        <x-mary-badge class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                                            {{ $row['position'] }}
-                                        </x-mary-badge>
-                                    @elseif($row['position'] === 3)
-                                        <x-mary-badge class="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                                            {{ $row['position'] }}
-                                        </x-mary-badge>
-                                    @else
+                                <div class="flex items-center gap-1.5">
+                                    @if($seasonStarted)
                                         <x-mary-badge variant="outline">{{ $row['position'] }}</x-mary-badge>
+                                        @if($seasonEnded && in_array($row['position'], [1, 2, 3], true))
+                                            <x-mary-icon name="o-trophy" class="w-5 h-5 text-amber-500 dark:text-amber-400" title="{{ __('Position clinched') }}" />
+                                        @endif
+                                    @else
+                                        <span class="text-zinc-500 dark:text-zinc-400">0</span>
                                     @endif
                                 </div>
                             </td>
