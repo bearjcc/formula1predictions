@@ -47,6 +47,93 @@
                     @endforeach
                 </div>
             </div>
+
+            @if($breakdown !== null)
+                <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50">
+                        <h3 class="font-bold">Score Breakdown</h3>
+                        @if($breakdown['half_points'])
+                            <p class="text-sm text-amber-600 dark:text-amber-400 mt-1">Half points applied for this race.</p>
+                        @endif
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-700">
+                                    <th class="p-3 font-semibold text-zinc-600 dark:text-zinc-400">Position / Label</th>
+                                    <th class="p-3 font-semibold text-zinc-600 dark:text-zinc-400">Predicted</th>
+                                    <th class="p-3 font-semibold text-zinc-600 dark:text-zinc-400">Actual</th>
+                                    <th class="p-3 font-semibold text-zinc-600 dark:text-zinc-400 text-center">Diff</th>
+                                    <th class="p-3 font-semibold text-zinc-600 dark:text-zinc-400 text-right">Points</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                                <tr class="bg-green-50/50 dark:bg-green-900/10 font-semibold">
+                                    <td class="p-3 text-zinc-900 dark:text-zinc-100">Total</td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3"></td>
+                                    <td class="p-3 text-center"></td>
+                                    <td class="p-3 text-right text-green-600 dark:text-green-400">{{ number_format($breakdown['total']) }}</td>
+                                </tr>
+                                @php
+                                    $fl = $breakdown['fastest_lap_row'];
+                                    $predFlDriver = $fl['predicted_driver_id'] ? \App\Models\Drivers::where('driverId', $fl['predicted_driver_id'])->first() : null;
+                                    $actualFlDriver = $fl['actual_driver_id'] ? \App\Models\Drivers::where('driverId', $fl['actual_driver_id'])->first() : null;
+                                @endphp
+                                <tr>
+                                    <td class="p-3 font-medium text-zinc-700 dark:text-zinc-300">Fastest lap</td>
+                                    <td class="p-3">{{ $predFlDriver ? $predFlDriver->name . ' ' . $predFlDriver->surname : ($fl['predicted_driver_id'] ?? '-') }}</td>
+                                    <td class="p-3">{{ $actualFlDriver ? $actualFlDriver->name . ' ' . $actualFlDriver->surname : ($fl['actual_driver_id'] ?: '-') }}</td>
+                                    <td class="p-3 text-center">-</td>
+                                    <td class="p-3 text-right">{{ $fl['points'] }}</td>
+                                </tr>
+                                @foreach($breakdown['driver_rows'] as $row)
+                                    @php
+                                        $predDriver = \App\Models\Drivers::where('driverId', $row['predicted_driver_id'])->first();
+                                    @endphp
+                                    <tr>
+                                        <td class="p-3 font-medium text-zinc-900 dark:text-zinc-100">{{ $row['position'] }}</td>
+                                        <td class="p-3">{{ $predDriver ? $predDriver->name . ' ' . $predDriver->surname : $row['predicted_driver_id'] }}</td>
+                                        <td class="p-3">{{ $row['actual_display'] }}</td>
+                                        <td class="p-3 text-center">
+                                            @if($row['diff'] !== null)
+                                                @if($row['diff'] < 0)
+                                                    <span class="text-green-600 dark:text-green-400" title="Finished above prediction">&#8593;</span>
+                                                @elseif($row['diff'] > 0)
+                                                    <span class="text-red-600 dark:text-red-400" title="Finished below prediction">&#8595;</span>
+                                                @else
+                                                    <span class="text-zinc-500">-</span>
+                                                @endif
+                                            @else
+                                                <span class="text-zinc-500">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="p-3 text-right">{{ $row['points'] }}</td>
+                                    </tr>
+                                @endforeach
+                                @if($breakdown['dnf_wager_points'] != 0)
+                                    <tr>
+                                        <td class="p-3 font-medium text-zinc-700 dark:text-zinc-300">DNF wager</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3 text-center">-</td>
+                                        <td class="p-3 text-right">{{ $breakdown['dnf_wager_points'] }}</td>
+                                    </tr>
+                                @endif
+                                @if($breakdown['perfect_bonus'] != 0)
+                                    <tr>
+                                        <td class="p-3 font-medium text-zinc-700 dark:text-zinc-300">Perfect bonus</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3 text-center">-</td>
+                                        <td class="p-3 text-right">{{ $breakdown['perfect_bonus'] }}</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Sidebar Stats -->

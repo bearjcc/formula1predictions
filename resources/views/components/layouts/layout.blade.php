@@ -42,9 +42,9 @@
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />
                             <span>{{ __('Standings') }}</span>
                         </a>
-                        <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.predictions') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
+                        <a href="{{ route('predictions.index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('predictions.*') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
-                            <span>{{ __('Predictions') }}</span>
+                            <span>{{ __('My Predictions') }}</span>
                         </a>
                         <a href="{{ route('leaderboard.index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('leaderboard.*') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />

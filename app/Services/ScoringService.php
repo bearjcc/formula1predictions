@@ -710,6 +710,120 @@ class ScoringService
     }
 
     /**
+     * Get per-driver and fastest-lap breakdown for a scored race/sprint prediction (for display).
+     *
+     * @return array{total: int, half_points: bool, fastest_lap_row: array{predicted_driver_id: string|null, actual_driver_id: string|null, points: int}, driver_rows: list<array{position: int, predicted_driver_id: string, actual_display: string, diff: int|null, points: int}>, dnf_wager_points: int, perfect_bonus: int}
+     */
+    public function getPredictionBreakdown(Prediction $prediction, Races $race): array
+    {
+        $empty = [
+            'total' => (int) $prediction->score,
+            'half_points' => (bool) ($race->half_points ?? false),
+            'fastest_lap_row' => ['predicted_driver_id' => null, 'actual_driver_id' => null, 'points' => 0],
+            'driver_rows' => [],
+            'dnf_wager_points' => 0,
+            'perfect_bonus' => 0,
+        ];
+
+        if (! in_array($prediction->type, ['race', 'sprint'], true) || ! $race->isCompleted()) {
+            return $empty;
+        }
+
+        $rawResults = $race->getResultsArray();
+        $processedResults = $this->processRaceResults($rawResults);
+
+        $driverIdToRawStatus = [];
+        foreach ($rawResults as $result) {
+            $driver = $result['driver'] ?? null;
+            if ($driver && isset($driver['driverId'])) {
+                $status = $result['status'] ?? '';
+                $driverIdToRawStatus[(string) $driver['driverId']] = strtoupper((string) $status) ?: 'N/A';
+            }
+        }
+
+        $predictedOrder = $prediction->getPredictedDriverOrder();
+        $predictedOrder = array_filter($predictedOrder, fn ($id) => $id !== null && $id !== '');
+        $predictedOrder = array_values($predictedOrder);
+
+        $isSprint = $prediction->type === 'sprint';
+        $driverRows = [];
+        $correctCount = 0;
+        $top8Correct = 0;
+
+        foreach ($predictedOrder as $position => $driverId) {
+            $position1Based = $position + 1;
+            $actualPosition = $this->findDriverPosition((string) $driverId, $processedResults);
+
+            if ($actualPosition !== null) {
+                $actualDisplay = (string) ($actualPosition + 1);
+                $diff = $actualPosition - $position;
+                $positionDiff = abs($diff);
+                $points = $isSprint
+                    ? $this->getSprintPositionScore($positionDiff, $race->season)
+                    : $this->getPositionScore($positionDiff, $race->season);
+                if ($positionDiff === 0) {
+                    $correctCount++;
+                    if ($position < 8) {
+                        $top8Correct++;
+                    }
+                }
+            } else {
+                $actualDisplay = $driverIdToRawStatus[(string) $driverId] ?? 'N/A';
+                $diff = null;
+                $points = 0;
+            }
+
+            $driverRows[] = [
+                'position' => $position1Based,
+                'predicted_driver_id' => (string) $driverId,
+                'actual_display' => $actualDisplay,
+                'diff' => $diff,
+                'points' => $points,
+            ];
+        }
+
+        $actualFastestLapDriverId = null;
+        foreach ($processedResults as $result) {
+            if (($result['fastestLap'] ?? false) === true) {
+                $actualFastestLapDriverId = $result['driver']['driverId'] ?? null;
+                break;
+            }
+        }
+        $predictedFastestLap = $prediction->getPredictedFastestLap();
+        $fastestLapPoints = 0;
+        if ($predictedFastestLap && $actualFastestLapDriverId && (string) $actualFastestLapDriverId === (string) $predictedFastestLap) {
+            $fastestLapPoints = $isSprint ? 5 : 10;
+        }
+
+        $fastestLapRow = [
+            'predicted_driver_id' => $predictedFastestLap ? (string) $predictedFastestLap : null,
+            'actual_driver_id' => $actualFastestLapDriverId ? (string) $actualFastestLapDriverId : null,
+            'points' => $fastestLapPoints,
+        ];
+
+        $dnfWagerPoints = $this->calculateDnfWagerScore($prediction, $race);
+        $totalDrivers = count($predictedOrder);
+        $perfectBonus = 0;
+        if ($isSprint && $top8Correct >= 8) {
+            $perfectBonus = 15;
+        } elseif (! $isSprint && $totalDrivers > 0 && $correctCount === $totalDrivers) {
+            $perfectBonus = 50;
+        }
+
+        $total = (int) $prediction->score;
+        $halfPoints = (bool) ($race->half_points ?? false);
+
+        return [
+            'total' => $total,
+            'half_points' => $halfPoints,
+            'fastest_lap_row' => $fastestLapRow,
+            'driver_rows' => $driverRows,
+            'dnf_wager_points' => $dnfWagerPoints,
+            'perfect_bonus' => $perfectBonus,
+        ];
+    }
+
+    /**
      * Admin override: manually set prediction score
      */
     public function overridePredictionScore(Prediction $prediction, int $score, ?string $reason = null): void
