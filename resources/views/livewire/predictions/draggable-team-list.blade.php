@@ -12,8 +12,15 @@
         x-data="{
             teams: @js($teams),
             teamOrder: @js($teamOrder),
+            constructorColors: @js(config('constructor_colors')),
             draggedIndex: null,
             draggedOverIndex: null,
+
+            getConstructorColor(teamName) {
+                if (!teamName || !this.constructorColors) return null;
+                const k = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === String(teamName).trim().toLowerCase());
+                return k ? this.constructorColors[k] : null;
+            },
             
             dragStart(index) {
                 this.draggedIndex = index;
@@ -80,13 +87,14 @@
                         @drop="drop($event, index)"
                         @dragend="dragEnd()"
                     >
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-4">
+                            <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4 min-w-0">
                                 <!-- Position Number -->
                                 <div class="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-600 rounded-full flex items-center justify-center">
                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="index + 1"></span>
                                 </div>
-                                
+                                <!-- Constructor color bar -->
+                                <span x-show="getConstructorColor(getTeamById(teamId)?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getTeamById(teamId)?.team_name) ? 'background-color: ' + getConstructorColor(getTeamById(teamId)?.team_name) : ''" aria-hidden="true"></span>
                                 <!-- Team Info -->
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center space-x-2">

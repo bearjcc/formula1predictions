@@ -47,19 +47,12 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                                            <x-mary-icon name="o-user" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                                        </div>
-                                    </div>
-                                    <div class="ml-4">
-                                        <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
-                                        @if($row['nationality'] ?? null)
-                                            <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $row['nationality'] }}</p>
-                                        @endif
-                                    </div>
-                                </div>
+                                <x-constructor-bar :teamName="$row['team_name'] ?? null">
+                                    <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
+                                    @if($row['nationality'] ?? null)
+                                        <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $row['nationality'] }}</p>
+                                    @endif
+                                </x-constructor-bar>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <p>{{ $row['team_name'] ?? '—' }}</p>

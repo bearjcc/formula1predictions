@@ -11,9 +11,16 @@
             dnfPredictions: @js($dnfPredictions),
             dnfEligibleFromSlot: @js($this->dnfEligibleFromSlot),
             predictionType: @js($type),
+            constructorColors: @js(config('constructor_colors')),
             draggedDriverId: null,
             draggedFromIndex: null,
             dragOverIndex: null,
+
+            getConstructorColor(teamName) {
+                if (!teamName || !this.constructorColors) return null;
+                const k = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === String(teamName).trim().toLowerCase());
+                return k ? this.constructorColors[k] : null;
+            },
 
             init() {
                 const fromWire = $wire.get('drivers');
@@ -131,6 +138,7 @@
                                     @dragstart="dragStartRace($event, slotDriverId(index), 'slot', index)"
                                     @dragend="dragEndRace()"
                                 >
+                                    <span x-show="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) ? 'background-color: ' + getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) : ''" aria-hidden="true"></span>
                                     <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600" aria-hidden="true" title="Drag to reorder">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                                     </span>
@@ -171,6 +179,7 @@
                             @dragstart="dragStartRace($event, driver.id, 'pool', null)"
                             @dragend="dragEndRace()"
                         >
+                            <span x-show="getConstructorColor(driver.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(driver.team?.team_name) ? 'background-color: ' + getConstructorColor(driver.team?.team_name) : ''" aria-hidden="true"></span>
                             <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500" title="Drag into prediction list">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                             </span>
@@ -205,8 +214,15 @@
             drivers: @js($drivers),
             driverOrder: @js($driverOrder),
             fastestLap: @js($fastestLapDriverId),
+            constructorColors: @js(config('constructor_colors')),
             draggedIndex: null,
             draggedOverIndex: null,
+
+            getConstructorColor(teamName) {
+                if (!teamName || !this.constructorColors) return null;
+                const k = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === String(teamName).trim().toLowerCase());
+                return k ? this.constructorColors[k] : null;
+            },
 
             dragStart(index) {
                 this.draggedIndex = index;
@@ -277,6 +293,7 @@
                                  :class="index === 0 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400' : (index === 1 ? 'bg-slate-200 text-slate-700 dark:bg-slate-700/60 dark:text-slate-300' : (index === 2 ? 'bg-amber-100 text-amber-700 dark:bg-amber-800/20 dark:text-amber-500' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500'))">
                                 <span x-text="index + 1"></span>
                             </div>
+                            <span x-show="getConstructorColor(getDriverById(driverId)?.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getDriverById(driverId)?.team?.team_name) ? 'background-color: ' + getConstructorColor(getDriverById(driverId)?.team?.team_name) : ''" aria-hidden="true"></span>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center space-x-2">
                                     <span class="font-bold text-zinc-900 dark:text-zinc-100 truncate" x-text="getDriverById(driverId)?.name + ' ' + getDriverById(driverId)?.surname"></span>

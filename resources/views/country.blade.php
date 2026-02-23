@@ -81,13 +81,12 @@
                 @endphp
                 @forelse($countryDrivers as $driver)
                     <div class="flex items-center space-x-4 p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
-                        <div class="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                            <x-mary-icon name="o-user" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold">{{ $driver->full_name }}</h4>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $driver->team?->team_name ?? 'No constructor' }}</p>
-                        </div>
+                        <x-constructor-bar :teamName="$driver->team?->team_name">
+                            <div class="flex-1">
+                                <h4 class="font-semibold">{{ $driver->full_name }}</h4>
+                                <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $driver->team?->team_name ?? 'No constructor' }}</p>
+                            </div>
+                        </x-constructor-bar>
                         <a href="{{ route('driver', $driver->slug) }}">
                             <x-mary-button variant="outline" size="sm" icon="o-eye">
                                 View

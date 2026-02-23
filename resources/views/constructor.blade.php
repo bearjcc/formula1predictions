@@ -2,14 +2,9 @@
     <!-- Constructor Overview Card -->
     <x-mary-card class="mb-8">
         <div class="flex items-start space-x-6">
-            <div class="flex-shrink-0">
-                <div class="w-24 h-24 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
-                    <x-mary-icon name="o-users" class="w-12 h-12 text-red-600 dark:text-red-400" />
-                </div>
-            </div>
-
-            <div class="flex-1">
-                <h2 class="text-2xl font-bold mb-2">{{ $constructor->team_name }}</h2>
+            <x-constructor-bar :teamName="$constructor->team_name">
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold mb-2">{{ $constructor->team_name }}</h2>
                 <p class="text-zinc-600 dark:text-zinc-400 mb-4">
                     @if($constructor->base_location)Based in {{ $constructor->base_location }}.@endif
                     @if($constructor->nationality) {{ $constructor->nationality }}.@endif
@@ -34,7 +29,8 @@
                         <p class="text-sm text-zinc-600 dark:text-zinc-400">Pole Positions</p>
                     </div>
                 </div>
-            </div>
+                </div>
+            </x-constructor-bar>
         </div>
     </x-mary-card>
 
@@ -44,15 +40,14 @@
             <div class="space-y-4">
                 @forelse($constructor->drivers as $driver)
                     <div class="flex items-center space-x-4 p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg">
-                        <div class="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                            <x-mary-icon name="o-user" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold">{{ $driver->full_name }}</h4>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                                @if($driver->driver_number)Driver #{{ $driver->driver_number }}@endif
-                            </p>
-                        </div>
+                        <x-constructor-bar :teamName="$constructor->team_name">
+                            <div class="flex-1">
+                                <h4 class="font-semibold">{{ $driver->full_name }}</h4>
+                                <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                                    @if($driver->driver_number)Driver #{{ $driver->driver_number }}@endif
+                                </p>
+                            </div>
+                        </x-constructor-bar>
                         <a href="{{ route('driver', $driver->slug) }}">
                             <x-mary-button variant="outline" size="sm" icon="o-eye">
                                 View

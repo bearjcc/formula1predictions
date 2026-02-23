@@ -142,4 +142,18 @@ class Teams extends Model
             ->replace([' ', '&', '-'], '-')
             ->slug();
     }
+
+    /**
+     * Official constructor color (hex) for F1-style bar. Null if unknown.
+     */
+    public static function constructorColor(?string $teamName): ?string
+    {
+        if ($teamName === null || $teamName === '') {
+            return null;
+        }
+        $colors = config('constructor_colors', []);
+        $key = collect($colors)->keys()->first(fn (string $k) => strcasecmp(trim($k), trim($teamName)) === 0);
+
+        return $key !== null ? $colors[$key] : null;
+    }
 }
