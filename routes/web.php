@@ -10,6 +10,7 @@ use App\Models\Drivers;
 use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
+use App\Services\F1ApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -183,23 +184,44 @@ Route::middleware(['validate.year'])->group(function () {
         return view('standings', ['year' => $year]);
     })->name('standings');
 
-    Route::get('/{year}/standings/drivers', function ($year) {
+    Route::get('/{year}/standings/drivers', function (F1ApiService $f1, $year) {
         $season = (int) $year;
         $driverStandings = Standings::getDriverStandings($season, null);
         $standingsByEntityId = $driverStandings->keyBy('entity_id');
         $allDrivers = Drivers::active()->with('team')->get();
-        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId) {
+
+        // Fallback: driver_id -> team_name from drivers championship (when driver.team_id is not set)
+        $driverIdToTeamName = [];
+        try {
+            $data = $f1->fetchDriversChampionship($season);
+            $entries = $data['drivers_championship'] ?? [];
+            $teamIds = collect($entries)->pluck('teamId')->filter()->unique()->all();
+            $teams = Teams::whereIn('team_id', $teamIds)->pluck('team_name', 'team_id');
+            foreach ($entries as $entry) {
+                $driverId = $entry['driverId'] ?? null;
+                $teamId = $entry['teamId'] ?? null;
+                if ($driverId !== null && $teamId !== null && isset($teams[$teamId])) {
+                    $driverIdToTeamName[$driverId] = $teams[$teamId];
+                }
+            }
+        } catch (\Throwable) {
+            // API may not have data for future/past years; use empty fallback
+        }
+
+        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId, $driverIdToTeamName) {
             $s = $standingsByEntityId->get((string) $driver->id) ?? $standingsByEntityId->get($driver->driver_id ?? '');
             $points = $s ? (float) $s->points : 0.0;
             $wins = $s ? (int) ($s->wins ?? 0) : 0;
             $podiums = $s ? (int) ($s->podiums ?? 0) : 0;
             $name = trim($driver->name.' '.$driver->surname);
+            $teamName = $driver->team?->team_name
+                ?? ($driver->driver_id ? ($driverIdToTeamName[$driver->driver_id] ?? null) : null);
 
             return [
                 'sort_name' => $name,
                 'driver_name' => $name,
                 'nationality' => $driver->nationality,
-                'team_name' => $driver->team?->team_name,
+                'team_name' => $teamName,
                 'points' => $points,
                 'wins' => $wins,
                 'podiums' => $podiums,
