@@ -17,6 +17,9 @@
                             Constructor
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            Country
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                             Drivers
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -48,10 +51,19 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-constructor-bar :teamName="$row['team_name']">
                                     <h4 class="font-semibold">{{ $row['team_display_name'] ?? $row['team_name'] }}</h4>
-                                    @if($row['nationality'] ?? null)
-                                        <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $row['nationality'] }}</p>
-                                    @endif
                                 </x-constructor-bar>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($row['nationality'] ?? null)
+                                    <div class="flex items-center gap-2">
+                                        @if($row['country_flag_url'] ?? null)
+                                            <img src="{{ $row['country_flag_url'] }}" alt="" class="h-6 w-auto max-w-10 object-contain" loading="lazy" />
+                                        @endif
+                                        <span class="text-sm text-zinc-700 dark:text-zinc-300">{{ $row['nationality'] }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-zinc-500">—</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if(!empty($row['driver_names']))
@@ -76,7 +88,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                            <td colspan="7" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                 {{ __('No constructor standings data for this season yet. Standings are updated from our database after each race.') }}
                             </td>
                         </tr>

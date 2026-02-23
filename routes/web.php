@@ -208,7 +208,8 @@ Route::middleware(['validate.year'])->group(function () {
             // API may not have data for future/past years; use empty fallback
         }
 
-        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId, $driverIdToTeamName) {
+        $countriesByName = Countries::all()->keyBy('name');
+        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId, $driverIdToTeamName, $countriesByName) {
             $s = $standingsByEntityId->get((string) $driver->id) ?? $standingsByEntityId->get($driver->driver_id ?? '');
             $points = $s ? (float) $s->points : 0.0;
             $wins = $s ? (int) ($s->wins ?? 0) : 0;
@@ -216,11 +217,13 @@ Route::middleware(['validate.year'])->group(function () {
             $name = trim($driver->name.' '.$driver->surname);
             $teamName = $driver->team?->team_name
                 ?? ($driver->driver_id ? ($driverIdToTeamName[$driver->driver_id] ?? null) : null);
+            $country = $driver->nationality ? $countriesByName->get($driver->nationality) : null;
 
             return [
                 'sort_name' => $name,
                 'driver_name' => $name,
                 'nationality' => $driver->nationality,
+                'country_flag_url' => $country ? $country->flag_url : '',
                 'team_name' => $teamName,
                 'team_display_name' => $driver->team?->display_name ?? Teams::displayNameFor($teamName),
                 'points' => $points,
@@ -255,18 +258,21 @@ Route::middleware(['validate.year'])->group(function () {
         $teamStandings = Standings::getConstructorStandings($season, null);
         $standingsByEntityId = $teamStandings->keyBy('entity_id');
         $allTeams = Teams::active()->with('drivers')->get();
-        $rows = $allTeams->map(function ($team) use ($standingsByEntityId) {
+        $countriesByName = Countries::all()->keyBy('name');
+        $rows = $allTeams->map(function ($team) use ($standingsByEntityId, $countriesByName) {
             $s = $standingsByEntityId->get((string) $team->id) ?? $standingsByEntityId->get($team->team_id ?? '');
             $points = $s ? (float) $s->points : 0.0;
             $wins = $s ? (int) ($s->wins ?? 0) : 0;
             $podiums = $s ? (int) ($s->podiums ?? 0) : 0;
             $driverNames = $team->drivers->map(fn ($d) => trim($d->name.' '.$d->surname))->values()->all();
+            $country = $team->nationality ? $countriesByName->get($team->nationality) : null;
 
             return [
                 'sort_name' => $team->team_name,
                 'team_name' => $team->team_name,
                 'team_display_name' => $team->display_name,
                 'nationality' => $team->nationality,
+                'country_flag_url' => $country ? $country->flag_url : '',
                 'driver_names' => $driverNames,
                 'points' => $points,
                 'wins' => $wins,
