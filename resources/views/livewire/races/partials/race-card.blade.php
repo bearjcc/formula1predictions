@@ -94,7 +94,7 @@
             @endif
 
             <div class="flex items-center space-x-4">
-                <x-mary-button variant="outline" size="sm" icon="o-eye">
+                <x-mary-button variant="outline" size="sm" icon="o-eye" wire:click="viewDetails({{ (int) ($race['round'] ?? 0) }})">
                     View Details
                 </x-mary-button>
                 @if(($race['status'] ?? '') === 'completed' && !empty($race['results']))
@@ -112,9 +112,6 @@
                         Make Prediction
                     </x-mary-button>
                 @endif
-                <x-mary-button variant="outline" size="sm" icon="o-users">
-                    Predictions
-                </x-mary-button>
             </div>
         </div>
     </div>
