@@ -35,7 +35,7 @@ class ChartDataService
         foreach ($races as $race) {
             $results = $race->getResultsArray();
             $raceData = [
-                'race' => $race->race_name,
+                'race' => $race->display_name,
                 'round' => $race->round,
                 'date' => $race->date->format('M j'),
             ];
@@ -70,7 +70,7 @@ class ChartDataService
         foreach ($races as $race) {
             $results = $race->getResultsArray();
             $raceData = [
-                'race' => $race->race_name,
+                'race' => $race->display_name,
                 'round' => $race->round,
                 'date' => $race->date->format('M j'),
             ];
@@ -81,7 +81,7 @@ class ChartDataService
                 if ($driverId && isset($drivers[$driverId])) {
                     $driver = $drivers[$driverId];
                     if ($driver->team) {
-                        $teamName = $driver->team->team_name;
+                        $teamName = $driver->team->display_name;
                         $points = $this->calculatePoints($position);
                         $teamPoints[$teamName] = ($teamPoints[$teamName] ?? 0) + $points;
                     }
@@ -183,7 +183,7 @@ class ChartDataService
 
             if ($predictions && $predictions->isNotEmpty()) {
                 $chartData[] = [
-                    'race' => $race->race_name,
+                    'race' => $race->display_name,
                     'round' => $race->round,
                     'avg_accuracy' => round($predictions->avg('accuracy'), 1),
                     'total_predictions' => $predictions->count(),
@@ -223,7 +223,7 @@ class ChartDataService
                 $driver = $drivers[$driverId];
                 $chartData[] = [
                     'driver' => $driver->name.' '.$driver->surname,
-                    'team' => $driver->team?->team_name ?? 'Unknown',
+                    'team' => $driver->team?->display_name ?? 'Unknown',
                     'points' => $standing->points,
                     'position' => $standing->position,
                     'wins' => $standing->wins ?? 0,
@@ -264,7 +264,7 @@ class ChartDataService
             if ($teamId && isset($teams[$teamId])) {
                 $team = $teams[$teamId];
                 $chartData[] = [
-                    'team' => $team->team_name,
+                    'team' => $team->display_name,
                     'points' => $standing->points,
                     'position' => $standing->position,
                     'wins' => $standing->wins ?? 0,
@@ -296,7 +296,7 @@ class ChartDataService
         foreach ($races as $race) {
             $results = $race->getResultsArray();
             $raceData = [
-                'race' => $race->race_name,
+                'race' => $race->display_name,
                 'round' => $race->round,
                 'date' => $race->date->format('M j'),
             ];
@@ -335,7 +335,7 @@ class ChartDataService
         foreach ($races as $race) {
             $results = $race->getResultsArray();
             $raceData = [
-                'race' => $race->race_name,
+                'race' => $race->display_name,
                 'round' => $race->round,
                 'date' => $race->date->format('M j'),
             ];
@@ -345,7 +345,7 @@ class ChartDataService
                 if ($driverId && isset($drivers[$driverId])) {
                     $driver = $drivers[$driverId];
                     if ($driver->team) {
-                        $teamName = $driver->team->team_name;
+                        $teamName = $driver->team->display_name;
                         $points = $this->calculatePoints($position);
                         $teamPoints[$teamName] = ($teamPoints[$teamName] ?? 0) + $points;
                         $raceData[$teamName] = $teamPoints[$teamName];
@@ -455,7 +455,7 @@ class ChartDataService
             }
 
             $chartData[] = [
-                'race' => $race->race_name,
+                'race' => $race->display_name,
                 'round' => $race->round,
                 'podiums' => $podiums,
                 'points_finishers' => $points,
@@ -606,7 +606,7 @@ class ChartDataService
 
         foreach ($races as $race) {
             $raceData = [
-                'race' => $race->race_name,
+                'race' => $race->display_name,
                 'round' => $race->round,
                 'date' => $race->date->format('M j'),
             ];

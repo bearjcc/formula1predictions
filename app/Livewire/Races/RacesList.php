@@ -108,7 +108,7 @@ class RacesList extends Component
 
         return [
             'deadline' => Races::getPreseasonDeadlineForSeason($this->year),
-            'first_race_name' => $firstRace?->race_name,
+            'first_race_name' => $firstRace?->display_name,
         ];
     }
 

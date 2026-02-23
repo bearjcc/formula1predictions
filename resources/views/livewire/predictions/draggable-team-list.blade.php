@@ -98,7 +98,7 @@
                                 <!-- Team Info -->
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="getTeamById(teamId)?.team_name"></span>
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
                                         <span class="text-xs text-gray-500 dark:text-gray-400" x-text="getTeamById(teamId)?.nationality"></span>
                                     </div>
                                 </div>
@@ -116,7 +116,7 @@
             </x-slot:summary>
             <x-slot:top3>
                 <template x-for="(teamId, index) in teamOrder.slice(0, 3)" :key="teamId">
-                    <p><span class="font-medium" x-text="index + 1"></span>. <span x-text="getTeamById(teamId)?.team_name"></span></p>
+                    <p><span class="font-medium" x-text="index + 1"></span>. <span x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span></p>
                 </template>
             </x-slot:top3>
         </x-prediction-summary>

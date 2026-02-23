@@ -1,4 +1,4 @@
-<x-layouts.layout :title="$race->race_name" :headerSubtitle="'Complete race information and results for ' . $race->race_name">
+<x-layouts.layout :title="$race->display_name" :headerSubtitle="'Complete race information and results for ' . $race->display_name">
     <!-- Race Overview Card -->
     <x-mary-card class="p-6 mb-8">
         <div class="flex items-start space-x-6">
@@ -11,7 +11,7 @@
 
             <!-- Race Info -->
             <div class="flex-1">
-                <h2 class="text-heading-2 mb-2">{{ $race->race_name }}</h2>
+                <h2 class="text-heading-2 mb-2">{{ $race->display_name }}</h2>
                 <p class="text-auto-muted mb-4">
                     {{ $race->circuit_name ?? 'Circuit TBD' }}
                     @if($race->country) &bull; {{ $race->country }}@endif
@@ -49,7 +49,7 @@
             <div class="space-y-4">
                 <div class="flex justify-between">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">Race Name</p>
-                    <p class="font-medium">{{ $race->race_name }}</p>
+                    <p class="font-medium">{{ $race->display_name }}</p>
                 </div>
                 <div class="flex justify-between">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">Circuit</p>

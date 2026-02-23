@@ -55,7 +55,7 @@
                                 </x-constructor-bar>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <p>{{ $row['team_name'] ?? '—' }}</p>
+                                <p>{{ $row['team_display_name'] ?? $row['team_name'] ?? '—' }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="font-semibold text-green-600 dark:text-green-400">{{ number_format($row['points'], 0) }}</span>

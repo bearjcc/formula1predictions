@@ -143,7 +143,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                                     </span>
                                     <span class="flex-1 min-w-0 font-medium text-zinc-900 dark:text-zinc-100 truncate" x-text="getDriverById(slotDriverId(index))?.name + ' ' + getDriverById(slotDriverId(index))?.surname"></span>
-                                    <span class="text-[10px] uppercase text-zinc-400 flex-shrink-0" x-text="getDriverById(slotDriverId(index))?.team?.team_name || ''"></span>
+                                    <span class="text-[10px] uppercase text-zinc-400 flex-shrink-0" x-text="getDriverById(slotDriverId(index))?.team?.display_name || getDriverById(slotDriverId(index))?.team?.team_name || ''"></span>
                                 </div>
                             </template>
                             <template x-if="isDnfEligible(index) && slotDriverId(index)">
@@ -184,7 +184,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                             </span>
                             <span class="flex-1 min-w-0 font-medium text-zinc-900 dark:text-zinc-100" x-text="driver.name + ' ' + driver.surname"></span>
-                            <span class="text-xs text-zinc-500 dark:text-zinc-400" x-text="driver.team?.team_name || ''"></span>
+                            <span class="text-xs text-zinc-500 dark:text-zinc-400" x-text="driver.team?.display_name || driver.team?.team_name || ''"></span>
                         </div>
                     </template>
                 </div>
@@ -299,7 +299,7 @@
                                     <span class="font-bold text-zinc-900 dark:text-zinc-100 truncate" x-text="getDriverById(driverId)?.name + ' ' + getDriverById(driverId)?.surname"></span>
                                     <span class="text-[10px] uppercase font-semibold text-zinc-400 tracking-wider" x-text="getDriverById(driverId)?.nationality?.substring(0, 3)"></span>
                                 </div>
-                                <div class="text-xs text-zinc-500 dark:text-zinc-400 font-medium" x-text="getDriverById(driverId)?.team?.team_name || 'Individual Entry'"></div>
+                                <div class="text-xs text-zinc-500 dark:text-zinc-400 font-medium" x-text="getDriverById(driverId)?.team?.display_name || getDriverById(driverId)?.team?.team_name || 'Individual Entry'"></div>
                             </div>
                         </div>
                     </div>

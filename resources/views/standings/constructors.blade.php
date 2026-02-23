@@ -47,7 +47,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-constructor-bar :teamName="$row['team_name']">
-                                    <h4 class="font-semibold">{{ $row['team_name'] }}</h4>
+                                    <h4 class="font-semibold">{{ $row['team_display_name'] ?? $row['team_name'] }}</h4>
                                     @if($row['nationality'] ?? null)
                                         <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $row['nationality'] }}</p>
                                     @endif

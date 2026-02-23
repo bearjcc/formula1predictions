@@ -28,7 +28,7 @@
                     <tbody>
                         @forelse($races as $race)
                             <tr>
-                                <td class="font-medium">{{ $race->race_name }}</td>
+                                <td class="font-medium">{{ $race->display_name }}</td>
                                 <td>{{ $race->season }}</td>
                                 <td>{{ $race->round }}</td>
                                 <td class="text-zinc-600 dark:text-zinc-400">{{ $race->date ? \Carbon\Carbon::parse($race->date)->format('M j, Y') : '—' }}</td>

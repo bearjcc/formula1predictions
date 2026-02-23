@@ -38,7 +38,7 @@ class LockPredictionsPastDeadline extends Command
 
             if ($pastDeadline && $prediction->lock()) {
                 $locked++;
-                $this->line("Locked prediction {$prediction->id} ({$prediction->type}) for race {$race->race_name}");
+                $this->line("Locked prediction {$prediction->id} ({$prediction->type}) for race {$race->display_name}");
             }
         }
 

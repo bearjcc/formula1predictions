@@ -203,7 +203,7 @@ class F1ApiService
             'round' => $race->round,
             'date' => $race->date->format('Y-m-d'),
             'time' => $race->time ? $race->time->format('H:i:s') : '00:00:00',
-            'raceName' => $race->race_name,
+            'raceName' => $race->display_name,
             'circuit' => $circuit,
             'laps' => $race->laps,
             'status' => $race->status,

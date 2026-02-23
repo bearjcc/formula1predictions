@@ -44,9 +44,9 @@ class PredictionDeadlineReminder extends Notification implements ShouldQueue
         };
 
         return (new MailMessage)
-            ->subject("Prediction Deadline Reminder: {$this->race->race_name}")
+            ->subject("Prediction Deadline Reminder: {$this->race->display_name}")
             ->greeting("Hello {$notifiable->name}!")
-            ->line("Don't forget to submit your predictions for {$this->race->race_name}!")
+            ->line("Don't forget to submit your predictions for {$this->race->display_name}!")
             ->line("The deadline is before the {$deadlineText}.")
             ->action('Submit Prediction', url('/predictions/create'))
             ->action('View Race Details', url("/{$this->race->season}/race/{$this->race->id}"))
@@ -67,7 +67,7 @@ class PredictionDeadlineReminder extends Notification implements ShouldQueue
             'season' => $this->race->season,
             'round' => $this->race->round,
             'deadline_type' => $this->deadlineType,
-            'message' => "Don't forget to submit your predictions for {$this->race->race_name}",
+            'message' => "Don't forget to submit your predictions for {$this->race->display_name}",
             'action_url' => '/predictions/create',
         ];
     }

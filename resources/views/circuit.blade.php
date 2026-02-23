@@ -110,7 +110,7 @@
                                 <x-mary-icon name="o-flag" class="w-5 h-5 text-green-600 dark:text-green-400" />
                             </div>
                             <div>
-                                <h4 class="font-semibold">{{ $race->season }} {{ $race->race_name }}</h4>
+                                <h4 class="font-semibold">{{ $race->season }} {{ $race->display_name }}</h4>
                                 <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $race->date?->format('F j, Y') ?? 'Date TBD' }}</p>
                             </div>
                         </div>

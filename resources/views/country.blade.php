@@ -84,7 +84,7 @@
                         <x-constructor-bar :teamName="$driver->team?->team_name">
                             <div class="flex-1">
                                 <h4 class="font-semibold">{{ $driver->full_name }}</h4>
-                                <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $driver->team?->team_name ?? 'No constructor' }}</p>
+                                <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $driver->team?->display_name ?? 'No constructor' }}</p>
                             </div>
                         </x-constructor-bar>
                         <a href="{{ route('driver', $driver->slug) }}">

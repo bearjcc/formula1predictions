@@ -1,6 +1,6 @@
 @extends('components.layouts.layout')
 
-@section('title', $race->race_name . ' Leaderboard')
+@section('title', $race->display_name . ' Leaderboard')
 @section('headerSubtitle', 'Round ' . $raceRound . ' - ' . $season . ' Season')
 
 @section('content')

@@ -13,7 +13,7 @@
             <div class="flex-1">
                 <h2 class="text-2xl font-bold mb-2">{{ $driver->full_name }}</h2>
                 <p class="text-zinc-600 dark:text-zinc-400 mb-4">
-                    @if($driver->team){{ $driver->team->team_name }}@endif
+                    @if($driver->team){{ $driver->team->display_name }}@endif
                     @if($driver->nationality) &bull; {{ $driver->nationality }}@endif
                     @if($driver->driver_number) &bull; Driver #{{ $driver->driver_number }}@endif
                 </p>
@@ -83,7 +83,7 @@
                 <div class="flex items-center space-x-4">
                     <x-constructor-bar :teamName="$driver->team->team_name">
                         <div>
-                            <h4 class="font-semibold">{{ $driver->team->team_name }}</h4>
+                            <h4 class="font-semibold">{{ $driver->team->display_name }}</h4>
                             @if($driver->driver_number)
                                 <p class="text-sm text-zinc-600 dark:text-zinc-400">Driver #{{ $driver->driver_number }}</p>
                             @endif

@@ -31,9 +31,10 @@ class NotificationService
                 'type' => 'race_results_available',
                 'race_id' => $race->id,
                 'race_name' => $race->race_name,
+                'display_name' => $race->display_name,
                 'season' => $race->season,
                 'round' => $race->round,
-                'message' => "Race results for {$race->race_name} are now available",
+                'message' => "Race results for {$race->display_name} are now available",
                 'action_url' => "/{$race->season}/race/{$race->id}",
             ]));
         }
@@ -55,10 +56,11 @@ class NotificationService
             'score' => $score,
             'accuracy' => $accuracy,
             'race_name' => $prediction->race?->race_name,
+            'display_name' => $prediction->race?->display_name,
             'message' => sprintf(
                 'Your %s prediction for %s has been scored: %d points (%.1f%% accuracy)',
                 $prediction->type,
-                $prediction->race?->race_name ?? "{$prediction->season} season",
+                $prediction->race?->display_name ?? "{$prediction->season} season",
                 $score,
                 $accuracy
             ),

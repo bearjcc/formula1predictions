@@ -222,6 +222,7 @@ Route::middleware(['validate.year'])->group(function () {
                 'driver_name' => $name,
                 'nationality' => $driver->nationality,
                 'team_name' => $teamName,
+                'team_display_name' => $driver->team?->display_name ?? Teams::displayNameFor($teamName),
                 'points' => $points,
                 'wins' => $wins,
                 'podiums' => $podiums,
@@ -264,6 +265,7 @@ Route::middleware(['validate.year'])->group(function () {
             return [
                 'sort_name' => $team->team_name,
                 'team_name' => $team->team_name,
+                'team_display_name' => $team->display_name,
                 'nationality' => $team->nationality,
                 'driver_names' => $driverNames,
                 'points' => $points,

@@ -141,6 +141,7 @@ class PredictionForm extends Component
                     'team' => [
                         'id' => $driver->team?->id,
                         'team_name' => $driver->team?->team_name,
+                        'display_name' => $driver->team?->display_name,
                     ],
                 ];
             })
@@ -154,6 +155,7 @@ class PredictionForm extends Component
                 return [
                     'id' => $team->id,
                     'team_name' => $team->team_name,
+                    'display_name' => $team->display_name,
                     'nationality' => $team->nationality,
                 ];
             })
@@ -167,6 +169,7 @@ class PredictionForm extends Component
                 return [
                     'id' => $team->id,
                     'team_name' => $team->team_name,
+                    'display_name' => $team->display_name,
                     'drivers' => $team->drivers->map(fn ($d) => [
                         'id' => $d->id,
                         'name' => $d->name,

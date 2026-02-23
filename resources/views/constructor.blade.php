@@ -1,10 +1,10 @@
-<x-layouts.layout :title="$constructor->team_name" :headerSubtitle="'Constructor information and statistics for ' . $constructor->team_name">
+<x-layouts.layout :title="$constructor->display_name" :headerSubtitle="'Constructor information and statistics for ' . $constructor->display_name">
     <!-- Constructor Overview Card -->
     <x-mary-card class="mb-8">
         <div class="flex items-start space-x-6">
-            <x-constructor-bar :teamName="$constructor->team_name">
-                <div class="flex-1">
-                    <h2 class="text-2xl font-bold mb-2">{{ $constructor->team_name }}</h2>
+<x-constructor-bar :teamName="$constructor->team_name">
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold mb-2">{{ $constructor->display_name }}</h2>
                 <p class="text-zinc-600 dark:text-zinc-400 mb-4">
                     @if($constructor->base_location)Based in {{ $constructor->base_location }}.@endif
                     @if($constructor->nationality) {{ $constructor->nationality }}.@endif

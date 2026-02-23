@@ -125,7 +125,7 @@ class Teams extends Model
     }
 
     /**
-     * Get the team's full name.
+     * Get the team's full name (stored in DB, for matching).
      */
     public function getFullNameAttribute(): string
     {
@@ -133,11 +133,36 @@ class Teams extends Model
     }
 
     /**
-     * Get the team's slug for URLs.
+     * Short name for display and URLs: strip "Formula 1", "F1", and "Team".
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return self::displayNameFor($this->team_name);
+    }
+
+    /**
+     * Compute display name from a raw team name string (e.g. for standings rows).
+     */
+    public static function displayNameFor(?string $teamName): string
+    {
+        if ($teamName === null || $teamName === '') {
+            return '';
+        }
+        $out = $teamName;
+        foreach (['Formula 1', 'F1', 'Team'] as $phrase) {
+            $out = preg_replace('/\s*'.preg_quote($phrase, '/').'\s*/iu', ' ', $out);
+        }
+        $out = trim(preg_replace('/\s+/', ' ', $out));
+
+        return $out !== '' ? $out : $teamName;
+    }
+
+    /**
+     * Get the team's slug for URLs (uses display name).
      */
     public function getSlugAttribute(): string
     {
-        return str($this->team_name)
+        return str($this->display_name)
             ->lower()
             ->replace([' ', '&', '-'], '-')
             ->slug();
@@ -145,6 +170,7 @@ class Teams extends Model
 
     /**
      * Official constructor color (hex) for F1-style bar. Null if unknown.
+     * Tries exact match first, then match when a config key is contained in the team name.
      */
     public static function constructorColor(?string $teamName): ?string
     {
@@ -152,8 +178,19 @@ class Teams extends Model
             return null;
         }
         $colors = config('constructor_colors', []);
-        $key = collect($colors)->keys()->first(fn (string $k) => strcasecmp(trim($k), trim($teamName)) === 0);
+        $normalized = trim($teamName);
 
-        return $key !== null ? $colors[$key] : null;
+        $key = collect($colors)->keys()->first(fn (string $k) => strcasecmp(trim($k), $normalized) === 0);
+        if ($key !== null) {
+            return $colors[$key];
+        }
+
+        // Fallback: config key contained in team name (e.g. "Ferrari" in "Scuderia Ferrari"); use longest match
+        $bestKey = collect($colors)->keys()
+            ->filter(fn (string $k) => stripos($normalized, trim($k)) !== false)
+            ->sortByDesc(fn (string $k) => strlen($k))
+            ->first();
+
+        return $bestKey !== null ? $colors[$bestKey] : null;
     }
 }

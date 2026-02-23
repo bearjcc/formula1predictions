@@ -28,7 +28,7 @@
                         <td class="p-4">
                             <div class="font-bold text-zinc-900 dark:text-zinc-100">
                                 @if($prediction->type === 'race')
-                                    {{ $prediction->race->race_name ?? "Round {$prediction->race_round}" }}
+                                    {{ $prediction->race->display_name ?? "Round {$prediction->race_round}" }}
                                 @else
                                     {{ ucfirst($prediction->type) }} Prediction
                                 @endif

@@ -93,7 +93,7 @@
                                     <x-mary-icon name="o-flag" class="w-6 h-6 text-red-600 dark:text-red-400" />
                                 </div>
                                 <div>
-                                    <h4 class="font-semibold">{{ $race->race_name }}</h4>
+                                    <h4 class="font-semibold">{{ $race->display_name }}</h4>
                                     <p class="text-sm text-auto-muted">
                                         {{ $race->date?->format('M j, Y') }}
                                         @if($race->locality)
@@ -168,7 +168,7 @@
                             <x-mary-icon name="{{ $prediction->status === 'scored' ? 'o-check' : 'o-clock' }}" class="w-5 h-5 {{ $prediction->status === 'scored' ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400' }}" />
                         </div>
                         <div class="flex-1">
-                            <h4 class="font-semibold">{{ ucfirst($prediction->type) }} - {{ $prediction->race?->race_name ?? ($prediction->type === 'preseason' ? $prediction->season . ' Season' : 'Unknown race') }}</h4>
+                            <h4 class="font-semibold">{{ ucfirst($prediction->type) }} - {{ $prediction->race?->display_name ?? ($prediction->type === 'preseason' ? $prediction->season . ' Season' : 'Unknown race') }}</h4>
                             <p class="text-sm text-auto-muted">
                                 {{ $prediction->season }} Season
                                 @if($prediction->status === 'scored' && $prediction->score !== null)

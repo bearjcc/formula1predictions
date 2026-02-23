@@ -167,7 +167,7 @@ class Races extends Model
     }
 
     /**
-     * Get the race's full name.
+     * Get the race's full name (stored in DB, for matching).
      */
     public function getFullNameAttribute(): string
     {
@@ -175,11 +175,27 @@ class Races extends Model
     }
 
     /**
-     * Get the race's slug for URLs.
+     * Short name for display and URLs: strip redundant "Formula 1" / "F1" prefix.
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        $trimmed = trim($this->race_name);
+        foreach (['Formula 1 ', 'F1 '] as $prefix) {
+            if (stripos($trimmed, $prefix) === 0) {
+                $trimmed = trim(substr($trimmed, strlen($prefix)));
+                break;
+            }
+        }
+
+        return $trimmed !== '' ? $trimmed : $this->race_name;
+    }
+
+    /**
+     * Get the race's slug for URLs (uses display name).
      */
     public function getSlugAttribute(): string
     {
-        return str($this->race_name)
+        return str($this->display_name)
             ->lower()
             ->replace([' ', '&', '-'], '-')
             ->slug();

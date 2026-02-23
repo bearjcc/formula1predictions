@@ -1,4 +1,4 @@
-<x-layouts.layout :title="($prediction->type === 'race' ? ($prediction->race->race_name ?? 'Round ' . $prediction->race_round) : ucfirst($prediction->type)) . ' Prediction'" headerSubtitle="Performance overview and details.">
+<x-layouts.layout :title="($prediction->type === 'race' ? ($prediction->race->display_name ?? 'Round ' . $prediction->race_round) : ucfirst($prediction->type)) . ' Prediction'" headerSubtitle="Performance overview and details.">
     <div class="mb-8 flex justify-end">
         <div class="flex items-center space-x-2">
             @if($prediction->isEditable())
@@ -35,7 +35,7 @@
                                         {{ $driver ? "{$driver->name} {$driver->surname}" : $driverId }}
                                     </div>
                                     <div class="text-xs text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                                        {{ $driver->team->team_name ?? 'Individual' }}
+                                        {{ $driver->team->display_name ?? 'Individual' }}
                                     </div>
                                 </div>
                             </div>

@@ -20,7 +20,7 @@
         @if($race)
         <div class="mb-6">
             <h2 class="text-xl font-bold text-zinc-900 dark:text-white uppercase tracking-tight">
-                {{ $race->race_name }} {{ $season }}
+                {{ $race->display_name }} {{ $season }}
             </h2>
             <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
                 <span>Round {{ $race->round }}</span>
@@ -57,7 +57,7 @@
             <div class="{{ $isLocked ? 'pointer-events-none grayscale-[0.5] opacity-80' : '' }}">
                 @livewire('predictions.draggable-driver-list', [
                     'drivers' => $drivers,
-                    'raceName' => $race ? $race->race_name : 'Race',
+                    'raceName' => $race ? $race->display_name : 'Race',
                     'season' => $season,
                     'raceRound' => $raceRound ?? 1,
                     'driverOrder' => $driverOrder,
@@ -88,7 +88,7 @@
                             @foreach($teamsWithDrivers as $team)
                                 @if(count($team['drivers']) >= 2)
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <span class="font-medium text-zinc-700 dark:text-zinc-300 w-40">{{ $team['team_name'] }}</span>
+                                        <span class="font-medium text-zinc-700 dark:text-zinc-300 w-40">{{ $team['display_name'] }}</span>
                                         <x-mary-select wire:model="teammateBattles.{{ $team['id'] }}" :disabled="$isLocked" placeholder="Pick driver" class="min-w-[180px]">
                                             @foreach($team['drivers'] as $driver)
                                                 <option value="{{ $driver['id'] }}">{{ $driver['name'] }} {{ $driver['surname'] }}</option>
@@ -129,7 +129,7 @@
                             <x-mary-select label="Constructor with Most Podiums" wire:model="superlatives.most_podiums_team" :disabled="$isLocked">
                                 <option value="">Select constructor</option>
                                 @foreach($teams as $team)
-                                    <option value="{{ $team['id'] }}">{{ $team['team_name'] }}</option>
+                                    <option value="{{ $team['id'] }}">{{ $team['display_name'] }}</option>
                                 @endforeach
                             </x-mary-select>
                             <x-mary-select label="Driver with Most Podiums" wire:model="superlatives.most_podiums_driver" :disabled="$isLocked">
@@ -141,7 +141,7 @@
                             <x-mary-select label="Constructor with Most DNFs" wire:model="superlatives.most_dnfs_team" :disabled="$isLocked">
                                 <option value="">Select constructor</option>
                                 @foreach($teams as $team)
-                                    <option value="{{ $team['id'] }}">{{ $team['team_name'] }}</option>
+                                    <option value="{{ $team['id'] }}">{{ $team['display_name'] }}</option>
                                 @endforeach
                             </x-mary-select>
                             <x-mary-select label="Driver with Most DNFs" wire:model="superlatives.most_dnfs_driver" :disabled="$isLocked">
