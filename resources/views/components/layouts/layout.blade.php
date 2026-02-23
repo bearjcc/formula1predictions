@@ -156,8 +156,8 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-4">
-                        <!-- Notification Dropdown -->
+                    <div class="flex items-center space-x-2">
+                        <livewire:layout.appearance-toggle />
                         @auth
                             <livewire:notifications.notification-dropdown />
                         @endauth
