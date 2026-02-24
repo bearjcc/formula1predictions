@@ -164,10 +164,10 @@ Longer-horizon ideas and exploratory improvements.
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
   - Done: Orphan predictions/edit.blade.php was removed in F1-107; edit flow uses edit-livewire only.
 
-- [ ] **F1-063: Remove console.log debug statements from production JS**
+- [x] **F1-063: Remove console.log debug statements from production JS** _(done 2026-02-24)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
-  - Affected: resources/js/notifications.js (L11, L79)
-  - console.log debug statements in production JS. Remove.
+  - Affected: resources/js/notifications.js
+  - console.log debug statements in production JS removed; NotificationsJsTest asserts no console.log statements are present.
 
 - [x] **F1-064: Fix clearAllCache() to cover all years** _(done 2026-02-10)_
   - Type: bug | Priority: P2 | Risk: low | Owner: agent
