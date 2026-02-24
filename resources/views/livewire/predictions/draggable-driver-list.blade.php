@@ -47,7 +47,10 @@
 
             get availableDrivers() {
                 const placed = new Set(this.driverOrder.filter(id => id != null).map(id => String(id)));
-                return this.drivers.filter(d => !placed.has(String(d.id)));
+                const lastWord = (d) => { const s = (d.surname || d.name || '').trim(); const w = s.split(/\s+/).filter(Boolean); return w.length ? w[w.length - 1] : s; };
+                return this.drivers
+                    .filter(d => !placed.has(String(d.id)))
+                    .sort((a, b) => lastWord(a).localeCompare(lastWord(b), 'en', { sensitivity: 'base' }));
             },
 
             getDriverById(id) {
@@ -239,11 +242,11 @@
         }"
         class="space-y-4"
     >
-        {{-- Mobile: single list, compact, surname-only, touch-drag + tap-to-fill --}}
+        {{-- Mobile: constructors-style list - position markers left (outside draggable), drag to sort; unplaced alphabetically --}}
         <div class="md:hidden space-y-2">
             <div class="px-1 py-1">
                 <h4 class="font-bold text-zinc-900 dark:text-white text-sm">Your prediction (1&ndash;{{ $maxSlots }})</h4>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag or tap unplaced drivers. Positions {{ $this->dnfEligibleFromSlot + 1 }}+ can be marked DNF.</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag to reorder. Tap unplaced to fill first empty. Positions {{ $this->dnfEligibleFromSlot + 1 }}+ can be marked DNF.</p>
             </div>
             <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
                 <div class="divide-y divide-zinc-200 dark:divide-zinc-700 max-h-[50vh] overflow-y-auto">
@@ -253,13 +256,16 @@
                                 'bg-blue-50/50 dark:bg-blue-900/10': dragOverIndex === index,
                                 'opacity-40': draggedDriverId && draggedFromIndex === index
                             }"
-                            class="flex items-center gap-1.5 py-1.5 px-2 min-h-[40px] border-zinc-100 dark:border-zinc-700/50 transition-colors"
+                            class="flex items-center gap-2 py-1.5 px-2 min-h-[44px] border-zinc-100 dark:border-zinc-700/50 transition-colors"
                             :data-drop-slot="index"
                             @dragover.prevent="dragOverRace($event, index)"
                             @dragleave="dragLeaveRace()"
                             @drop.prevent="dropRace($event, index)"
                         >
-                            <span class="flex-shrink-0 w-5 text-zinc-500 dark:text-zinc-400 text-xs font-medium" x-text="(index + 1) + '.'"></span>
+                            {{-- Position marker: left, outside draggable area --}}
+                            <div class="flex-shrink-0 w-7 flex items-center justify-center">
+                                <span class="text-zinc-500 dark:text-zinc-400 text-xs font-semibold" x-text="index + 1"></span>
+                            </div>
                             <template x-if="slotDriverId(index)">
                                 <div
                                     class="flex-1 flex items-center gap-1.5 cursor-move select-none rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800/80 py-1 px-2 min-w-0"
@@ -269,6 +275,7 @@
                                     @pointerdown="pointerDownRace($event, slotDriverId(index), 'slot', index)"
                                     :title="getDriverById(slotDriverId(index)) ? (getDriverById(slotDriverId(index)).name + ' ' + getDriverById(slotDriverId(index)).surname) : ''"
                                 >
+                                    <span x-show="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) ? 'background-color: ' + getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) : ''" aria-hidden="true"></span>
                                     <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 w-3.5" aria-hidden="true">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                                     </span>
@@ -297,14 +304,14 @@
                 </div>
             </div>
             <div class="px-1 py-1">
-                <h4 class="font-bold text-zinc-900 dark:text-white text-sm" x-text="'Unplaced (' + (availableDrivers?.length ?? 0) + ')'"></h4>
+                <h4 class="font-bold text-zinc-900 dark:text-white text-sm" x-text="'Unplaced (' + (availableDrivers?.length ?? 0) + ') - tap to fill'"></h4>
             </div>
             <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
                 <div class="p-1.5 flex flex-wrap gap-1.5 max-h-[30vh] overflow-y-auto">
                     <template x-for="driver in availableDrivers" :key="driver.id">
                         <button
                             type="button"
-                            class="flex items-center gap-1 cursor-move select-none rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800/80 py-1.5 px-2 hover:border-zinc-300 dark:hover:border-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-700 text-sm font-medium text-zinc-900 dark:text-zinc-100"
+                            class="flex items-center gap-1.5 cursor-move select-none rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800/80 py-1.5 px-2 hover:border-zinc-300 dark:hover:border-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-700 text-sm font-medium text-zinc-900 dark:text-zinc-100"
                             draggable="true"
                             @dragstart="dragStartRace($event, driver.id, 'pool', null)"
                             @dragend="dragEndRace()"
@@ -312,6 +319,7 @@
                             @click.prevent="if (!justDragged) fillFirstEmpty(driver.id); justDragged = false"
                             :title="driver.name + ' ' + driver.surname"
                         >
+                            <span x-show="getConstructorColor(driver.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[0.875rem]" :style="getConstructorColor(driver.team?.team_name) ? 'background-color: ' + getConstructorColor(driver.team?.team_name) : ''" aria-hidden="true"></span>
                             <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 w-3.5" aria-hidden="true">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                             </span>

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\F1ApiService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -125,6 +127,43 @@ class Drivers extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Drivers competing in a season (from standings, then API fallback).
+     * Matches the logic used on the drivers standings page.
+     *
+     * @return Collection<int, Drivers>
+     */
+    public static function forSeason(int $season, ?F1ApiService $f1 = null): Collection
+    {
+        $driverStandings = Standings::getDriverStandings($season, null);
+        $entityIds = $driverStandings->pluck('entity_id')->unique()->filter()->values();
+
+        $allDrivers = new Collection;
+        if ($entityIds->isNotEmpty()) {
+            $byDriverId = static::whereIn('driver_id', $entityIds)->with('team')->get();
+            $numericIds = $entityIds->filter(fn ($id) => ctype_digit((string) $id))->values();
+            $byId = $numericIds->isNotEmpty()
+                ? static::whereIn('id', $numericIds->map(fn ($id) => (int) $id))->with('team')->get()
+                : new Collection;
+            $allDrivers = $byDriverId->merge($byId)->unique('id')->values();
+        }
+
+        if ($allDrivers->isEmpty() && $f1 !== null) {
+            try {
+                $data = $f1->fetchDriversChampionship($season);
+                $entries = $data['drivers_championship'] ?? [];
+                if ($entries !== []) {
+                    $apiDriverIds = collect($entries)->pluck('driverId')->filter()->unique()->values()->all();
+                    $allDrivers = static::whereIn('driver_id', $apiDriverIds)->with('team')->get();
+                }
+            } catch (\Throwable) {
+                // API may not have data for future/past years
+            }
+        }
+
+        return Collection::make($allDrivers->all());
     }
 
     /**

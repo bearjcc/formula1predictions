@@ -8,6 +8,7 @@ use App\Models\Drivers;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\Teams;
+use App\Services\F1ApiService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule as ValidationRule;
 use Livewire\Attributes\On;
@@ -131,24 +132,27 @@ class PredictionForm extends Component
 
     public function loadData(): void
     {
-        // Use driver_id (F1 API string) when present, else fallback to id for compatibility
-        $this->drivers = Drivers::where('is_active', true)
-            ->get()
-            ->map(function ($driver) {
-                return [
-                    'id' => $driver->driver_id ?? (string) $driver->id,
-                    'name' => $driver->name,
-                    'surname' => $driver->surname,
-                    'nationality' => $driver->nationality,
-                    'team' => [
-                        'id' => $driver->team?->id,
-                        'team_name' => $driver->team?->team_name,
-                        'display_name' => $driver->team?->display_name,
-                    ],
-                ];
-            })
-            ->values()
-            ->toArray();
+        // Only show drivers for this season (same logic as drivers standings page)
+        $seasonDrivers = Drivers::forSeason($this->season, app(F1ApiService::class));
+        $driverArrays = $seasonDrivers->map(function ($driver) {
+            return [
+                'id' => $driver->driver_id ?? (string) $driver->id,
+                'name' => $driver->name,
+                'surname' => $driver->surname,
+                'nationality' => $driver->nationality,
+                'team' => [
+                    'id' => $driver->team?->id,
+                    'team_name' => $driver->team?->team_name,
+                    'display_name' => $driver->team?->display_name,
+                ],
+            ];
+        });
+        // Sort by family name (last word of surname so "Kimi Antonelli" is under A)
+        $this->drivers = collect($driverArrays)->sortBy(function ($d) {
+            $s = trim($d['surname'] ?? $d['name'] ?? '');
+            $words = array_filter(preg_split('/\s+/', $s));
+            return $words ? end($words) : $s;
+        })->values()->toArray();
 
         $this->teams = Teams::where('is_active', true)
             ->with('drivers')
