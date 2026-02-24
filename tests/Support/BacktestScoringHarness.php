@@ -11,7 +11,7 @@ use App\Models\Races;
  * Test-only harness for running alternative scoring variants against historical predictions.
  * Does not persist to the database. Used for experiments and backtesting.
  *
- * @see TODO.md F1-009
+ * @see \App\Services\ScoringService::class
  */
 class BacktestScoringHarness
 {
