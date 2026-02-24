@@ -361,3 +361,51 @@ test('ensure test year bot predictions runs seeder once then sets flag', functio
         ->expectsOutputToContain('already seeded. Skipping.')
         ->assertExitCode(0);
 });
+
+test('ensure previous-race bot initial prediction skips when job already recorded', function () {
+    \Illuminate\Support\Facades\DB::table('one_time_jobs')->insert([
+        'name' => 'previous_race_bot_2026_r1',
+        'run_at' => now(),
+    ]);
+
+    $this->artisan('app:ensure-previous-race-bot-initial-prediction')
+        ->expectsOutputToContain('already seeded. Skipping.')
+        ->assertExitCode(0);
+});
+
+test('ensure previous-race bot initial prediction seeds 2026 round 1 from final 2025 race', function () {
+    Drivers::factory()->create(['driver_id' => 'driver_a']);
+
+    $final2025 = Races::factory()->create([
+        'season' => 2025,
+        'round' => 24,
+        'status' => 'completed',
+        'results' => [
+            ['driver' => ['driverId' => 'driver_a'], 'status' => 'finished'],
+        ],
+    ]);
+    $first2026 = Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'status' => 'upcoming',
+    ]);
+
+    $this->artisan('app:ensure-previous-race-bot-initial-prediction')
+        ->expectsOutputToContain('Seeding previous-race bot prediction for 2026 round '.$first2026->round)
+        ->expectsOutputToContain('Previous-race bot initial prediction seeded. Flag set so this will not run again.')
+        ->assertExitCode(0);
+
+    expect(\Illuminate\Support\Facades\DB::table('one_time_jobs')->where('name', 'previous_race_bot_2026_r1')->exists())->toBeTrue();
+
+    $botUser = User::where('email', 'lastracebot@example.com')->first();
+    expect($botUser)->not->toBeNull();
+
+    $prediction = Prediction::where('user_id', $botUser->id)
+        ->where('season', 2026)
+        ->where('race_round', 1)
+        ->where('type', 'race')
+        ->first();
+
+    expect($prediction)->not->toBeNull();
+    expect($prediction->prediction_data['driver_order'])->toHaveCount(1);
+});

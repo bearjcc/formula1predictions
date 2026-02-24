@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Races;
 use App\Services\F1ApiService;
+use App\Services\PreviousRaceResultBotService;
 use App\Services\ScoringService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -70,6 +71,18 @@ class ScoreRacePredictionsJob implements ShouldQueue
                     Log::warning('Scoring errors encountered', [
                         'race_id' => $race->id,
                         'errors' => $results['errors'],
+                    ]);
+                }
+
+                try {
+                    /** @var PreviousRaceResultBotService $botService */
+                    $botService = app(PreviousRaceResultBotService::class);
+                    $botService->createNextRacePrediction($race);
+                } catch (\Throwable $e) {
+                    Log::error('Failed to create previous race bot prediction', [
+                        'race_id' => $race->id,
+                        'error' => $e->getMessage(),
+                        'exception' => $e,
                     ]);
                 }
             } else {

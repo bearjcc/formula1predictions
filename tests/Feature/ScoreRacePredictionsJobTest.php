@@ -164,3 +164,47 @@ test('job failed method logs error', function () {
     $job = new ScoreRacePredictionsJob(123, false);
     $job->failed(new \RuntimeException('Test failure'));
 });
+
+test('job creates previous-race bot prediction for next race after scoring', function () {
+    $race1 = Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'status' => 'completed',
+        'race_name' => 'Opening GP',
+        'results' => [
+            ['driver' => ['driverId' => 'driver_a'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'driver_b'], 'status' => 'finished'],
+        ],
+    ]);
+    $race2 = Races::factory()->create([
+        'season' => 2026,
+        'round' => 2,
+        'status' => 'upcoming',
+        'race_name' => 'Second GP',
+    ]);
+
+    $user = User::factory()->create();
+    Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race1->id,
+        'type' => 'race',
+        'status' => 'submitted',
+        'prediction_data' => [
+            'driver_order' => ['driver_a', 'driver_b'],
+        ],
+    ]);
+
+    $job = new ScoreRacePredictionsJob($race1->id, false);
+    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+
+    $botUser = \App\Models\User::where('email', 'lastracebot@example.com')->first();
+    expect($botUser)->not->toBeNull();
+
+    $botPrediction = Prediction::where('user_id', $botUser->id)
+        ->where('season', 2026)
+        ->where('race_round', 2)
+        ->where('type', 'race')
+        ->first();
+
+    expect($botPrediction)->not->toBeNull();
+});
