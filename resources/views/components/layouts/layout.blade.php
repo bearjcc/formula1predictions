@@ -216,44 +216,46 @@
         </div>
     </div>
 
-    <script>
+    <script data-navigate-once>
         // Set user ID for notifications
         @auth
             window.userId = {{ Auth::id() }};
         @endauth
 
         // Mobile sidebar functionality
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('livewire:navigated', function() {
             const sidebar = document.getElementById('sidebar');
             const mobileOverlay = document.getElementById('mobile-overlay');
             const openSidebarBtn = document.getElementById('open-sidebar');
             const closeSidebarBtn = document.getElementById('close-sidebar');
 
             function openSidebar() {
-                sidebar.classList.remove('-translate-x-full');
-                mobileOverlay.classList.remove('hidden');
+                if (sidebar) sidebar.classList.remove('-translate-x-full');
+                if (mobileOverlay) mobileOverlay.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
 
             function closeSidebar() {
-                sidebar.classList.add('-translate-x-full');
-                mobileOverlay.classList.add('hidden');
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (mobileOverlay) mobileOverlay.classList.add('hidden');
                 document.body.style.overflow = '';
             }
 
-            openSidebarBtn.addEventListener('click', openSidebar);
-            closeSidebarBtn.addEventListener('click', closeSidebar);
-            mobileOverlay.addEventListener('click', closeSidebar);
+            if (openSidebarBtn) openSidebarBtn.addEventListener('click', openSidebar);
+            if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+            if (mobileOverlay) mobileOverlay.addEventListener('click', closeSidebar);
 
             // Close sidebar when clicking on navigation links on mobile
-            const navLinks = sidebar.querySelectorAll('a[wire\\:navigate]');
-            navLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    if (window.innerWidth < 1024) { // lg breakpoint
-                        closeSidebar();
-                    }
+            if (sidebar) {
+                const navLinks = sidebar.querySelectorAll('a[wire\\:navigate]');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth < 1024) { // lg breakpoint
+                            closeSidebar();
+                        }
+                    });
                 });
-            });
+            }
 
             // Handle window resize
             window.addEventListener('resize', () => {
