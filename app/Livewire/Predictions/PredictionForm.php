@@ -75,6 +75,8 @@ class PredictionForm extends Component
         if ($preseason) {
             $this->type = 'preseason';
             $this->season = $preseasonYear ?? config('f1.current_season');
+            $deadline = Races::getPreseasonDeadlineForSeason($this->season);
+            $this->isLocked = $deadline === null || ! $deadline->isFuture();
         }
 
         $this->loadData();
@@ -153,7 +155,7 @@ class PredictionForm extends Component
             ->orderBy('team_name')
             ->get()
             ->map(function ($team) {
-                $driverSurnames = $team->drivers->where('is_active', true)->pluck('surname')->filter()->values();
+                $driverSurnames = $team->drivers->pluck('surname')->filter()->values();
 
                 return [
                     'id' => $team->id,

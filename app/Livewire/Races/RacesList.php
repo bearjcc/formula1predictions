@@ -114,12 +114,24 @@ class RacesList extends Component
         ];
     }
 
-    /** @return array{past: array, next: array|null, future: array} */
+    /** Whether the season is in the past (no "next" or "future" races). */
+    public function getIsSeasonCompletedProperty(): bool
+    {
+        return $this->year < (int) date('Y');
+    }
+
+    /** @return array{past: array, next: array|null, future: array, flat: array} */
     public function getGroupedRacesProperty(): array
     {
         $past = [];
         $next = null;
         $future = [];
+
+        if ($this->isSeasonCompleted) {
+            $all = array_values(array_filter($this->races, fn ($r) => is_array($r)));
+
+            return ['past' => $all, 'next' => null, 'future' => [], 'flat' => $all];
+        }
 
         foreach ($this->races as $race) {
             if (! is_array($race)) {
@@ -139,7 +151,7 @@ class RacesList extends Component
             }
         }
 
-        return ['past' => $past, 'next' => $next, 'future' => $future];
+        return ['past' => $past, 'next' => $next, 'future' => $future, 'flat' => []];
     }
 
     public function showCalendar(): void

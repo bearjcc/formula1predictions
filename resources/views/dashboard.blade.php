@@ -64,7 +64,7 @@
         {{-- Upcoming Races --}}
         <x-mary-card class="lg:col-span-2 p-6">
             <h3 class="text-heading-3 mb-4">Upcoming Races</h3>
-            @if($preseasonDeadline && !$hasPreseasonPrediction)
+            @if($preseasonDeadline && !$hasPreseasonPrediction && $preseasonDeadline->isFuture())
                 <div class="mb-4 p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg flex items-center justify-between gap-3">
                     <div>
                         <h4 class="font-semibold">Preseason prediction</h4>

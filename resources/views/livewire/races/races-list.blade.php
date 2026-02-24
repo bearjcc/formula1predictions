@@ -43,13 +43,15 @@
                                 Closes when {{ $preseasonInfo['first_race_name'] }} predictions close.
                             @endif
                             @if($preseasonInfo['deadline'])
-                                <span class="block mt-1 text-amber-600 dark:text-amber-400">{{ $preseasonInfo['deadline']->format('M j, Y g:i A T') }}</span>
+                                <span class="block mt-1 {{ $preseasonInfo['open'] ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-500 dark:text-zinc-400' }}">{{ $preseasonInfo['deadline']->format('M j, Y g:i A T') }}{{ $preseasonInfo['open'] ? '' : ' (closed)' }}</span>
                             @endif
                         </p>
                     </div>
-                    <x-mary-button variant="primary" size="sm" icon="o-pencil-square" link="{{ route('predict.preseason', ['year' => $year]) }}" wire:navigate>
-                        Make preseason prediction
-                    </x-mary-button>
+                    @if($preseasonInfo['open'])
+                        <x-mary-button variant="primary" size="sm" icon="o-pencil-square" link="{{ route('predict.preseason', ['year' => $year]) }}" wire:navigate>
+                            Make preseason prediction
+                        </x-mary-button>
+                    @endif
                 </div>
             @endif
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -76,6 +78,19 @@
                 </div>
             @else
             <div class="space-y-4">
+                @if($this->isSeasonCompleted && !empty($grouped['flat']))
+                    <details class="group bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700" open>
+                        <summary class="px-6 py-4 cursor-pointer list-none font-semibold text-lg flex items-center gap-2">
+                            <x-mary-icon name="o-chevron-right" class="w-5 h-5 transition-transform group-open:rotate-90" />
+                            Races ({{ count($grouped['flat']) }})
+                        </summary>
+                        <div class="px-6 pb-6 space-y-4">
+                            @foreach($grouped['flat'] as $race)
+                                @include('livewire.races.partials.race-card', ['race' => $race])
+                            @endforeach
+                        </div>
+                    </details>
+                @else
                 @if(!empty($grouped['next']))
                     <details class="group bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700" open>
                         <summary class="px-6 py-4 cursor-pointer list-none font-semibold text-lg flex items-center gap-2">
@@ -115,10 +130,11 @@
                         </div>
                     </details>
                 @endif
+                @endif
             </div>
             @endif
 
-            @if(empty($grouped['next']) && empty($grouped['future']) && empty($grouped['past']))
+            @if(empty($grouped['next']) && empty($grouped['future']) && empty($grouped['past']) && empty($grouped['flat'] ?? []))
                 <div class="text-center py-12">
                     <p class="text-zinc-500 dark:text-zinc-400">No races available for {{ $year }}.</p>
                 </div>

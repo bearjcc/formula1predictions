@@ -218,11 +218,16 @@ class Races extends Model
     }
 
     /**
-     * Check if the race is in the future.
+     * Check if the race is in the future (or today). Past race dates are never upcoming
+     * regardless of stored status, so prediction gates stay correct.
      */
     public function isUpcoming(): bool
     {
-        return $this->status === 'upcoming' || ($this->date !== null && $this->date->isFuture());
+        if ($this->date === null) {
+            return $this->status === 'upcoming';
+        }
+
+        return $this->date->isFuture() || $this->date->isToday();
     }
 
     /**

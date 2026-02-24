@@ -102,7 +102,7 @@
                         Results ({{ count($race['results']) }} drivers)
                     </x-mary-button>
                 @endif
-                @if(($race['status'] ?? '') === 'upcoming')
+                @if(!empty($race['predictions_open']))
                     <x-mary-button
                         variant="primary"
                         size="sm"
