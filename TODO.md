@@ -286,10 +286,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: resources/views/home.blade.php, dashboard.blade.php, standings views, races.blade.php
   - Done: Design system CSS (`resources/css/design-system.css`) defines `.text-auto-muted` and `.bg-card` as zinc-based auto-switching utilities; `resources/css/app.css` defines `.text-shadow`. Home, dashboard, scoring, standings, and detail views now consistently use these documented utilities instead of ad-hoc classes.
 
-- [ ] **F1-100: Update focus ring colors to F1 brand** _(found 2026-02-10 audit)_
+- [x] **F1-100: Update focus ring colors to F1 brand** _(done 2026-02-24)_
   - Type: UI | Priority: P3 | Risk: low | Owner: agent
   - Affected: resources/views/livewire/auth/login.blade.php (predict/create and components/prediction-form were removed in F1-107/F1-108).
-  - Multiple files use `focus:ring-indigo-500` or `focus:ring-blue-500` for focus indicators. DESIGN_SYSTEM.md specifies F1 brand red as primary. Update to `focus:ring-red-600 dark:focus:ring-red-500`.
+  - F1 brand red is used for focus indicators instead of indigo/blue. Added `FocusRingColorsTest` to ensure Blade views do not contain `focus:ring-indigo-500` or `focus:ring-blue-500`.
 
 - [x] **F1-101: Remove dead duplicate leaderboard routes** _(done 2026-02-24)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
