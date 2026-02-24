@@ -91,16 +91,16 @@
                                 <x-mary-icon name="o-chart-bar" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-heading-3">Predictions</h3>
-                                <p class="text-sm text-auto-muted">Leaderboard & accuracy</p>
+                                <h3 class="text-heading-3">Prediction standings</h3>
+                                <p class="text-sm text-auto-muted">Global prediction leaderboard</p>
                             </div>
                         </div>
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
-                            See how your predictions stack up and track your accuracy.
+                            See how prediction scores stack up for the season. For your own picks, use My Predictions.
                         </p>
                         <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" wire:navigate
                             class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                            View Predictions
+                            View prediction standings
                         </a>
                     </div>
                 </x-mary-card>
@@ -238,7 +238,7 @@
                     class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg bg-white text-red-600 hover:bg-red-50 shadow-md transition-colors">
                     Get Started
                 </a>
-                <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" wire:navigate
+                <a href="{{ route('how-it-works') }}" wire:navigate
                     class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg border-2 border-white text-white hover:bg-white/10 transition-colors">
                     Learn More
                 </a>

@@ -19,6 +19,10 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+Route::get('/how-it-works', function () {
+    return view('how-it-works');
+})->name('how-it-works');
+
 Route::get('/scoring', function () {
     return view('scoring');
 })->name('scoring');
@@ -163,7 +167,7 @@ Route::middleware(['validate.year'])->group(function () {
     })->name('races');
 
     Route::get('/{year}/standings', function ($year) {
-        return view('standings', ['year' => $year]);
+        return redirect()->route('standings.drivers', ['year' => $year], 302);
     })->name('standings');
 
     Route::get('/{year}/standings/drivers', function (F1ApiService $f1, $year) {
@@ -226,10 +230,12 @@ Route::middleware(['validate.year'])->group(function () {
             return [
                 'sort_name' => trim($driver->surname.' '.$driver->name),
                 'driver_name' => $driverName,
+                'driver_slug' => $driver->slug,
                 'nationality' => $driver->nationality,
                 'country_flag_url' => $country ? $country->flag_url : '',
                 'team_name' => $teamName,
                 'team_display_name' => $driver->team?->display_name ?? Teams::displayNameFor($teamName),
+                'team_slug' => $driver->team?->slug,
                 'points' => $points,
                 'wins' => $wins,
                 'podiums' => $podiums,
@@ -296,6 +302,7 @@ Route::middleware(['validate.year'])->group(function () {
                 'sort_name' => $team->team_name,
                 'team_name' => $team->team_name,
                 'team_display_name' => $team->display_name,
+                'team_slug' => $team->slug,
                 'nationality' => $team->nationality,
                 'country_flag_url' => $country ? $country->flag_url : '',
                 'driver_names' => $driverNames,
