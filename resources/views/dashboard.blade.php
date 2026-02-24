@@ -2,7 +2,7 @@
     {{-- #region Page Header --}}
     <div class="mb-8 flex justify-end">
         <div class="flex items-center gap-3">
-            <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
+            <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('predict.create') }}" wire:navigate>
                 Make Prediction
             </x-mary-button>
         </div>
@@ -112,7 +112,7 @@
                                     View
                                 </x-mary-button>
                                 @if($allowsPredictions)
-                                    <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('predict.create') }}?race={{ $race->id }}" wire:navigate>
+                                    <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('predict.create', ['race_id' => $race->id]) }}" wire:navigate>
                                         Predict
                                     </x-mary-button>
                                 @endif
@@ -195,8 +195,8 @@
     {{-- #region Quick Actions --}}
     <x-mary-card class="p-6">
         <h3 class="text-heading-3 mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <x-mary-button variant="primary" size="lg" icon="o-plus" class="h-20" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <x-mary-button variant="primary" size="lg" icon="o-plus" class="h-20" link="{{ route('predict.create') }}" wire:navigate>
                 Make Prediction
             </x-mary-button>
             <x-mary-button variant="outline" size="lg" icon="o-trophy" class="h-20" link="{{ route('leaderboard.index', ['season' => $season]) }}" wire:navigate>

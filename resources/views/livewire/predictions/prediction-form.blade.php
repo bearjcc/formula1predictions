@@ -198,9 +198,9 @@
         @endif
 
         <div class="flex items-center justify-end space-x-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-            <x-mary-button label="Cancel" link="{{ route('predictions.index') }}" variant="ghost" />
+            <x-mary-button label="Cancel" link="{{ route('predictions.index') }}" variant="ghost" wire:loading.attr="disabled" wire:target="save" />
             @if(!$isLocked)
-                <x-mary-button type="submit" label="{{ $editingPrediction ? 'Update Prediction' : 'Submit Prediction' }}" variant="primary" icon="o-check" />
+                <x-mary-button type="submit" label="{{ $editingPrediction ? 'Update Prediction' : 'Submit Prediction' }}" variant="primary" icon="o-check" spinner="save" />
             @endif
         </div>
     </form>

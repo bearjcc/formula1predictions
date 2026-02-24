@@ -53,7 +53,13 @@
         <!-- Team List -->
         <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700">
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
-                <h4 class="font-medium text-zinc-900 dark:text-zinc-100">{{ $title }}</h4>
+                <div class="flex items-center justify-between">
+                    <h4 class="font-medium text-zinc-900 dark:text-zinc-100">{{ $title }}</h4>
+                    <span wire:loading wire:target="updateTeamOrder" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                        <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                        Saving…
+                    </span>
+                </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Constructor order (drag to reorder). Drag constructors to reorder your predictions.</p>
             </div>
             

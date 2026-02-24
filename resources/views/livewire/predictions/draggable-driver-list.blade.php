@@ -245,7 +245,13 @@
         {{-- Mobile: constructors-style list - position markers left (outside draggable), drag to sort; unplaced alphabetically --}}
         <div class="md:hidden space-y-2">
             <div class="px-1 py-1">
-                <h4 class="font-bold text-zinc-900 dark:text-white text-sm">Your prediction (1&ndash;{{ $maxSlots }})</h4>
+                <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-zinc-900 dark:text-white text-sm">Your prediction (1&ndash;{{ $maxSlots }})</h4>
+                    <span wire:loading wire:target="updateDriverOrder,toggleDnf,setFastestLap,updateTeamOrder" class="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+                        <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                        Saving…
+                    </span>
+                </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag to reorder. Tap unplaced to fill first empty. Positions {{ $this->dnfEligibleFromSlot + 1 }}+ can be marked DNF.</p>
             </div>
             <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
@@ -347,7 +353,13 @@
         <div class="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             <section class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm overflow-hidden min-h-[400px] flex flex-col">
                 <div class="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50">
-                    <h4 class="font-bold text-zinc-900 dark:text-white">Your prediction (1&ndash;{{ $maxSlots }})</h4>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-zinc-900 dark:text-white">Your prediction (1&ndash;{{ $maxSlots }})</h4>
+                        <span wire:loading wire:target="updateDriverOrder,toggleDnf,setFastestLap,updateTeamOrder" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                            Saving…
+                        </span>
+                    </div>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag drivers from the right or reorder here. Positions outside points ({{ $this->dnfEligibleFromSlot + 1 }}+) can be marked DNF.</p>
                 </div>
                 <div class="flex-1 divide-y divide-zinc-200 dark:divide-zinc-700 overflow-y-auto">
@@ -509,6 +521,10 @@
                     <h4 class="font-bold text-zinc-900 dark:text-white">{{ $raceName }} Predicted Order</h4>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag to reorder. Points awarded based on proximity to actual finish.</p>
                 </div>
+                <span wire:loading wire:target="updateDriverOrder" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                    <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                    Saving…
+                </span>
             </div>
             <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
                 <template x-for="(driverId, index) in driverOrder" :key="driverId">

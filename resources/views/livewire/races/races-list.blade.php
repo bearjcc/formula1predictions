@@ -64,7 +64,7 @@
                     </x-mary-button>
                 </div>
                 @if(auth()->user()?->hasRole('admin'))
-                    <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path">
+                    <x-mary-button variant="outline" size="sm" wire:click="refreshRaces" icon="o-arrow-path" spinner="1">
                         Refresh Data
                     </x-mary-button>
                 @endif

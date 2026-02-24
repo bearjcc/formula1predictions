@@ -1,6 +1,6 @@
 <x-layouts.layout title="My Predictions" headerSubtitle="Track your performance across the season.">
     <div class="mb-8 flex justify-end">
-        <x-mary-button label="New Prediction" link="{{ route('races', ['year' => config('f1.current_season')]) }}" variant="primary" icon="o-plus" wire:navigate />
+        <x-mary-button label="New Prediction" link="{{ route('predict.create') }}" variant="primary" icon="o-plus" wire:navigate />
     </div>
 
     @if(session('success'))
