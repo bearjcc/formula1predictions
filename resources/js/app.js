@@ -14,11 +14,18 @@ function applyAppearance() {
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 
-document.addEventListener('livewire:init', () => {
+let appearanceListenerRegistered = false;
+function registerAppearanceListener() {
+  if (appearanceListenerRegistered || typeof window.Livewire === 'undefined') return;
+  appearanceListenerRegistered = true;
   Livewire.on('appearance-changed', ({ appearance }) => {
     document.documentElement.setAttribute('data-appearance', appearance);
     applyAppearance();
   });
-});
+}
+
+document.addEventListener('livewire:init', registerAppearanceListener);
+// App.js is a deferred module; Livewire may already be initialized when this runs.
+registerAppearanceListener();
 // Re-apply after wire:navigate (inline script in head does not run on replaced document)
 document.addEventListener('livewire:navigated', () => applyAppearance());

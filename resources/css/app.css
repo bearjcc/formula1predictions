@@ -7,9 +7,9 @@
 /* Mobile Optimizations */
 @import "./mobile.css";
 
-/* daisyUI */
+/* daisyUI: theme controlled only by data-theme (set by appearance toggle) so btn and other components update when switching light/dark */
 @plugin "daisyui" {
-    themes: light --default, dark --prefersdark;
+    themes: light --default, dark;
 }
 
 /* maryUI */
