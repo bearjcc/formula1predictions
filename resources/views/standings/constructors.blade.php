@@ -2,11 +2,74 @@
     <x-standings-tabs :year="$year" />
 
     <x-mary-card class="overflow-hidden">
-        <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div class="px-4 sm:px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
             <h3 class="text-heading-3">Constructor Championship Standings</h3>
         </div>
 
-        <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
+        {{-- Mobile: tappable card rows (hidden on sm+) --}}
+        <ul class="sm:hidden divide-y divide-zinc-200 dark:divide-zinc-700">
+            @forelse($teamRows as $row)
+                <li>
+                    @if(!empty($row['team_slug'] ?? null))
+                        <a href="{{ route('constructor', ['slug' => $row['team_slug']]) }}"
+                           class="flex items-center gap-3 px-4 py-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 active:bg-zinc-100 dark:active:bg-zinc-700 transition-colors">
+                    @else
+                        <div class="flex items-center gap-3 px-4 py-3.5">
+                    @endif
+
+                        {{-- Position + trophy --}}
+                        <div class="flex-shrink-0 w-7 flex flex-col items-center gap-0.5">
+                            @if($seasonStarted)
+                                <span class="text-sm font-bold tabular-nums text-zinc-800 dark:text-zinc-200">{{ $row['position'] }}</span>
+                                @if($seasonEnded && in_array($row['position'], [1, 2, 3], true))
+                                    <x-mary-icon name="o-trophy" class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                                @endif
+                            @else
+                                <span class="text-sm text-zinc-400">—</span>
+                            @endif
+                        </div>
+
+                        {{-- Constructor name + drivers (with constructor colour bar) --}}
+                        <div class="flex-1 min-w-0">
+                            @php $teamDisplayName = $row['team_display_name'] ?? $row['team_name']; @endphp
+                            <x-constructor-bar :teamName="$row['team_name']">
+                                <p class="font-semibold text-zinc-900 dark:text-zinc-100 truncate leading-tight">{{ $teamDisplayName }}</p>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    @if(!empty($row['driver_names']))
+                                        <span class="text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ implode(' · ', $row['driver_names']) }}</span>
+                                    @endif
+                                    @if($row['country_flag_url'] ?? null)
+                                        <img src="{{ $row['country_flag_url'] }}" alt="{{ $row['nationality'] ?? '' }}" class="h-3 w-auto max-w-5 object-contain flex-shrink-0" loading="lazy" />
+                                    @endif
+                                </div>
+                            </x-constructor-bar>
+                        </div>
+
+                        {{-- Points + wins/podiums --}}
+                        <div class="flex-shrink-0 text-right">
+                            <p class="text-base font-bold text-green-600 dark:text-green-400 tabular-nums leading-tight">{{ number_format($row['points'], 0) }}</p>
+                            <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 tabular-nums">{{ $row['wins'] }}W&nbsp;·&nbsp;{{ $row['podiums'] }}P</p>
+                        </div>
+
+                        @if(!empty($row['team_slug'] ?? null))
+                            <x-mary-icon name="o-chevron-right" class="flex-shrink-0 w-4 h-4 text-zinc-300 dark:text-zinc-600" />
+                        @endif
+
+                    @if(!empty($row['team_slug'] ?? null))
+                        </a>
+                    @else
+                        </div>
+                    @endif
+                </li>
+            @empty
+                <li class="px-4 py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                    {{ __('No constructor standings data for this season yet. Standings are updated from our database after each race.') }}
+                </li>
+            @endforelse
+        </ul>
+
+        {{-- Desktop: full table (hidden on mobile) --}}
+        <div class="hidden sm:block w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
             <table class="w-full">
                 <thead class="bg-zinc-50 dark:bg-zinc-700">
                     <tr>
