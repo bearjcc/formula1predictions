@@ -130,17 +130,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isBot(): bool
     {
-        return in_array($this->email, [
-            'lastbot@example.com',
-            'seasonbot@example.com',
-            'randombot@example.com',
-            'lastracebot@example.com',
-            'championshipbot@example.com',
-            'championshiporderbot@example.com',
-            'circuitbot@example.com',
-            'smartbot@example.com',
-            'lastyearorderbot@example.com',
-        ], true);
+        return in_array($this->email, config('f1.bot_emails', []), true);
     }
 
     /**

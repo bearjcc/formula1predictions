@@ -66,4 +66,25 @@ return [
         // 2025 => ['red_flags' => null, 'safety_cars' => null],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Bot account emails
+    |--------------------------------------------------------------------------
+    |
+    | Email addresses used by seeded algorithm bots. Centralised here so
+    | User::isBot(), seeders, and tests all reference the same list.
+    |
+    */
+    'bot_emails' => [
+        'lastbot@example.com',
+        'seasonbot@example.com',
+        'randombot@example.com',
+        'lastracebot@example.com',
+        'championshipbot@example.com',
+        'championshiporderbot@example.com',
+        'circuitbot@example.com',
+        'smartbot@example.com',
+        'lastyearorderbot@example.com',
+    ],
+
 ];
