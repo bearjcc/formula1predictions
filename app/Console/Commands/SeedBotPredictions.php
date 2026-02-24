@@ -14,7 +14,8 @@ use Illuminate\Console\Command;
 class SeedBotPredictions extends Command
 {
     protected $signature = 'bots:seed
-                            {--only= : Comma-separated: last, season, random, championship-order, previous-year, last-year-order, circuit, smart}';
+                            {--only= : Comma-separated: last, season, random, championship-order, previous-year, last-year-order, circuit, smart}
+                            {--season= : Comma-separated years for last-year-order only (e.g. 2025,2026)}';
 
     protected $description = 'Run all algorithm-based bot seeders to populate predictions.';
 
@@ -48,7 +49,20 @@ class SeedBotPredictions extends Command
         foreach ($names as $name) {
             $seederClass = self::BOT_SEEDERS[$name];
             $this->info("Seeding {$name}...");
+
+            if ($name === 'last-year-order' && $this->option('season')) {
+                $seasonInput = $this->option('season');
+                $seasons = array_values(array_map('intval', array_filter(explode(',', $seasonInput))));
+                if ($seasons !== []) {
+                    config(['f1.bot_seed_seasons' => $seasons]);
+                }
+            }
+
             $this->call('db:seed', ['--class' => $seederClass, '--no-interaction' => true]);
+
+            if ($name === 'last-year-order' && $this->option('season')) {
+                config(['f1.bot_seed_seasons' => null]);
+            }
         }
 
         $this->info('Done.');

@@ -11,9 +11,13 @@ use App\Services\F1ApiService;
 use Illuminate\Database\Seeder;
 
 /**
- * Bot that predicts last year's driver championship order for every race of the current season.
+ * Bot that predicts last year's driver championship order for every race of the target season(s).
  * Fetches order from the external F1 API. No DNFs. 2025 had 20 drivers; current season has 22
  * slots, so the bottom two entries are left blank.
+ *
+ * Target seasons: config('f1.bot_seed_seasons'), or [current_season] if not set (e.g. when
+ * run via bots:seed without --season). When run with bots:seed --only=last-year-order --season=2025,2026,
+ * seeds 2025 using 2024 order and 2026 using 2025 order.
  */
 class LastYearChampionshipOrderBotSeeder extends Seeder
 {
@@ -27,13 +31,27 @@ class LastYearChampionshipOrderBotSeeder extends Seeder
             ['name' => 'Last Year Order Bot', 'password' => bcrypt('secret-password')]
         );
 
-        $previousYear = config('f1.current_season') - 1;
+        $seasons = config('f1.bot_seed_seasons');
+        if (! is_array($seasons) || $seasons === []) {
+            $seasons = [config('f1.current_season')];
+        }
+        $seasons = array_values(array_map('intval', array_filter($seasons)));
+
         $f1Api = app(F1ApiService::class);
+
+        foreach ($seasons as $season) {
+            $this->seedSeason($f1Api, $bot, $season);
+        }
+    }
+
+    private function seedSeason(F1ApiService $f1Api, User $bot, int $season): void
+    {
+        $previousYear = $season - 1;
 
         try {
             $data = $f1Api->fetchDriversChampionship($previousYear);
         } catch (F1ApiException $e) {
-            $this->command?->warn("Could not fetch {$previousYear} drivers championship: ".$e->getMessage());
+            $this->command?->warn("Could not fetch {$previousYear} drivers championship: ".$e->getMessage().", skipping season {$season}");
 
             return;
         }
@@ -60,13 +78,17 @@ class LastYearChampionshipOrderBotSeeder extends Seeder
         }
 
         if ($driverOrder === []) {
-            $this->command?->warn("No drivers resolved for {$previousYear}, skipping");
+            $this->command?->warn("No drivers resolved for {$previousYear}, skipping season {$season}");
 
             return;
         }
 
-        $season = config('f1.current_season');
         $races = Races::where('season', $season)->orderBy('round')->get();
+        if ($races->isEmpty()) {
+            $this->command?->warn("No races for season {$season}, skipping");
+
+            return;
+        }
 
         foreach ($races as $race) {
             $prediction = Prediction::updateOrCreate(

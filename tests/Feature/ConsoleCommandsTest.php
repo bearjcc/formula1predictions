@@ -319,3 +319,45 @@ test('ensure admin user command updates password when ADMIN_PASSWORD changes', f
     $user->refresh();
     expect(\Illuminate\Support\Facades\Hash::check('new-super-secret', $user->password))->toBeTrue();
 });
+
+test('ensure test year bot predictions skips when job already recorded', function () {
+    \Illuminate\Support\Facades\DB::table('one_time_jobs')->insert([
+        'name' => 'test_year_bot_predictions',
+        'run_at' => now(),
+    ]);
+
+    $this->artisan('app:ensure-test-year-bot-predictions')
+        ->expectsOutputToContain('already seeded. Skipping.')
+        ->assertExitCode(0);
+});
+
+test('ensure test year bot predictions runs seeder once then sets flag', function () {
+    Drivers::factory()->create(['driver_id' => 'driver_a']);
+    Races::factory()->create(['season' => 2025, 'round' => 1]);
+    Races::factory()->create(['season' => 2026, 'round' => 1]);
+
+    $mockF1 = \Mockery::mock(\App\Services\F1ApiService::class);
+    $mockF1->shouldReceive('fetchDriversChampionship')->with(2024)->andReturn([
+        'drivers_championship' => [['driverId' => 'driver_a']],
+    ]);
+    $mockF1->shouldReceive('fetchDriversChampionship')->with(2025)->andReturn([
+        'drivers_championship' => [['driverId' => 'driver_a']],
+    ]);
+    $mockF1->shouldReceive('syncDriversForSeason')->with(2024);
+    $mockF1->shouldReceive('syncDriversForSeason')->with(2025);
+    $this->app->instance(\App\Services\F1ApiService::class, $mockF1);
+
+    $this->artisan('app:ensure-test-year-bot-predictions')
+        ->expectsOutputToContain('Seeding Last Year Order Bot')
+        ->expectsOutputToContain('Flag set so this will not run again')
+        ->assertExitCode(0);
+
+    expect(\Illuminate\Support\Facades\DB::table('one_time_jobs')->where('name', 'test_year_bot_predictions')->exists())->toBeTrue();
+    expect(Prediction::where('season', 2025)->where('race_round', 1)->count())->toBe(1);
+    expect(Prediction::where('season', 2026)->where('race_round', 1)->count())->toBe(1);
+
+    // Second run skips
+    $this->artisan('app:ensure-test-year-bot-predictions')
+        ->expectsOutputToContain('already seeded. Skipping.')
+        ->assertExitCode(0);
+});
