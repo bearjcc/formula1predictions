@@ -1,4 +1,4 @@
-<x-layouts.layout :title="($prediction->type === 'race' ? ($prediction->race->display_name ?? 'Round ' . $prediction->race_round) : ucfirst($prediction->type)) . ' Prediction'" headerSubtitle="Performance overview and details.">
+<x-layouts.layout :title="($prediction->type === 'race' ? ($prediction->race?->display_name ?? 'Round ' . ($prediction->race_round ?? '')) : ucfirst($prediction->type)) . ' Prediction'" headerSubtitle="Performance overview and details.">
     <div class="mb-8 flex justify-end">
         <div class="flex items-center space-x-2">
             @if($prediction->isEditable())
@@ -18,12 +18,15 @@
                 <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @php
                         $order = $prediction->getPredictedDriverOrder();
+                        $order = array_filter($order, fn ($id) => $id !== null && $id !== '');
                         $fastestLap = $prediction->getPredictedFastestLap();
                     @endphp
                     
                     @foreach($order as $index => $driverId)
                         @php
-                            $driver = \App\Models\Drivers::where('driverId', $driverId)->first();
+                            $driver = is_numeric($driverId)
+                                ? \App\Models\Drivers::find($driverId)
+                                : \App\Models\Drivers::where('driver_id', $driverId)->first();
                         @endphp
                         <div class="p-4 flex items-center justify-between">
                             <div class="flex items-center space-x-4">
@@ -35,7 +38,7 @@
                                         {{ $driver ? "{$driver->name} {$driver->surname}" : $driverId }}
                                     </div>
                                     <div class="text-xs text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                                        {{ $driver->team->display_name ?? 'Individual' }}
+                                        {{ $driver?->team?->display_name ?? 'Individual' }}
                                     </div>
                                 </div>
                             </div>
@@ -77,8 +80,8 @@
                                 </tr>
                                 @php
                                     $fl = $breakdown['fastest_lap_row'];
-                                    $predFlDriver = $fl['predicted_driver_id'] ? \App\Models\Drivers::where('driverId', $fl['predicted_driver_id'])->first() : null;
-                                    $actualFlDriver = $fl['actual_driver_id'] ? \App\Models\Drivers::where('driverId', $fl['actual_driver_id'])->first() : null;
+                                    $predFlDriver = $fl['predicted_driver_id'] ? (is_numeric($fl['predicted_driver_id']) ? \App\Models\Drivers::find($fl['predicted_driver_id']) : \App\Models\Drivers::where('driver_id', $fl['predicted_driver_id'])->first()) : null;
+                                    $actualFlDriver = $fl['actual_driver_id'] ? (is_numeric($fl['actual_driver_id']) ? \App\Models\Drivers::find($fl['actual_driver_id']) : \App\Models\Drivers::where('driver_id', $fl['actual_driver_id'])->first()) : null;
                                 @endphp
                                 <tr>
                                     <td class="p-3 font-medium text-zinc-700 dark:text-zinc-300">Fastest lap</td>
@@ -89,7 +92,7 @@
                                 </tr>
                                 @foreach($breakdown['driver_rows'] as $row)
                                     @php
-                                        $predDriver = \App\Models\Drivers::where('driverId', $row['predicted_driver_id'])->first();
+                                        $predDriver = is_numeric($row['predicted_driver_id']) ? \App\Models\Drivers::find($row['predicted_driver_id']) : \App\Models\Drivers::where('driver_id', $row['predicted_driver_id'])->first();
                                     @endphp
                                     <tr>
                                         <td class="p-3 font-medium text-zinc-900 dark:text-zinc-100">{{ $row['position'] }}</td>

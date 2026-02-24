@@ -176,10 +176,12 @@ class Races extends Model
 
     /**
      * Short name for display and URLs: strip redundant "Formula 1" / "F1" prefix.
+     * Never returns null (fallback for missing race_name).
      */
     public function getDisplayNameAttribute(): string
     {
-        $trimmed = trim($this->race_name);
+        $name = $this->race_name ?? '';
+        $trimmed = trim($name);
         foreach (['Formula 1 ', 'F1 '] as $prefix) {
             if (stripos($trimmed, $prefix) === 0) {
                 $trimmed = trim(substr($trimmed, strlen($prefix)));
@@ -187,7 +189,7 @@ class Races extends Model
             }
         }
 
-        return $trimmed !== '' ? $trimmed : $this->race_name;
+        return $trimmed !== '' ? $trimmed : ('Round '.((int) $this->round));
     }
 
     /**

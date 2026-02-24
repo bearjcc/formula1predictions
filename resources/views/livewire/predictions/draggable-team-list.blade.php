@@ -1,13 +1,4 @@
 <div class="w-full">
-    <div class="mb-4">
-        <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            {{ $title }}
-        </h3>
-        <p class="text-sm text-zinc-600 dark:text-zinc-400">
-            Drag constructors to reorder your predictions.
-        </p>
-    </div>
-
     <div 
         x-data="{
             teams: @js($teams),
@@ -62,7 +53,8 @@
         <!-- Team List -->
         <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700">
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
-                <h4 class="font-medium text-zinc-900 dark:text-zinc-100">Constructor order (drag to reorder)</h4>
+                <h4 class="font-medium text-zinc-900 dark:text-zinc-100">{{ $title }}</h4>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Constructor order (drag to reorder). Drag constructors to reorder your predictions.</p>
             </div>
             
             <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -105,34 +97,6 @@
                         </div>
                     </div>
                 </template>
-            </div>
-        </div>
-
-        <!-- Summary -->
-        <x-prediction-summary>
-            <x-slot:summary>
-                <p>Total constructors: <span class="font-medium" x-text="teamOrder.length"></span></p>
-            </x-slot:summary>
-            <x-slot:top3>
-                <template x-for="(teamId, index) in teamOrder.slice(0, 3)" :key="teamId">
-                    <p><span class="font-medium" x-text="index + 1"></span>. <span x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span></p>
-                </template>
-            </x-slot:top3>
-        </x-prediction-summary>
-
-        <!-- Instructions -->
-        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
-            <div class="flex items-start space-x-2">
-                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                </svg>
-                <div class="text-sm text-blue-800 dark:text-blue-200">
-                    <p class="font-medium">How to use:</p>
-                    <ul class="mt-1 space-y-1">
-                        <li>• Drag constructors up or down to reorder your predictions</li>
-                        <li>• Your prediction will be automatically saved</li>
-                    </ul>
-                </div>
             </div>
         </div>
     </div>
