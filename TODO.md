@@ -262,10 +262,10 @@ Longer-horizon ideas and exploratory improvements.
   - Type: UI | Priority: P2 | Risk: low | Owner: agent
   - Verified: All specified views (standings/drivers, standings/teams, leaderboard/index, leaderboard/compare, livewire/global-leaderboard) already wrap tables in `<div class="overflow-x-auto">`. No changes required.
 
-- [ ] **F1-096: Standardize color palette to zinc (remove gray usage)** _(found 2026-02-10 audit)_
+- [x] **F1-096: Standardize color palette to zinc (remove gray usage)** _(done 2026-02-24)_
   - Type: UI | Priority: P2 | Risk: low | Owner: agent
-  - Affected: resources/views/standings/drivers.blade.php, standings/teams.blade.php, resources/views/leaderboard/index.blade.php
-  - DESIGN_SYSTEM.md specifies zinc as the neutral palette, but these files use `bg-gray-100`, `text-gray-800`, `dark:bg-gray-900`, `text-gray-400` etc. Replace all `gray-*` with corresponding `zinc-*` classes.
+  - Affected: dashboard widgets, prediction summary component, and draggable demo view
+  - DESIGN_SYSTEM.md specifies zinc as the neutral palette. Remaining `bg-gray-*` / `text-gray-*` usage in Blade views has been replaced with the corresponding `zinc-*` classes, and a regression test enforces the absence of Tailwind `gray-*` neutrals in views.
 
 - [ ] **F1-100: Repo map and orphan audit** _(done 2026-02-18)_
   - Type: docs | Priority: P3 | Risk: none | Owner: agent

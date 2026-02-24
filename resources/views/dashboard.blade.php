@@ -136,7 +136,7 @@
                                 @php
                                     $badgeClass = match($entry->rank) {
                                         1 => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                        2 => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+                                        2 => 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200',
                                         3 => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
                                         default => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
                                     };
