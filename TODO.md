@@ -313,7 +313,7 @@ Longer-horizon ideas and exploratory improvements.
   - Type: security | Priority: P2 | Risk: low | Owner: agent
   - Done: Added is_admin to User::$hidden so admin status is not exposed in JSON serialization.
   
-- [ ] **F1-106: Revisit country detail page and sidebar link**
+- [x] **F1-106: Revisit country detail page and sidebar link** _(hide navigation entry done 2026-02-24)_
   - Type: bug | Priority: P3 | Risk: low | Owner: agent
-  - Affected: resources/views/country.blade.php, components/layouts/layout.blade.php
-  - The country detail page is not yet set up correctly for production (data, layout, or navigation expectations). Temporarily hide the sidebar navigation entry until the page is finalized, then align the page with the rest of the site and restore the link.
+  - Affected: resources/views/country.blade.php, resources/views/components/layouts/layout.blade.php, tests/Feature/WebsiteNavigationTest.php
+  - Done (phase 1): Sidebar navigation entry and home Countries card are hidden until the country page is fully finalized. New feature tests in WebsiteNavigationTest assert that the countries sidebar link and home navigation card are not rendered while the page is unfinished. A follow-up item should align the country detail page with the rest of the site and restore the navigation entry when ready.

@@ -76,3 +76,23 @@ test('api race endpoints are accessible with mocked F1 API', function () {
     $responseCurrent = $this->get('/api/f1/races/2026');
     $responseCurrent->assertOk();
 });
+
+test('sidebar does not show Countries navigation link while country page is unfinished', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/dashboard');
+
+    $response->assertOk();
+    $response->assertDontSee('Countries', false);
+    $response->assertDontSee(route('countries'), false);
+});
+
+test('home page does not show Countries navigation card while country page is unfinished', function () {
+    /** @var \Tests\TestCase $this */
+    $response = $this->get('/');
+
+    $response->assertOk();
+    $response->assertDontSee('View Countries', false);
+});
