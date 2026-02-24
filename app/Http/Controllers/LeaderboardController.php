@@ -7,6 +7,7 @@ use App\Models\Races;
 use App\Models\User;
 use App\Services\ChartDataService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 class LeaderboardController extends Controller
@@ -16,15 +17,87 @@ class LeaderboardController extends Controller
      */
     public function index(Request $request): View
     {
-        $season = $request->get('season', date('Y'));
+        $season = (int) $request->get('season', date('Y'));
         $type = $request->get('type', 'all');
 
-        $leaderboard = $this->getLeaderboard($season, $type);
+        $perPage = (int) $request->get('per_page', 20);
+        $perPage = in_array($perPage, [10, 20, 50], true) ? $perPage : 20;
+
+        $fullLeaderboard = $this->getLeaderboard($season, $type);
+        $total = $fullLeaderboard->count();
 
         $seasons = $this->getAvailableSeasons();
         $types = ['all' => 'All Predictions', 'race' => 'Race Predictions', 'preseason' => 'Preseason Predictions'];
 
-        return view('leaderboard.index', compact('leaderboard', 'seasons', 'types', 'season', 'type'));
+        $showFocusView = false;
+        $focusLeaderboard = collect();
+        $userRank = null;
+
+        $viewMode = $request->get('view', 'auto');
+
+        if (auth()->user() && $total > 0 && $viewMode !== 'full') {
+            $currentUserId = auth()->user()->id;
+            $userIndex = $fullLeaderboard->search(function ($user) use ($currentUserId) {
+                return (int) $user->id === (int) $currentUserId;
+            });
+
+            if ($userIndex !== false) {
+                $userRank = $userIndex + 1;
+
+                if ($userRank > 8) {
+                    $showFocusView = true;
+
+                    $topFive = $fullLeaderboard->take(5);
+                    $aroundStart = max(0, $userIndex - 1);
+                    $around = $fullLeaderboard->slice($aroundStart, 3);
+
+                    $focusLeaderboard = $topFive
+                        ->concat($around)
+                        ->unique('id')
+                        ->values();
+                }
+            }
+        }
+
+        if ($showFocusView) {
+            return view('leaderboard.index', [
+                'leaderboard' => null,
+                'focusLeaderboard' => $focusLeaderboard,
+                'showFocusView' => true,
+                'seasons' => $seasons,
+                'types' => $types,
+                'season' => $season,
+                'type' => $type,
+                'perPage' => $perPage,
+                'userRank' => $userRank,
+            ]);
+        }
+
+        $page = max(1, (int) $request->get('page', 1));
+        $items = $fullLeaderboard->forPage($page, $perPage)->values();
+
+        $leaderboard = new LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
+        return view('leaderboard.index', [
+            'leaderboard' => $leaderboard,
+            'focusLeaderboard' => null,
+            'showFocusView' => false,
+            'seasons' => $seasons,
+            'types' => $types,
+            'season' => $season,
+            'type' => $type,
+            'perPage' => $perPage,
+            'userRank' => $userRank,
+        ]);
     }
 
     /**
@@ -104,7 +177,7 @@ class LeaderboardController extends Controller
     /**
      * Get leaderboard data.
      */
-    private function getLeaderboard(int $season, string $type): \Illuminate\Database\Eloquent\Collection
+    private function getLeaderboard(int $season, string $type): \Illuminate\Support\Collection
     {
         $query = User::withCount(['predictions' => function ($query) use ($season, $type) {
             $query->where('season', $season);

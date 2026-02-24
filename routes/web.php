@@ -45,6 +45,15 @@ Route::get('dashboard', App\Http\Controllers\DashboardController::class)
 
 Route::get('/analytics', App\Livewire\Pages\Analytics::class)->middleware(['auth'])->name('analytics');
 
+// Leaderboard routes (public)
+Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
+    Route::get('/', [LeaderboardController::class, 'index'])->name('index');
+    Route::get('/compare', [LeaderboardController::class, 'compare'])->name('compare');
+    Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
+    Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
+    Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
@@ -117,15 +126,6 @@ Route::middleware(['auth'])->group(function () {
 
         // Score overrides
         Route::post('/predictions/{prediction}/override-score', [AdminController::class, 'overridePredictionScore'])->name('predictions.override-score');
-    });
-
-    // Leaderboard routes
-    Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
-        Route::get('/', [LeaderboardController::class, 'index'])->name('index');
-        Route::get('/compare', [LeaderboardController::class, 'compare'])->name('compare');
-        Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
-        Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
-        Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');
     });
 
     // Monetization (Stripe/Season Supporter) — deferred to later release; re-enable with F1-031

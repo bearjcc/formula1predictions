@@ -39,6 +39,20 @@
                     </select>
                 </div>
 
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Per page</label>
+                    <select
+                        name="per_page"
+                        class="w-full max-w-xs rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500 px-3 py-2"
+                    >
+                        @foreach ([10, 20, 50] as $size)
+                            <option value="{{ $size }}" {{ ($perPage ?? 20) == $size ? 'selected' : '' }}>
+                                {{ $size }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <x-mary-button type="submit" variant="primary" label="Filter" />
                 </div>
@@ -53,7 +67,11 @@
                 </h3>
             </div>
             <div class="p-6">
-                @if ($leaderboard->count() > 0)
+                @php
+                    $currentUserId = auth()->id();
+                @endphp
+
+                @if (!empty($showFocusView) && $showFocusView && isset($focusLeaderboard) && $focusLeaderboard->count() > 0)
                     <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                         <table class="w-full">
                             <thead class="bg-zinc-50 dark:bg-zinc-700">
@@ -67,8 +85,20 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-zinc-800 divide-y divide-zinc-200 dark:divide-zinc-700">
-                                @foreach ($leaderboard as $user)
-                                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                                @foreach ($focusLeaderboard as $index => $user)
+                                    @php
+                                        $isCurrentUser = $currentUserId && (int) $user->id === (int) $currentUserId;
+                                    @endphp
+
+                                    @if ($index === 5)
+                                        <tr>
+                                            <td colspan="6" class="px-6 py-2 text-center text-zinc-500 dark:text-zinc-400">
+                                                ...
+                                            </td>
+                                        </tr>
+                                    @endif
+
+                                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700 @if($isCurrentUser) border-l-4 border-red-500 dark:border-red-400 bg-red-50/40 dark:bg-red-900/20 @endif">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if ($user->rank <= 3)
                                                 <div class="flex items-center">
@@ -123,6 +153,96 @@
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between gap-4">
+                        <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                            Showing top 5 and your position (rank {{ $userRank }}) in the leaderboard.
+                        </p>
+                        <x-mary-button
+                            variant="outline"
+                            size="sm"
+                            link="{{ route('leaderboard.index', ['season' => $season, 'type' => $type, 'per_page' => $perPage, 'view' => 'full']) }}"
+                        >
+                            Show full results
+                        </x-mary-button>
+                    </div>
+                @elseif (isset($leaderboard) && $leaderboard && $leaderboard->count() > 0)
+                    <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
+                        <table class="w-full">
+                            <thead class="bg-zinc-50 dark:bg-zinc-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Rank</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Score</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Avg Score</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Predictions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-zinc-800 divide-y divide-zinc-200 dark:divide-zinc-700">
+                                @foreach ($leaderboard as $user)
+                                    @php
+                                        $isCurrentUser = $currentUserId && (int) $user->id === (int) $currentUserId;
+                                    @endphp
+                                    <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700 @if($isCurrentUser) border-l-4 border-red-500 dark:border-red-400 bg-red-50/40 dark:bg-red-900/20 @endif">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if ($user->rank <= 3)
+                                                <div class="flex items-center">
+                                                    @if ($user->rank == 1)
+                                                        <span class="text-yellow-500 dark:text-yellow-400">🥇</span>
+                                                    @elseif ($user->rank == 2)
+                                                        <span class="text-zinc-400 dark:text-zinc-500">🥈</span>
+                                                    @elseif ($user->rank == 3)
+                                                        <span class="text-amber-600 dark:text-amber-500">🥉</span>
+                                                    @endif
+                                                    <span class="ml-2 font-bold text-zinc-900 dark:text-zinc-100">{{ $user->rank }}</span>
+                                                </div>
+                                            @else
+                                                <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ $user->rank }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center space-x-3">
+                                                <x-mary-avatar class="w-12 h-12 rounded-lg flex-shrink-0" placeholder="{{ strtoupper(substr($user->name, 0, 2)) }}" />
+                                                <div>
+                                                    <div class="font-bold text-zinc-900 dark:text-zinc-100">{{ $user->name }}</div>
+                                                    <div class="text-sm text-zinc-600 dark:text-zinc-400">{{ $user->predictions_count }} predictions</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="font-bold text-lg text-zinc-900 dark:text-zinc-100">{{ $user->total_score ?? 0 }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
+                                            {{ number_format($user->avg_score ?? 0, 1) }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <x-mary-badge variant="outline">{{ $user->predictions_count }}</x-mary-badge>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex gap-2">
+                                                <x-mary-button
+                                                    link="{{ route('leaderboard.user-stats', $user) }}"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    label="View Stats"
+                                                />
+                                                <x-mary-button
+                                                    link="{{ route('leaderboard.compare', ['season' => $season, 'users' => $user->id]) }}"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    label="Compare"
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4">
+                        {{ $leaderboard->withQueryString()->links() }}
                     </div>
                 @else
                     <div class="text-center py-8">
