@@ -209,7 +209,7 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: .github/workflows/ci.yml
   - Done: CI workflow and test-batches.sh added. GitHub Actions on push/PR to main and master; PHP 8.4, two-batch tests via scripts/test-batches.sh, npm run build, optional Pint (continue-on-error). Documented in README and AGENTS.md.
 
-- [ ] **F1-073: Create Dockerfile and docker-compose for production**
+- [x] **F1-073: Create Dockerfile and docker-compose for production** _(done 2026-02-24)_
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
   - Affected: Dockerfile, docker-compose.yml
   - No Dockerfile or docker-compose for production. Create for containerized deployment.
