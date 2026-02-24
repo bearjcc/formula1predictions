@@ -178,10 +178,10 @@ Longer-horizon ideas and exploratory improvements.
   - Type: security | Priority: P2 | Risk: low | Owner: agent
   - Done: Removed is_admin, is_season_supporter, supporter_since, badges, stats_cache, stats_cache_updated_at from $fillable. Added is_admin to $hidden. AdminSeeder, EnsureAdminUser, PromoteAdminUser, TestUserSeeder use forceFill(). UserFactory::admin() state for tests. Added UserModelTest (mass-assign create/update rejected).
 
-- [ ] **F1-066: Remove redundant indexes**
+- [x] **F1-066: Remove redundant indexes** _(done 2026-02-24)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
   - Affected: database/migrations/
-  - Redundant indexes on 4 tables (unique + explicit index on same column). Clean up.
+  - Removed redundant non-unique indexes on unique ID columns for drivers, teams, and countries; DatabaseIndexesTest asserts there are no extra non-unique indexes on those unique columns.
 
 - [x] **F1-067: Remove empty no-op migration file** _(done 2026-02-24)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent

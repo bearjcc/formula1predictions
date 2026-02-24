@@ -33,3 +33,50 @@ test('predictions table has an index on race_id', function () {
 
 // endregion
 
+// region Redundant index cleanup (F1-066)
+
+test('drivers_teams_countries_do_not_have_redundant_non_unique_indexes_on_unique_id_columns', function () {
+    $tables = [
+        'drivers' => 'driver_id',
+        'teams' => 'team_id',
+        'countries' => 'code',
+    ];
+
+    foreach ($tables as $tableName => $uniqueColumn) {
+        $indexes = DB::select("PRAGMA index_list('{$tableName}')");
+
+        $hasRedundantIndex = false;
+
+        foreach ($indexes as $index) {
+            $indexName = $index->name ?? null;
+
+            if (! $indexName) {
+                continue;
+            }
+
+            // In SQLite PRAGMA index_list, "unique" is 1 for unique indexes, 0 otherwise.
+            $isUnique = (bool) ($index->unique ?? 0);
+
+            $columns = DB::select("PRAGMA index_info('{$indexName}')");
+            $columnNames = [];
+
+            foreach ($columns as $column) {
+                if (isset($column->name)) {
+                    $columnNames[] = $column->name;
+                }
+            }
+
+            sort($columnNames);
+
+            if (! $isUnique && $columnNames === [$uniqueColumn]) {
+                $hasRedundantIndex = true;
+                break;
+            }
+        }
+
+        expect($hasRedundantIndex)->toBeFalse();
+    }
+});
+
+// endregion
+
