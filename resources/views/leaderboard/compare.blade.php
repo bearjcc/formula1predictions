@@ -1,5 +1,5 @@
 <x-layouts.layout title="Head-to-Head Comparison" headerSubtitle="Compare scores and accuracy with other predictors">
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto max-w-full min-w-0 px-4 py-8">
         <div class="mb-8 flex justify-end">
             <x-mary-button link="{{ route('leaderboard.index') }}" variant="outline" label="Back to Leaderboard" />
         </div>
@@ -19,7 +19,7 @@
                     </select>
                 </div>
 
-                <div class="flex-1 min-w-[200px] space-y-1">
+                <div class="flex-1 min-w-0 sm:min-w-[200px] space-y-1">
                     <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Select predictors to compare</label>
                     <select
                         name="users[]"
@@ -49,7 +49,7 @@
                     <h3 class="text-heading-3 text-zinc-900 dark:text-zinc-100">Comparison - {{ $season }} Season</h3>
                 </div>
                 <div class="p-6">
-                    <div class="overflow-x-auto">
+                    <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                         <table class="w-full">
                             <thead class="bg-zinc-50 dark:bg-zinc-700">
                                 <tr>

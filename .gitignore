@@ -33,5 +33,9 @@ yarn-error.log
 storage/logs/*.log
 deployment/logs/
 
+# Lighthouse audit reports (generate with npm run audit:lighthouse)
+/lighthouse-mobile.html
+lighthouse-*.html
+
 # Windows artifacts
 nul

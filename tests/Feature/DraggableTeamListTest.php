@@ -23,8 +23,8 @@ test('draggable team list component can be rendered', function () {
         'title' => '2024 Constructor Championship',
     ])
         ->assertSee('2024 Constructor Championship')
-        ->assertSee('Team Order (Drag to Reorder)')
-        ->assertSee('Drag teams to reorder your predictions');
+        ->assertSee('Constructor order (drag to reorder)')
+        ->assertSee('Drag constructors to reorder your predictions');
 });
 
 test('draggable team list initializes with correct team order', function () {

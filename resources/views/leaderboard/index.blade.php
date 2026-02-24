@@ -54,7 +54,7 @@
             </div>
             <div class="p-6">
                 @if ($leaderboard->count() > 0)
-                    <div class="overflow-x-auto">
+                    <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                         <table class="w-full">
                             <thead class="bg-zinc-50 dark:bg-zinc-700">
                                 <tr>

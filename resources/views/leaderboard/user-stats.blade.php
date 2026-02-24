@@ -71,7 +71,7 @@
         <div class="card bg-base-100 mb-8">
             <div class="card-body">
                 <h3 class="card-title mb-6">Season Breakdown</h3>
-                <div class="overflow-x-auto">
+                <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                     <table class="table table-zebra">
                         <thead>
                             <tr>

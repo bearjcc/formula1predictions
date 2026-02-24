@@ -149,14 +149,20 @@ class PredictionForm extends Component
             ->toArray();
 
         $this->teams = Teams::where('is_active', true)
+            ->with('drivers')
             ->orderBy('team_name')
             ->get()
             ->map(function ($team) {
+                $driverSurnames = $team->drivers->where('is_active', true)->pluck('surname')->filter()->values();
+
                 return [
                     'id' => $team->id,
                     'team_name' => $team->team_name,
                     'display_name' => $team->display_name,
                     'nationality' => $team->nationality,
+                    'driver_surnames' => $driverSurnames->count() >= 1
+                        ? $driverSurnames->join(', ')
+                        : null,
                 ];
             })
             ->toArray();

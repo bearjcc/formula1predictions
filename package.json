@@ -4,7 +4,8 @@
 "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "audit-screenshots": "node scripts/audit-screenshots.mjs"
+    "audit-screenshots": "node scripts/audit-screenshots.mjs",
+    "audit:lighthouse": "node scripts/audit-lighthouse.mjs"
   },
     "dependencies": {
         "@f1api/sdk": "^1.1.0",
@@ -21,6 +22,7 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
+        "lighthouse": "^13.0.0",
         "@axe-core/puppeteer": "^4.10.2",
         "@tailwindcss/vite": "^4.1.18",
         "autoprefixer": "^10.4.24",

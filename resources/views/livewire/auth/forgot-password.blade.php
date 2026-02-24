@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Password;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('components.layouts.layout', ['title' => 'Forgot password', 'headerSubtitle' => 'Enter your email to receive a password reset link'])] class extends Component {
     public string $email = '';
 
     /**
@@ -22,13 +22,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
     }
 }; ?>
 
-<div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
+<div class="mx-auto w-full max-w-md min-w-0">
+    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 shadow-sm min-w-0">
+        <x-auth-session-status class="mb-4 text-center text-sm" :status="session('status')" />
 
-    <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
-
-    <form method="POST" wire:submit="sendPasswordResetLink" class="flex flex-col gap-6">
+        <form method="POST" wire:submit="sendPasswordResetLink" class="flex flex-col gap-6">
         <!-- Email Address -->
         <div class="space-y-2">
             <label for="email" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -48,10 +46,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
         <x-mary-button type="submit" class="w-full justify-center">{{ __('Email password reset link') }}</x-mary-button>
     </form>
 
-    <p class="text-center text-sm text-zinc-600 dark:text-zinc-400">
+    <p class="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
         <span>{{ __('Or, return to') }}</span>
-        <a href="{{ route('login') }}" class="font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-zinc-800 rounded-md" wire:navigate>
+        <a href="{{ route('login') }}" class="font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" wire:navigate>
             {{ __('log in') }}
         </a>
     </p>
+    </div>
 </div>

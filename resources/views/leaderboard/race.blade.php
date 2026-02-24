@@ -20,7 +20,7 @@
             <h3 class="card-title mb-6">Race Prediction Rankings</h3>
 
             @if($leaderboard->count() > 0)
-                <div class="overflow-x-auto">
+                <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                     <table class="table table-zebra">
                         <thead>
                             <tr>

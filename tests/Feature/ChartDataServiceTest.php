@@ -362,10 +362,9 @@ test('chart data service can get chart configuration', function () {
 test('chart data service calculates F1 points correctly', function () {
     $service = app(ChartDataService::class);
 
-    // Test using reflection to access private method
+    // Test using reflection to access private method (PHP 8.1+ no longer requires setAccessible)
     $reflection = new ReflectionClass($service);
     $method = $reflection->getMethod('calculatePoints');
-    $method->setAccessible(true);
 
     expect($method->invoke($service, 0))->toBe(25) // 1st place
         ->and($method->invoke($service, 1))->toBe(18) // 2nd place

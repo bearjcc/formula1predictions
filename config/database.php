@@ -2,6 +2,14 @@
 
 use Illuminate\Support\Str;
 
+// PHP 8.5+ removed PDO::MYSQL_ATTR_SSL_CA; use Pdo\Mysql::ATTR_SSL_CA. Older PHP use PDO constant.
+$mysql_attr_ssl_ca = null;
+if (PHP_VERSION_ID >= 80500 && class_exists(\Pdo\Mysql::class, false)) {
+    $mysql_attr_ssl_ca = \Pdo\Mysql::ATTR_SSL_CA;
+} elseif (defined('PDO::MYSQL_ATTR_SSL_CA')) {
+    $mysql_attr_ssl_ca = constant('PDO::MYSQL_ATTR_SSL_CA');
+}
+
 return [
 
     /*
@@ -62,8 +70,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            'options' => (extension_loaded('pdo_mysql') && $mysql_attr_ssl_ca !== null) ? array_filter([
+                $mysql_attr_ssl_ca => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -82,8 +90,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            'options' => (extension_loaded('pdo_mysql') && $mysql_attr_ssl_ca !== null) ? array_filter([
+                $mysql_attr_ssl_ca => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 

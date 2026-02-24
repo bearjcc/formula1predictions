@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('components.layouts.layout', ['title' => 'Log in to your account', 'headerSubtitle' => 'Enter your email and password below to log in'])] class extends Component {
     #[Validate('required|string|email')]
     public string $email = '';
 
@@ -73,13 +73,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
     }
 }; ?>
 
-<div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+<div class="mx-auto w-full max-w-md min-w-0">
+    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 shadow-sm min-w-0">
+        <x-auth-session-status class="mb-4 text-center text-sm" :status="session('status')" />
 
-    <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
-
-    <form method="POST" wire:submit="login" class="flex flex-col gap-6">
+        <form method="POST" wire:submit="login" class="flex flex-col gap-6">
         <!-- Email Address -->
         <div class="space-y-2">
             <label for="email" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -116,11 +114,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
         </div>
 
         <!-- Remember Me -->
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <x-mary-checkbox wire:model="remember" :label="__('Remember me')" />
 
             @if (Route::has('password.request'))
-                <a class="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-zinc-800 rounded-md" href="{{ route('password.request') }}" wire:navigate>
+                <a class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" href="{{ route('password.request') }}" wire:navigate>
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
@@ -132,9 +130,10 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         <p class="text-center text-sm text-zinc-600 dark:text-zinc-400">
             {{ __("Don't have an account?") }}
-            <a href="{{ route('register') }}" class="font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-zinc-800 rounded-md" wire:navigate>
+            <a href="{{ route('register') }}" class="font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" wire:navigate>
                 {{ __('Sign up') }}
             </a>
         </p>
     </form>
+    </div>
 </div>

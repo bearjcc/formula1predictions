@@ -26,7 +26,7 @@ describe('year-specific routes return 200 for valid years', function () {
         '/{year}/races',
         '/{year}/standings',
         '/{year}/standings/drivers',
-        '/{year}/standings/teams',
+        '/{year}/standings/constructors',
         '/{year}/standings/predictions',
     ];
 

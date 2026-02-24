@@ -1,4 +1,4 @@
-# CI for Formula1Predictions: PHP 8.4, two-batch tests (same as scripts/test-batches.ps1), build, optional Pint.
+# CI for Formula1Predictions: PHP 8.5, audits, tests, build, Pint.
 name: CI
 
 on:
@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up PHP 8.4
+      - name: Set up PHP 8.5
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite
           coverage: none
 
@@ -34,10 +34,16 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist
 
+      - name: Composer security audit
+        run: composer audit
+
       - name: Prepare Laravel
         run: |
           cp .env.example .env
           php artisan key:generate --no-interaction
+
+      - name: Readiness check
+        run: php artisan app:check-ready
 
       - name: Run tests (two batches)
         run: ./scripts/test-batches.sh
@@ -48,6 +54,9 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: NPM audit (high/critical)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
       - name: Check code style (Pint)
         run: vendor/bin/pint --dirty --test
-        continue-on-error: true

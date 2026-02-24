@@ -3,11 +3,15 @@
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+
 uses(RefreshDatabase::class);
 
 test('pages meet accessibility standards', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $pages = [
         '/',
@@ -15,7 +19,7 @@ test('pages meet accessibility standards', function () {
     ];
 
     foreach ($pages as $page) {
-        $response = $this->get($page);
+        $response = get($page);
         $response->assertStatus(200);
 
         // Check for basic accessibility issues
@@ -24,10 +28,11 @@ test('pages meet accessibility standards', function () {
 });
 
 test('color contrast compliance', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
-    $response = $this->get('/');
+    $response = get('/');
     $content = $response->getContent();
 
     // Check for proper text color classes (WCAG AA: primary text high contrast)
@@ -43,10 +48,11 @@ test('color contrast compliance', function () {
 });
 
 test('colour contrast design system usage', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
-    $response = $this->get('/');
+    $response = get('/');
     $content = $response->getContent();
 
     // Design system contrast utilities or equivalent Tailwind classes must be present
@@ -59,10 +65,11 @@ test('colour contrast design system usage', function () {
 });
 
 test('focus management', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
-    $response = $this->get('/');
+    $response = get('/');
     $content = $response->getContent();
 
     // Check for button elements with proper type attributes
@@ -74,10 +81,11 @@ test('focus management', function () {
 });
 
 test('semantic html structure', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
-    $response = $this->get('/');
+    $response = get('/');
     $content = $response->getContent();
 
     // Check for proper heading hierarchy
@@ -91,10 +99,11 @@ test('semantic html structure', function () {
 });
 
 test('dark mode accessibility', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
-    $response = $this->get('/');
+    $response = get('/');
     $content = $response->getContent();
 
     // Check for dark mode classes
@@ -104,11 +113,12 @@ test('dark mode accessibility', function () {
 });
 
 test('form accessibility', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     // Test the draggable demo page which has interactive elements
-    $response = $this->get('/draggable-demo');
+    $response = get('/draggable-demo');
     $content = $response->getContent();
 
     // Check for proper button elements

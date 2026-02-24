@@ -14,12 +14,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('prediction form validation requires authentication', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->post('/predictions', []);
 
     $response->assertRedirect('/login');
 });
 
 test('prediction form validation requires valid type', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -32,6 +35,8 @@ test('prediction form validation requires valid type', function () {
 });
 
 test('sprint prediction requires valid configuration', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -46,6 +51,8 @@ test('sprint prediction requires valid configuration', function () {
 });
 
 test('prediction form validation requires valid season', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -65,6 +72,8 @@ test('prediction form validation requires valid season', function () {
 });
 
 test('race prediction requires driver order', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -81,6 +90,8 @@ test('race prediction requires driver order', function () {
 });
 
 test('race prediction driver order must have between 1 and max drivers', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $maxDrivers = config('f1.max_drivers', 22);
     $drivers = Drivers::factory()->count($maxDrivers + 5)->create();
@@ -121,6 +132,8 @@ test('race prediction driver order must have between 1 and max drivers', functio
 });
 
 test('race prediction driver order must contain valid driver IDs', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -137,6 +150,8 @@ test('race prediction driver order must contain valid driver IDs', function () {
 });
 
 test('preseason prediction requires team order', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -152,6 +167,8 @@ test('preseason prediction requires team order', function () {
 });
 
 test('preseason prediction team order must have between 1 and max teams', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $maxTeams = config('f1.max_constructors', 11);
     $teams = Teams::factory()->count($maxTeams + 5)->create();
@@ -193,6 +210,8 @@ test('preseason prediction team order must have between 1 and max teams', functi
 });
 
 test('preseason prediction does not require driver championship order', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -223,6 +242,8 @@ test('midseason prediction requires driver championship order', function () {
 });
 
 test('midseason prediction driver championship must have between 1 and max drivers', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $maxDrivers = config('f1.max_drivers', 22);
     $drivers = Drivers::factory()->count($maxDrivers + 5)->create();
@@ -252,6 +273,8 @@ test('midseason prediction driver championship must have between 1 and max drive
 });
 
 test('valid race prediction passes validation', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $drivers = Drivers::factory()->count(20)->create();
     $this->actingAs($user);
@@ -271,6 +294,8 @@ test('valid race prediction passes validation', function () {
 });
 
 test('valid preseason prediction passes validation', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $drivers = Drivers::factory()->count(20)->create();
     $teams = Teams::factory()->count(10)->create();
@@ -296,6 +321,8 @@ test('valid preseason prediction passes validation', function () {
 });
 
 test('notes field has maximum length validation', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -309,6 +336,8 @@ test('notes field has maximum length validation', function () {
 });
 
 test('race round validation for race predictions', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
     $this->actingAs($user);
 

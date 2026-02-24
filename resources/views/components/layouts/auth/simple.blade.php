@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-@php $appearance = session('appearance', config('f1.default_appearance', 'system')); @endphp
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}" data-theme="{{ $appearance === 'dark' ? 'dark' : 'light' }}">
+@php
+  $appearance = session('appearance', config('f1.default_appearance', 'system'));
+  $dataTheme = $appearance === 'system' ? null : $appearance;
+@endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}" @if($dataTheme) data-theme="{{ $dataTheme }}" @endif>
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen antialiased bg-white dark:bg-zinc-900">
+    <body class="min-h-screen antialiased bg-white dark:bg-zinc-900 overflow-x-hidden">
         <div class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
             <div class="flex w-full max-w-sm flex-col gap-2">
                 <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>

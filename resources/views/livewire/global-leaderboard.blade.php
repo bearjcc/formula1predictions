@@ -5,7 +5,7 @@
             <h2 class="card-title mb-4">Global Leaderboard</h2>
             
             <div class="flex flex-wrap gap-4 items-end">
-                <div class="form-control flex-1 min-w-[150px]">
+                <div class="form-control flex-1 min-w-0">
                     <label class="label">
                         <span class="label-text">Season</span>
                     </label>
@@ -16,7 +16,7 @@
                     </select>
                 </div>
 
-                <div class="form-control flex-1 min-w-[150px]">
+                <div class="form-control flex-1 min-w-0">
                     <label class="label">
                         <span class="label-text">Type</span>
                     </label>
@@ -27,7 +27,7 @@
                     </select>
                 </div>
 
-                <div class="form-control flex-1 min-w-[150px]">
+                <div class="form-control flex-1 min-w-0">
                     <label class="label">
                         <span class="label-text">Sort By</span>
                     </label>
@@ -103,7 +103,7 @@
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body p-0">
             @if($paginatedLeaderboard->count() > 0)
-                <div class="overflow-x-auto">
+                <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                     <table class="table table-zebra">
                         <thead>
                             <tr>

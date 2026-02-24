@@ -13,6 +13,7 @@ uses(RefreshDatabase::class);
 
 describe('prediction standings page', function () {
     test('returns 200 and shows real users with predictions in table', function () {
+        /** @var \Tests\TestCase $this */
         $user = User::factory()->create(['name' => 'RealPredictor']);
         Prediction::factory()->scored(50, 75.0)->create([
             'user_id' => $user->id,
@@ -33,6 +34,7 @@ describe('prediction standings page', function () {
     });
 
     test('does not show demo or fake usernames when only real users have predictions', function () {
+        /** @var \Tests\TestCase $this */
         $user = User::factory()->create(['name' => 'OnlyRealUser']);
         Prediction::factory()->scored(10)->create([
             'user_id' => $user->id,
@@ -50,6 +52,7 @@ describe('prediction standings page', function () {
     });
 
     test('season filter shows only users with predictions for that season', function () {
+        /** @var \Tests\TestCase $this */
         $user2024 = User::factory()->create(['name' => 'User2024']);
         $user2025 = User::factory()->create(['name' => 'User2025']);
         Prediction::factory()->scored(30)->create([
@@ -76,6 +79,7 @@ describe('prediction standings page', function () {
     });
 
     test('type filter shows only matching prediction types', function () {
+        /** @var \Tests\TestCase $this */
         $raceUser = User::factory()->create(['name' => 'RaceOnlyUser']);
         $preseasonUser = User::factory()->create(['name' => 'PreseasonOnlyUser']);
         Prediction::factory()->scored(20)->create([
@@ -106,6 +110,7 @@ describe('prediction standings page', function () {
     });
 
     test('sort filter changes leaderboard order', function () {
+        /** @var \Tests\TestCase $this */
         $highTotal = User::factory()->create(['name' => 'HighTotalUser']);
         $highAvg = User::factory()->create(['name' => 'HighAvgUser']);
         foreach ([20, 20, 20, 20, 20] as $round => $score) {

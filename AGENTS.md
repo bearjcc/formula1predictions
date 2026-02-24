@@ -2,6 +2,13 @@
 
 ---
 
+## Agent workflow
+
+- **Run tests before claiming completion or making commits.** At minimum run the test suite (or the subset that covers your changes). Auth and other critical paths have tests that assert 200 and no Laravel 500 error page; if those fail, fix before committing.
+- **Pre-push:** `.\scripts\pre-push.ps1` or `./scripts/pre-push.sh` runs audits, readiness (`app:check-ready`), Pint, tests, and build. CI runs the same checks (see .github/workflows/ci.yml).
+
+---
+
 ## Handoff
 
 **Shippable v1 backlog complete (2026-02-20).** All Now / Shippable v1 items (F1-084, 086/087, 069, 080, 072, 076, 093, 094, 095, 104 + test fixes) are done. No critical P1/P2 items remain in the Now scope.

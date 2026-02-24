@@ -137,7 +137,11 @@ Coverage (optional): `composer run test:coverage` (requires pcov).
 
 ### CI
 
-GitHub Actions runs on push and pull request to `main` and `master` (see [.github/workflows/ci.yml](.github/workflows/ci.yml)): two-batch tests via `scripts/test-batches.sh`, then `npm run build`. Optional: `vendor/bin/pint --dirty --test` (continue-on-error).
+GitHub Actions runs on push and pull request to `main` and `master` (see [.github/workflows/ci.yml](.github/workflows/ci.yml)): `composer audit`, `app:check-ready`, two-batch tests via `scripts/test-batches.sh`, `npm run build`, `npm audit --audit-level=high` (optional), and `vendor/bin/pint --dirty --test`.
+
+### Pre-push (local)
+
+Before pushing, run `.\scripts\pre-push.ps1` (PowerShell) or `./scripts/pre-push.sh` (Unix). These run composer audit, readiness check, Pint, tests, build, and optionally npm audit. You can wire them to a git pre-push hook if desired.
 
 ---
 

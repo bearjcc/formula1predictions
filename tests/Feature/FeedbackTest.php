@@ -5,16 +5,20 @@ use App\Models\Feedback;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Volt\Volt as LivewireVolt;
+use Tests\TestCase;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('guest cannot access feedback page', function () {
+    /** @var TestCase $this */
     $response = $this->get(route('feedback'));
 
     $response->assertRedirect(route('login', absolute: false));
 });
 
 test('authenticated user can load feedback page', function () {
+    /** @var TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('feedback'));
@@ -25,6 +29,7 @@ test('authenticated user can load feedback page', function () {
 });
 
 test('authenticated user can submit feedback and it is stored', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create();
 
     LivewireVolt::actingAs($user)
@@ -41,6 +46,7 @@ test('authenticated user can submit feedback and it is stored', function () {
 });
 
 test('authenticated user can submit feedback without subject', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create();
 
     LivewireVolt::actingAs($user)
@@ -57,6 +63,7 @@ test('authenticated user can submit feedback without subject', function () {
 });
 
 test('feedback submission requires message', function () {
+    /** @var TestCase $this */
     $user = User::factory()->create();
 
     LivewireVolt::actingAs($user)
@@ -89,6 +96,7 @@ test('when MAIL_FEEDBACK_TO is set feedback email is sent', function () {
 });
 
 test('when MAIL_FEEDBACK_TO is not set no feedback email is sent', function () {
+    /** @var TestCase $this */
     Mail::fake();
     config(['mail.feedback_to' => null]);
 

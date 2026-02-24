@@ -8,7 +8,7 @@ use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('components.layouts.layout', ['title' => 'Create an account', 'headerSubtitle' => 'Enter your details below to create your account'])] class extends Component {
     public string $name = '';
     public string $email = '';
     public string $password = '';
@@ -35,13 +35,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
     }
 }; ?>
 
-<div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
+<div class="mx-auto w-full max-w-md min-w-0">
+    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 shadow-sm min-w-0">
+        <x-auth-session-status class="mb-4 text-center text-sm" :status="session('status')" />
 
-    <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
-
-    <form method="POST" wire:submit="register" class="flex flex-col gap-6">
+        <form method="POST" wire:submit="register" class="flex flex-col gap-6">
         <!-- Name -->
         <div class="space-y-2">
             <label for="name" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -112,10 +110,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
         </x-mary-button>
     </form>
 
-    <p class="text-center text-sm text-zinc-600 dark:text-zinc-400">
+    <p class="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
         <span>{{ __('Already have an account?') }}</span>
-        <a href="{{ route('login') }}" class="font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-zinc-800 rounded-md" wire:navigate>
+        <a href="{{ route('login') }}" class="font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" wire:navigate>
             {{ __('Log in') }}
         </a>
     </p>
+    </div>
 </div>

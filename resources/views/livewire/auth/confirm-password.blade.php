@@ -5,7 +5,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('components.layouts.layout', ['title' => 'Confirm password', 'headerSubtitle' => 'This is a secure area. Please confirm your password before continuing.'])] class extends Component {
     public string $password = '';
 
     /**
@@ -32,16 +32,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
     }
 }; ?>
 
-<div class="flex flex-col gap-6">
-    <x-auth-header
-        :title="__('Confirm password')"
-        :description="__('This is a secure area of the application. Please confirm your password before continuing.')"
-    />
+<div class="mx-auto w-full max-w-md min-w-0">
+    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 shadow-sm min-w-0">
+        <x-auth-session-status class="mb-4 text-center text-sm" :status="session('status')" />
 
-    <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
-
-    <form method="POST" wire:submit="confirmPassword" class="flex flex-col gap-6">
+        <form method="POST" wire:submit="confirmPassword" class="flex flex-col gap-6">
         <!-- Password -->
         <div class="space-y-2">
             <label for="password" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -60,4 +55,5 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         <x-mary-button type="submit" class="w-full justify-center">{{ __('Confirm') }}</x-mary-button>
     </form>
+    </div>
 </div>

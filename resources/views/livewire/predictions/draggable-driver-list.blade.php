@@ -112,11 +112,231 @@
 
             slotDriverId(index) {
                 return this.driverOrder[index] ?? null;
+            },
+
+            // #region pointer/touch drag (mobile and desktop fallback)
+            pointerDragActive: false,
+            pointerDriverId: null,
+            pointerFrom: null,
+            pointerFromIndex: null,
+            pointerGhost: null,
+            pointerThreshold: 10,
+            pointerStartX: 0,
+            pointerStartY: 0,
+            _pointerMoveBound: null,
+            _pointerUpBound: null,
+            justDragged: false,
+
+            firstEmptySlot() {
+                for (let i = 0; i < this.maxSlots; i++) {
+                    if (this.driverOrder[i] == null || this.driverOrder[i] === '') return i;
+                }
+                return -1;
+            },
+
+            fillFirstEmpty(driverId) {
+                const idx = this.firstEmptySlot();
+                if (idx >= 0 && driverId != null) this.insertDriverAt(driverId, idx);
+            },
+
+            pointerDownRace(e, driverId, from, fromIndex) {
+                if (e.button !== undefined && e.button !== 0) return;
+                this.justDragged = false;
+                this.pointerDriverId = driverId;
+                this.pointerFrom = from;
+                this.pointerFromIndex = fromIndex;
+                this.pointerStartX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+                this.pointerStartY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+                this.pointerDragActive = false;
+                this._pointerMoveBound = (ev) => this.pointerMoveRace(ev);
+                this._pointerUpBound = (ev) => this.pointerUpRace(ev);
+                document.addEventListener('pointermove', this._pointerMoveBound, { passive: false });
+                document.addEventListener('pointerup', this._pointerUpBound);
+                document.addEventListener('pointercancel', this._pointerUpBound);
+            },
+
+            pointerMoveRace(e) {
+                const x = e.clientX ?? 0;
+                const y = e.clientY ?? 0;
+                if (!this.pointerDragActive) {
+                    const dx = x - this.pointerStartX;
+                    const dy = y - this.pointerStartY;
+                    if (dx * dx + dy * dy < this.pointerThreshold * this.pointerThreshold) return;
+                    this.pointerDragActive = true;
+                    this.draggedDriverId = this.pointerDriverId;
+                    this.draggedFromIndex = this.pointerFrom === 'slot' ? this.pointerFromIndex : null;
+                    this.showGhost(x, y);
+                }
+                e.preventDefault();
+                this.moveGhost(x, y);
+                const under = document.elementFromPoint(x, y);
+                const slotRow = under?.closest?.('[data-drop-slot]');
+                if (slotRow) {
+                    const idx = slotRow.getAttribute('data-drop-slot');
+                    if (idx !== null && idx !== '') this.dragOverIndex = parseInt(idx, 10);
+                } else {
+                    this.dragOverIndex = null;
+                }
+            },
+
+            pointerUpRace(e) {
+                document.removeEventListener('pointermove', this._pointerMoveBound);
+                document.removeEventListener('pointerup', this._pointerUpBound);
+                document.removeEventListener('pointercancel', this._pointerUpBound);
+                this._pointerMoveBound = null;
+                this._pointerUpBound = null;
+                const x = e.clientX ?? 0;
+                const y = e.clientY ?? 0;
+                if (this.pointerDragActive && this.pointerDriverId != null) {
+                    const under = document.elementFromPoint(x, y);
+                    const slotRow = under?.closest?.('[data-drop-slot]');
+                    if (slotRow) {
+                        const idx = parseInt(slotRow.getAttribute('data-drop-slot'), 10);
+                        if (!isNaN(idx) && idx >= 0 && idx < this.maxSlots) {
+                            this.insertDriverAt(this.pointerDriverId, idx);
+                            this.justDragged = true;
+                        }
+                    }
+                }
+                this.removeGhost();
+                this.pointerDragActive = false;
+                this.pointerDriverId = null;
+                this.pointerFrom = null;
+                this.pointerFromIndex = null;
+                this.draggedDriverId = null;
+                this.draggedFromIndex = null;
+                this.dragOverIndex = null;
+            },
+
+            showGhost(x, y) {
+                this.removeGhost();
+                const driver = this.getDriverById(this.pointerDriverId);
+                const name = driver ? (driver.surname || (driver.name + ' ' + (driver.surname || '')).trim()) : '';
+                const el = document.createElement('div');
+                el.setAttribute('data-drag-ghost', '1');
+                el.className = 'fixed z-[100] pointer-events-none px-3 py-1.5 rounded border-2 border-blue-400 bg-white dark:bg-zinc-800 shadow-lg text-sm font-medium text-zinc-900 dark:text-zinc-100';
+                el.textContent = name;
+                el.style.left = (x - 8) + 'px';
+                el.style.top = (y - 8) + 'px';
+                document.body.appendChild(el);
+                this.pointerGhost = el;
+            },
+
+            moveGhost(x, y) {
+                if (this.pointerGhost) {
+                    this.pointerGhost.style.left = (x - 8) + 'px';
+                    this.pointerGhost.style.top = (y - 8) + 'px';
+                }
+            },
+
+            removeGhost() {
+                if (this.pointerGhost && this.pointerGhost.parentNode) {
+                    this.pointerGhost.parentNode.removeChild(this.pointerGhost);
+                }
+                this.pointerGhost = null;
             }
+            // #endregion
         }"
         class="space-y-4"
     >
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        {{-- Mobile: single list, compact, surname-only, touch-drag + tap-to-fill --}}
+        <div class="md:hidden space-y-2">
+            <div class="px-1 py-1">
+                <h4 class="font-bold text-zinc-900 dark:text-white text-sm">Your prediction (1&ndash;{{ $maxSlots }})</h4>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag or tap unplaced drivers. Positions {{ $this->dnfEligibleFromSlot + 1 }}+ can be marked DNF.</p>
+            </div>
+            <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                <div class="divide-y divide-zinc-200 dark:divide-zinc-700 max-h-[50vh] overflow-y-auto">
+                    <template x-for="(_, index) in Array.from({ length: maxSlots }, (_, i) => i)" :key="index">
+                        <div
+                            :class="{
+                                'bg-blue-50/50 dark:bg-blue-900/10': dragOverIndex === index,
+                                'opacity-40': draggedDriverId && draggedFromIndex === index
+                            }"
+                            class="flex items-center gap-1.5 py-1.5 px-2 min-h-[40px] border-zinc-100 dark:border-zinc-700/50 transition-colors"
+                            :data-drop-slot="index"
+                            @dragover.prevent="dragOverRace($event, index)"
+                            @dragleave="dragLeaveRace()"
+                            @drop.prevent="dropRace($event, index)"
+                        >
+                            <span class="flex-shrink-0 w-5 text-zinc-500 dark:text-zinc-400 text-xs font-medium" x-text="(index + 1) + '.'"></span>
+                            <template x-if="slotDriverId(index)">
+                                <div
+                                    class="flex-1 flex items-center gap-1.5 cursor-move select-none rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800/80 py-1 px-2 min-w-0"
+                                    draggable="true"
+                                    @dragstart="dragStartRace($event, slotDriverId(index), 'slot', index)"
+                                    @dragend="dragEndRace()"
+                                    @pointerdown="pointerDownRace($event, slotDriverId(index), 'slot', index)"
+                                    :title="getDriverById(slotDriverId(index)) ? (getDriverById(slotDriverId(index)).name + ' ' + getDriverById(slotDriverId(index)).surname) : ''"
+                                >
+                                    <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 w-3.5" aria-hidden="true">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
+                                    </span>
+                                    <span class="flex-1 min-w-0 font-medium text-zinc-900 dark:text-zinc-100 text-sm truncate" x-text="getDriverById(slotDriverId(index))?.surname || (getDriverById(slotDriverId(index))?.name + ' ' + getDriverById(slotDriverId(index))?.surname)"></span>
+                                    <template x-if="isDnfEligible(index)">
+                                        <button
+                                            type="button"
+                                            @click.stop="toggleDnf(slotDriverId(index))"
+                                            :class="hasDnf(slotDriverId(index)) ? 'bg-zinc-200 dark:bg-zinc-300 text-red-600 dark:text-red-500' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500'"
+                                            class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold"
+                                        >DNF</button>
+                                    </template>
+                                </div>
+                            </template>
+                            <template x-if="!slotDriverId(index)">
+                                <div
+                                    class="flex-1 rounded border border-dashed border-zinc-300 dark:border-zinc-600 py-1 px-2 text-zinc-400 dark:text-zinc-500 text-xs italic min-h-[28px] flex items-center"
+                                    :data-drop-slot="index"
+                                    @dragover.prevent="dragOverRace($event, index)"
+                                    @dragleave="dragLeaveRace()"
+                                    @drop.prevent="dropRace($event, index)"
+                                >Drop here</div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <div class="px-1 py-1">
+                <h4 class="font-bold text-zinc-900 dark:text-white text-sm" x-text="'Unplaced (' + (availableDrivers?.length ?? 0) + ')'"></h4>
+            </div>
+            <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                <div class="p-1.5 flex flex-wrap gap-1.5 max-h-[30vh] overflow-y-auto">
+                    <template x-for="driver in availableDrivers" :key="driver.id">
+                        <button
+                            type="button"
+                            class="flex items-center gap-1 cursor-move select-none rounded border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800/80 py-1.5 px-2 hover:border-zinc-300 dark:hover:border-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-700 text-sm font-medium text-zinc-900 dark:text-zinc-100"
+                            draggable="true"
+                            @dragstart="dragStartRace($event, driver.id, 'pool', null)"
+                            @dragend="dragEndRace()"
+                            @pointerdown="pointerDownRace($event, driver.id, 'pool', null)"
+                            @click.prevent="if (!justDragged) fillFirstEmpty(driver.id); justDragged = false"
+                            :title="driver.name + ' ' + driver.surname"
+                        >
+                            <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 w-3.5" aria-hidden="true">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
+                            </span>
+                            <span x-text="driver.surname || (driver.name + ' ' + driver.surname)"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-2">
+                <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Fastest Lap</p>
+                <select
+                    :value="fastestLap"
+                    @change="setFastestLap($event.target.value || null)"
+                    class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-2 py-1.5 text-sm"
+                >
+                    <option value="">None</option>
+                    <template x-for="driver in drivers" :key="driver.id">
+                        <option :value="driver.id" x-text="driver.surname || (driver.name + ' ' + driver.surname)"></option>
+                    </template>
+                </select>
+            </div>
+        </div>
+
+        {{-- Desktop: two-column layout (unchanged behavior, add pointer handlers for touch devices) --}}
+        <div class="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             <section class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm overflow-hidden min-h-[400px] flex flex-col">
                 <div class="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50">
                     <h4 class="font-bold text-zinc-900 dark:text-white">Your prediction (1&ndash;{{ $maxSlots }})</h4>
@@ -130,6 +350,7 @@
                                 'opacity-40': draggedDriverId && draggedFromIndex === index
                             }"
                             class="flex items-center gap-2 p-2 sm:p-3 min-h-[52px] border-zinc-100 dark:border-zinc-700/50 transition-colors"
+                            :data-drop-slot="index"
                             @dragover.prevent="dragOverRace($event, index)"
                             @dragleave="dragLeaveRace()"
                             @drop.prevent="dropRace($event, index)"
@@ -141,6 +362,7 @@
                                     draggable="true"
                                     @dragstart="dragStartRace($event, slotDriverId(index), 'slot', index)"
                                     @dragend="dragEndRace()"
+                                    @pointerdown="pointerDownRace($event, slotDriverId(index), 'slot', index)"
                                 >
                                     <span x-show="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) ? 'background-color: ' + getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) : ''" aria-hidden="true"></span>
                                     <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600" aria-hidden="true" title="Drag to reorder">
@@ -164,6 +386,7 @@
                             <template x-if="!slotDriverId(index)">
                                 <div
                                     class="flex-1 flex items-center rounded border border-dashed border-zinc-300 dark:border-zinc-600 py-2 px-3 text-zinc-400 dark:text-zinc-500 text-sm italic min-h-[2.5rem]"
+                                    :data-drop-slot="index"
                                     @dragover.prevent="dragOverRace($event, index)"
                                     @dragleave="dragLeaveRace()"
                                     @drop.prevent="dropRace($event, index)"
@@ -187,6 +410,7 @@
                             draggable="true"
                             @dragstart="dragStartRace($event, driver.id, 'pool', null)"
                             @dragend="dragEndRace()"
+                            @pointerdown="pointerDownRace($event, driver.id, 'pool', null)"
                         >
                             <span x-show="getConstructorColor(driver.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(driver.team?.team_name) ? 'background-color: ' + getConstructorColor(driver.team?.team_name) : ''" aria-hidden="true"></span>
                             <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500" title="Drag into prediction list">

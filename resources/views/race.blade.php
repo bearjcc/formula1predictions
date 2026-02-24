@@ -139,7 +139,7 @@
                 <h2 class="text-heading-3">Complete Race Results</h2>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                 <table class="w-full">
                     <thead class="bg-zinc-50 dark:bg-zinc-700">
                         <tr>

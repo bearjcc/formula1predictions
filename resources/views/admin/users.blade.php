@@ -13,7 +13,7 @@
                 <x-mary-alert icon="o-x-circle" class="alert-error mb-4" :title="session('error')" />
             @endif
 
-            <div class="overflow-x-auto">
+            <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                 <table class="table table-zebra">
                     <thead>
                         <tr>

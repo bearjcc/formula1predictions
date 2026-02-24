@@ -6,27 +6,33 @@ use Livewire\Volt\Volt as LivewireVolt;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('login screen can be rendered', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/login');
 
     $response->assertOk();
 });
 
 test('login page returns 200 with data-appearance and shared layout branding', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/login');
 
     $response->assertOk();
     $content = $response->getContent();
     expect($content)->toContain('data-appearance=');
-    expect($content)->toContain('Predict race outcomes.');
+    expect($content)->toContain('F1 Predictor');
+    expect($content)->not->toContain('Whoops');
+    expect($content)->not->toContain('500 | Server Error');
 });
 
 test('auth pages use data-appearance for theme consistency', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/login');
     $response->assertOk();
     expect($response->getContent())->toContain('data-appearance="system"');
 });
 
 test('auth pages respect session appearance preference', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->withSession(['appearance' => 'dark'])->get('/login');
     $response->assertOk();
     expect($response->getContent())->toContain('data-appearance="dark"');
@@ -37,6 +43,7 @@ test('auth pages respect session appearance preference', function () {
 });
 
 test('auth layout has shared body classes and blocking appearance script in head', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/login');
     $response->assertOk();
     $content = $response->getContent();
@@ -47,6 +54,7 @@ test('auth layout has shared body classes and blocking appearance script in head
 });
 
 test('dark appearance sets html dark class for consistent background', function () {
+    /** @var \Tests\TestCase $this */
     $response = $this->withSession(['appearance' => 'dark'])->get('/login');
     $response->assertOk();
     $content = $response->getContent();
@@ -54,6 +62,7 @@ test('dark appearance sets html dark class for consistent background', function 
 });
 
 test('users can authenticate using the login screen', function () {
+    /** @var \Tests\TestCase $this */
     $user = User::factory()->create();
 
     $response = LivewireVolt::test('auth.login')
@@ -69,6 +78,7 @@ test('users can authenticate using the login screen', function () {
 });
 
 test('users can not authenticate with invalid password', function () {
+    /** @var \Tests\TestCase $this */
     $user = User::factory()->create();
 
     $response = LivewireVolt::test('auth.login')
@@ -82,6 +92,8 @@ test('users can not authenticate with invalid password', function () {
 });
 
 test('users can logout', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var \App\Models\User $user */
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');

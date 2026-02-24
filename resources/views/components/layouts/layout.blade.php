@@ -1,21 +1,25 @@
 @props(['title' => null, 'headerSubtitle' => null, 'hideHeader' => false])
-<!DOCTYPE html>
 @php
+  if (! isset($slot)) {
+      $slot = '';
+  }
   $appearance = session('appearance', config('f1.default_appearance', 'system'));
+  $dataTheme = $appearance === 'system' ? null : $appearance;
 @endphp
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}" data-theme="{{ $appearance === 'dark' ? 'dark' : 'light' }}">
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}" @if($dataTheme) data-theme="{{ $dataTheme }}" @endif>
 <head>
     @include('partials.head')
 </head>
-<body class="min-h-screen antialiased bg-white dark:bg-zinc-900">
-    <div class="flex h-screen">
+<body class="min-h-screen antialiased bg-white dark:bg-zinc-900 overflow-x-hidden">
+    <div class="flex h-screen min-w-0">
         <!-- Sidebar - Hidden on mobile, shown on desktop -->
         <div id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
             <!-- App Logo/Title -->
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
                 <div class="flex items-center justify-between">
                     <a href="{{ route('home') }}" class="flex items-center space-x-2 text-zinc-900 dark:text-zinc-100 hover:text-red-600 dark:hover:text-red-400 transition-colors" wire:navigate>
-                        <img src="/images/logo.png" alt="F1 Predictor logo" class="h-8 w-auto flex-shrink-0" />
+                        <img src="/images/logo.png" alt="F1 Predictor logo" class="h-8 w-auto max-w-full flex-shrink-0" />
                         <h2 class="text-lg font-semibold">F1 Predictor</h2>
                     </a>
                     <!-- Close button for mobile -->
@@ -135,7 +139,7 @@
         <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col w-full lg:w-auto">
+        <div class="flex-1 flex flex-col min-w-0 w-full lg:w-auto">
             @if(!$hideHeader)
             <!-- Header -->
             <header class="bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 p-4">
@@ -202,7 +206,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="flex-1 p-4 lg:p-6 overflow-auto">
+            <main class="flex-1 p-4 lg:p-6 overflow-auto min-w-0">
                 @hasSection('content')
                     @yield('content')
                 @else

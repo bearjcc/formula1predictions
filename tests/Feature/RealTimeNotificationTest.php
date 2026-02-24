@@ -9,6 +9,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 
+use function Pest\Laravel\actingAs;
+
 uses(RefreshDatabase::class);
 
 test('notification received event is dispatched when race results are available', function () {
@@ -61,6 +63,7 @@ test('notification received event is dispatched when prediction is scored', func
 });
 
 test('notification dropdown highlights prediction scored details', function () {
+    /** @var User $user */
     $user = User::factory()->create();
     $race = Races::factory()->create([
         'race_name' => 'Monaco Grand Prix',
@@ -76,7 +79,7 @@ test('notification dropdown highlights prediction scored details', function () {
     // Store a real prediction scored notification using the notification class
     $user->notify(new App\Notifications\PredictionScored($prediction, 95, 88.5));
 
-    $this->actingAs($user);
+    actingAs($user);
 
     Livewire::test('notifications.notification-dropdown')
         ->assertSee('Prediction scored')
@@ -102,6 +105,7 @@ test('notification received event broadcasts to correct channel', function () {
 });
 
 test('notification dropdown component shows correct unread count', function () {
+    /** @var User $user */
     $user = User::factory()->create();
     $race = Races::factory()->create();
 
@@ -117,9 +121,10 @@ test('notification dropdown component shows correct unread count', function () {
         ],
     ]);
 
-    $this->actingAs($user);
+    actingAs($user);
 
     // Visit a page that renders the layout header (home uses hideHeader=true so dropdown is not in DOM)
+    /** @var \Tests\TestCase $this */
     $response = $this->get(route('scoring'));
     $response->assertStatus(200);
 
@@ -128,6 +133,7 @@ test('notification dropdown component shows correct unread count', function () {
 });
 
 test('notifications index page shows user notifications', function () {
+    /** @var User $user */
     $user = User::factory()->create();
     $race = Races::factory()->create();
 
@@ -143,8 +149,9 @@ test('notifications index page shows user notifications', function () {
         ],
     ]);
 
-    $this->actingAs($user);
+    actingAs($user);
 
+    /** @var \Tests\TestCase $this */
     $response = $this->get('/notifications');
     $response->assertStatus(200);
     $response->assertSee($race->race_name);
@@ -152,6 +159,7 @@ test('notifications index page shows user notifications', function () {
 });
 
 test('mark as read functionality works', function () {
+    /** @var User $user */
     $user = User::factory()->create();
     $race = Races::factory()->create();
 
@@ -167,7 +175,7 @@ test('mark as read functionality works', function () {
         ],
     ]);
 
-    $this->actingAs($user);
+    actingAs($user);
 
     // Mark as read using Livewire test
     Livewire::test('notifications.notification-dropdown')
@@ -178,6 +186,7 @@ test('mark as read functionality works', function () {
 });
 
 test('mark all as read functionality works', function () {
+    /** @var User $user */
     $user = User::factory()->create();
     $race = Races::factory()->create();
 
@@ -203,7 +212,7 @@ test('mark all as read functionality works', function () {
         ],
     ]);
 
-    $this->actingAs($user);
+    actingAs($user);
 
     // Mark all as read using Livewire test
     Livewire::test('notifications.notification-dropdown')

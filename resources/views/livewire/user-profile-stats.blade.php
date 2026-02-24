@@ -133,7 +133,7 @@
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
                 <h3 class="card-title mb-4">Race-by-Race Performance</h3>
-                <div class="overflow-x-auto">
+                <div class="w-full max-w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
                     <table class="table table-zebra table-sm">
                         <thead>
                             <tr>

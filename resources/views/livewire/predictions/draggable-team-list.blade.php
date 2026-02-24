@@ -98,7 +98,7 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center space-x-2">
                                         <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
-                                        <span class="text-xs text-zinc-500 dark:text-zinc-400" x-text="getTeamById(teamId)?.nationality"></span>
+                                        <span class="text-xs text-zinc-500 dark:text-zinc-400" x-text="getTeamById(teamId)?.driver_surnames || getTeamById(teamId)?.nationality"></span>
                                     </div>
                                 </div>
                             </div>
