@@ -1,5 +1,7 @@
 <?php
 
+uses()->group('browser', 'slow');
+
 use App\Models\User;
 
 it('runs on CI but not locally', function () {

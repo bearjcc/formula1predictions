@@ -1,5 +1,7 @@
 <?php
 
+uses()->group('browser', 'slow');
+
 use App\Models\Drivers;
 use App\Models\Races;
 use App\Models\Teams;

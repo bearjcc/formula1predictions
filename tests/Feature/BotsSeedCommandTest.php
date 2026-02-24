@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('bots:seed runs all bot seeders', function () {
     Races::factory()->create(['season' => 2023, 'round' => 1]);

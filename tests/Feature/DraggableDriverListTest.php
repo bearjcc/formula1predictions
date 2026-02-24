@@ -200,15 +200,4 @@ test('draggable driver list handles empty drivers gracefully', function () {
     expect($component->get('fastestLapDriverId'))->toBeNull();
 });
 
-test('draggable driver list demo page loads correctly', function () {
-    /** @var User $user */
-    $user = User::factory()->create();
-    actingAs($user);
-
-    $response = get('/draggable-demo');
-
-    $response->assertStatus(200);
-    $response->assertSee('Draggable Driver Predictions Demo');
-    $response->assertSee('Your prediction');
-    $response->assertSee('Drivers (drag into list)');
-});
+// /draggable-demo route smoke test lives in RoutesTest.

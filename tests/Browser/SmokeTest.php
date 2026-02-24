@@ -1,5 +1,7 @@
 <?php
 
+uses()->group('browser', 'slow');
+
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 

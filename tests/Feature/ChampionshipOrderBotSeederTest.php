@@ -8,7 +8,7 @@ use App\Models\User;
 use Database\Seeders\ChampionshipOrderBotSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('championship order bot seeder creates SeasonBot user', function () {
     Races::factory()->create(['season' => 2023, 'round' => 1]);

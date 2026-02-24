@@ -67,6 +67,18 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "test:fast": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test --exclude-group slow,browser"
+        ],
+        "test:slow": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test --group slow"
+        ],
+        "test:browser": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test --group browser"
+        ],
         "test:coverage": [
             "@php artisan config:clear --ansi",
             "@php -dpcov.enabled=1 -dpcov.directory=app vendor/bin/pest --coverage --coverage-html=build/coverage"

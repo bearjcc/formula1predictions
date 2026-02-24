@@ -1,5 +1,7 @@
 <?php
 
+uses()->group('browser', 'slow');
+
 use App\Models\User;
 
 it('can visit dashboard and see predictions', function () {

@@ -6,7 +6,7 @@ use App\Models\User;
 use Database\Seeders\FakerBasicSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('faker basic seeder creates expected number of records', function () {
     // Run the seeder

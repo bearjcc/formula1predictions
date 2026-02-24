@@ -151,41 +151,7 @@ test('chart data service can generate driver consistency analysis', function () 
         ->and($data[0]['consistency_score'])->toBeGreaterThan(0);
 });
 
-test('standings chart component renders correctly', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    $response = $this->get('/analytics');
-    $response->assertStatus(200);
-    $response->assertSeeLivewire('charts.standings-chart');
-});
-
-test('points progression chart component renders correctly', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    $response = $this->get('/analytics');
-    $response->assertStatus(200);
-    $response->assertSeeLivewire('charts.points-progression-chart');
-});
-
-test('driver consistency chart component renders correctly', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    $response = $this->get('/analytics');
-    $response->assertStatus(200);
-    $response->assertSeeLivewire('charts.driver-consistency-chart');
-});
-
-test('prediction accuracy chart component renders correctly', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    $response = $this->get('/analytics');
-    $response->assertStatus(200);
-    $response->assertSeeLivewire('charts.prediction-accuracy-chart');
-});
+// /analytics page-load and Livewire component presence tests live in WebsiteNavigationTest.
 
 test('chart components can change chart type', function () {
     Livewire::test('charts.standings-chart')

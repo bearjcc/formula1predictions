@@ -8,7 +8,7 @@ use App\Models\User;
 use Database\Seeders\RandomBotSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('random bot seeder creates user', function () {
     $d = Drivers::factory()->create();

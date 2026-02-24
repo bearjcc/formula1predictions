@@ -7,7 +7,7 @@ use App\Services\F1ApiService;
 use Database\Seeders\BotPredictionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('bot predictions seeder creates LastBot user', function () {
     $mockF1Service = Mockery::mock(F1ApiService::class);

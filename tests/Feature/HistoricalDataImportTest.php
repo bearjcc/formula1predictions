@@ -11,7 +11,7 @@ use Database\Seeders\HistoricalPredictionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('historical predictions seeder can import data', function () {
     // Create some test drivers and teams first with unique IDs

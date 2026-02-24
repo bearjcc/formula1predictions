@@ -8,7 +8,7 @@ use App\Services\F1ApiService;
 use Database\Seeders\LastYearChampionshipOrderBotSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('last year order bot seeder creates Last Year Order Bot user', function () {
     $d1 = Drivers::factory()->create(['driver_id' => 'driver_a']);

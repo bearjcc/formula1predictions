@@ -5,7 +5,7 @@ use Database\Seeders\TestUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt as LivewireVolt;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('slow');
 
 test('test user seeder creates expected users', function () {
     $this->seed(TestUserSeeder::class);

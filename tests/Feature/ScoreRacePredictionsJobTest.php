@@ -115,6 +115,43 @@ test('job updates race results from api when force update', function () {
         ->and($race->results)->not->toBeNull();
 });
 
+test('job is idempotent when run twice on the same race', function () {
+    $race = Races::factory()->create([
+        'season' => 2024,
+        'round' => 1,
+        'status' => 'completed',
+        'race_name' => 'Monaco GP',
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
+        ],
+    ]);
+    $user = User::factory()->create();
+    Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'status' => 'submitted',
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+            'fastest_lap' => 'max_verstappen',
+        ],
+    ]);
+
+    $job = new ScoreRacePredictionsJob($race->id, false);
+    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+
+    $firstScore = Prediction::where('race_id', $race->id)->value('score');
+    $firstScoredAt = Prediction::where('race_id', $race->id)->value('scored_at');
+
+    // Run again — score must not change
+    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+
+    $prediction = Prediction::where('race_id', $race->id)->first();
+    expect($prediction->score)->toBe($firstScore)
+        ->and($prediction->scored_at->toDateTimeString())->toBe($firstScoredAt->toDateTimeString());
+});
+
 test('job failed method logs error', function () {
     Log::shouldReceive('error')
         ->once()

@@ -111,6 +111,80 @@ test('user cannot delete another users prediction', function () {
     expect(Prediction::find($prediction->id))->not->toBeNull();
 });
 
+test('user cannot update a locked prediction', function () {
+    $user = User::factory()->create();
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'season' => 2024,
+        'status' => 'locked',
+        'locked_at' => now(),
+        'notes' => 'Original notes',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('predictions.update', $prediction), ['notes' => 'Attempted change'])
+        ->assertForbidden();
+
+    $prediction->refresh();
+    expect($prediction->notes)->toBe('Original notes');
+});
+
+test('user cannot update a scored prediction', function () {
+    $user = User::factory()->create();
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'season' => 2024,
+        'status' => 'scored',
+        'locked_at' => now(),
+        'scored_at' => now(),
+        'notes' => 'Original notes',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('predictions.update', $prediction), ['notes' => 'Attempted change'])
+        ->assertForbidden();
+
+    $prediction->refresh();
+    expect($prediction->notes)->toBe('Original notes');
+});
+
+test('user cannot delete a locked prediction', function () {
+    $user = User::factory()->create();
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'status' => 'locked',
+        'locked_at' => now(),
+    ]);
+    $id = $prediction->id;
+
+    $this->actingAs($user)
+        ->delete(route('predictions.destroy', $prediction))
+        ->assertForbidden();
+
+    expect(Prediction::find($id))->not->toBeNull();
+});
+
+test('user cannot delete a scored prediction', function () {
+    $user = User::factory()->create();
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'status' => 'scored',
+        'locked_at' => now(),
+        'scored_at' => now(),
+    ]);
+    $id = $prediction->id;
+
+    $this->actingAs($user)
+        ->delete(route('predictions.destroy', $prediction))
+        ->assertForbidden();
+
+    expect(Prediction::find($id))->not->toBeNull();
+});
+
 test('mass-assigning score or status via create is rejected', function () {
     $user = User::factory()->create();
     $prediction = Prediction::create([

@@ -1,5 +1,7 @@
 <?php
 
+uses()->group('browser', 'slow');
+
 use App\Models\User;
 
 it('can run parallel browser tests for dashboard', function () {

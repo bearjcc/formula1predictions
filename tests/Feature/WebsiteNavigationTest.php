@@ -7,24 +7,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+// Auth redirect tests (guest → /login) live in RoutesTest (authentication required routes block).
+
 test('home page loads successfully', function () {
     /** @var \Tests\TestCase $this */
     $response = $this->get('/');
     $response->assertOk();
-});
-
-test('unauthenticated users are redirected from auth-required routes', function () {
-    /** @var \Tests\TestCase $this */
-    $this->get('/dashboard')->assertRedirect('/login');
-    $this->get('/analytics')->assertRedirect('/login');
-    $this->get('/settings/profile')->assertRedirect('/login');
-    $this->get('/settings/password')->assertRedirect('/login');
-    $this->get('/settings/appearance')->assertRedirect('/login');
-    $this->get(route('predict.create'))->assertRedirect('/login');
-    $this->get('/predictions')->assertRedirect('/login');
-
-    $prediction = Prediction::factory()->create();
-    $this->get(route('predictions.edit', $prediction))->assertRedirect('/login');
 });
 
 test('authenticated user can access dashboard analytics settings and predictions', function () {
@@ -49,30 +37,6 @@ test('authenticated user can access dashboard analytics settings and predictions
     $this->get(route('predictions.edit', $prediction))->assertOk();
 });
 
-test('admin can access admin dashboard', function () {
-    /** @var \Tests\TestCase $this */
-    /** @var User $admin */
-    $admin = User::factory()->admin()->create();
-
-    $this->actingAs($admin);
-    $this->get('/admin/dashboard')->assertOk();
-});
-
-test('analytics page requires authentication', function () {
-    /** @var \Tests\TestCase $this */
-    $response = $this->get('/analytics');
-    $response->assertRedirect('/login');
-});
-
-test('analytics page loads for authenticated user', function () {
-    /** @var \Tests\TestCase $this */
-    /** @var User $user */
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->get('/analytics');
-    $response->assertOk();
-});
-
 test('admin dashboard requires authentication and admin role', function () {
     /** @var \Tests\TestCase $this */
     // Guest redirected to login
@@ -92,15 +56,6 @@ test('admin dashboard loads for admin user', function () {
     $admin = User::factory()->admin()->create();
 
     $response = $this->actingAs($admin)->get('/admin/dashboard');
-    $response->assertOk();
-});
-
-test('predictions landing is reachable for authenticated users', function () {
-    /** @var \Tests\TestCase $this */
-    /** @var User $user */
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->get('/predictions');
     $response->assertOk();
 });
 

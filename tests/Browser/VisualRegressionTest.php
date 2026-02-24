@@ -1,5 +1,7 @@
 <?php
 
+uses()->group('browser', 'slow');
+
 use App\Models\User;
 
 it('dashboard screenshots match baseline', function () {
