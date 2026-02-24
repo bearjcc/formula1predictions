@@ -69,7 +69,6 @@
 
         @else
             <div class="space-y-6 {{ $isLocked ? 'pointer-events-none opacity-80' : '' }}">
-                <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100">Constructor championship order</h3>
                 @if(!empty($teams))
                     <livewire:predictions.draggable-team-list
                         :teams="$teams"
@@ -84,19 +83,61 @@
                     <div class="mt-8">
                         <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Teammate battles</h3>
                         <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-4">For each constructor, pick who you think will finish higher in the championship.</p>
-                        <div class="space-y-4">
+                        @php
+                            $teammateTeamCount = collect($teamsWithDrivers)->filter(fn ($t) => count($t['drivers'] ?? []) >= 2)->count();
+                        @endphp
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach($teamsWithDrivers as $team)
-                                @if(count($team['drivers']) >= 2)
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <span class="font-medium text-zinc-700 dark:text-zinc-300 w-40">{{ $team['display_name'] }}</span>
-                                        <x-mary-select wire:model="teammateBattles.{{ $team['id'] }}" :disabled="$isLocked" placeholder="Pick driver" class="min-w-[180px]">
-                                            @foreach($team['drivers'] as $driver)
-                                                <option value="{{ $driver['id'] }}">{{ $driver['name'] }} {{ $driver['surname'] }}</option>
-                                            @endforeach
-                                        </x-mary-select>
+                                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col pt-1 relative">
+                                    <!-- Constructor color strip -->
+                                    @if(config('constructor_colors.' . strtolower($team['team_name'])))
+                                        <div class="absolute top-0 left-0 right-0 h-1 bg-zinc-200 dark:bg-zinc-700" style="background-color: {{ config('constructor_colors.' . strtolower($team['team_name'])) }}"></div>
+                                    @else
+                                        <div class="absolute top-0 left-0 right-0 h-1 bg-zinc-200 dark:bg-zinc-800"></div>
+                                    @endif
+                                    
+                                    <div class="px-3 py-2.5 border-b border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col justify-center items-center text-center">
+                                        <span class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ $team['display_name'] }}</span>
                                     </div>
-                                @endif
+                                    
+                                    <div class="p-3 grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-3 flex-1">
+                                        @if(count($team['drivers']) >= 2)
+                                            @foreach($team['drivers'] as $driver)
+                                                <label class="relative flex flex-col items-center justify-center p-3 cursor-pointer rounded-lg border-2 text-center transition-all duration-200
+                                                    {{ ($teammateBattles[$team['id']] ?? null) == $driver['id'] 
+                                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300' 
+                                                        : 'border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50' }}
+                                                    {{ $isLocked ? 'pointer-events-none opacity-75' : '' }}">
+                                                    
+                                                    <input type="radio" name="teammateBattles[{{ $team['id'] }}]" value="{{ $driver['id'] }}"
+                                                        wire:model.live="teammateBattles.{{ $team['id'] }}"
+                                                        {{ $isLocked ? 'disabled' : '' }}
+                                                        class="sr-only">
+                                                        
+                                                    <span class="text-xs opacity-75 mb-0.5 truncate w-full">{{ $driver['name'] }}</span>
+                                                    <span class="text-sm font-bold uppercase tracking-wide truncate w-full">{{ $driver['surname'] }}</span>
+                                                    
+                                                    @if(($teammateBattles[$team['id']] ?? null) == $driver['id'])
+                                                        <div class="absolute -top-2.5 -left-2.5 bg-white dark:bg-zinc-900 rounded-full text-primary-500 shadow-sm border border-zinc-100 dark:border-zinc-800">
+                                                            <x-mary-icon name="o-check-circle" class="w-6 h-6 text-primary-600 dark:text-primary-500" />
+                                                        </div>
+                                                    @endif
+                                                </label>
+                                            @endforeach
+                                        @else
+                                            <div class="col-span-2 flex items-center justify-center p-4 text-center text-xs text-zinc-500 dark:text-zinc-400 italic bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-dashed border-zinc-200 dark:border-zinc-700">
+                                                Lineup Unconfirmed
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
                             @endforeach
+                            
+                            @if($teammateTeamCount === 0)
+                                <div class="col-span-full">
+                                    <p class="text-sm text-zinc-500 dark:text-zinc-400 italic">No constructor line-ups with two drivers are available for this season yet. Run <code class="text-xs bg-zinc-200 dark:bg-zinc-700 px-1 rounded">php artisan db:seed --class=DriverLineup2026Seeder</code> to assign drivers to constructors, then refresh this page.</p>
+                                </div>
+                            @endif
                         </div>
                         @error('teammateBattles')
                             <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>

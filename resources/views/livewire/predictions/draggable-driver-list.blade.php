@@ -249,7 +249,7 @@
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag to reorder. Tap unplaced to fill first empty. Positions {{ $this->dnfEligibleFromSlot + 1 }}+ can be marked DNF.</p>
             </div>
             <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-                <div class="divide-y divide-zinc-200 dark:divide-zinc-700 max-h-[50vh] overflow-y-auto">
+                <div class="divide-y divide-zinc-200 dark:divide-zinc-700 max-h-[50vh] landscape-driver-slots overflow-y-auto">
                     <template x-for="(_, index) in Array.from({ length: maxSlots }, (_, i) => i)" :key="index">
                         <div
                             :class="{
@@ -307,7 +307,7 @@
                 <h4 class="font-bold text-zinc-900 dark:text-white text-sm" x-text="'Unplaced (' + (availableDrivers?.length ?? 0) + ') - tap to fill'"></h4>
             </div>
             <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-                <div class="p-1.5 flex flex-wrap gap-1.5 max-h-[30vh] overflow-y-auto">
+                <div class="p-1.5 flex flex-wrap gap-1.5 max-h-[30vh] landscape-driver-pool overflow-y-auto">
                     <template x-for="driver in availableDrivers" :key="driver.id">
                         <button
                             type="button"

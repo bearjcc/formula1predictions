@@ -24,7 +24,15 @@ class PredictionFactory extends Factory
             'race_round' => $this->faker->numberBetween(1, 24),
             'race_id' => null,
             'prediction_data' => [
-                'driver_order' => $this->faker->shuffleArray(range(1, 20)),
+                // driver_order stores driver_id strings (e.g. 'max_verstappen'), not integer PKs.
+                // We use a fixed representative set so factories work without hitting the DB.
+                // Tests that need real driver IDs should override this via ->state() or create([...]).
+                'driver_order' => $this->faker->shuffleArray([
+                    'max_verstappen', 'lewis_hamilton', 'charles_leclerc',
+                    'lando_norris', 'carlos_sainz', 'george_russell',
+                    'fernando_alonso', 'oscar_piastri', 'lance_stroll',
+                    'esteban_ocon',
+                ]),
                 'fastest_lap' => $this->faker->randomElement(['max_verstappen', 'lewis_hamilton', 'charles_leclerc']),
             ],
             'notes' => $this->faker->optional()->sentence(),

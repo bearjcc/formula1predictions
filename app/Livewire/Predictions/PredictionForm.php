@@ -173,23 +173,60 @@ class PredictionForm extends Component
             })
             ->toArray();
 
-        $this->teamsWithDrivers = Teams::where('is_active', true)
-            ->with('drivers')
-            ->orderBy('team_name')
-            ->get()
-            ->map(function ($team) {
-                return [
-                    'id' => $team->id,
-                    'team_name' => $team->team_name,
-                    'display_name' => $team->display_name,
-                    'drivers' => $team->drivers->map(fn ($d) => [
-                        'id' => $d->id,
-                        'name' => $d->name,
-                        'surname' => $d->surname,
+        // Preseason: build teammate pairings from season drivers (so lineup seeder or API links are used)
+        if ($this->type === 'preseason') {
+            $byTeam = collect($this->drivers)->groupBy('team.id');
+            $list = [];
+            foreach ($byTeam as $teamId => $driverArray) {
+                if (!$teamId) continue;
+                $team = collect($this->teams)->firstWhere('id', $teamId);
+                if (!$team) continue;
+                
+                $list[] = [
+                    'id' => (int) $teamId,
+                    'team_name' => $team['team_name'],
+                    'display_name' => $team['display_name'],
+                    'drivers' => $driverArray->map(fn($d) => [
+                        'id' => $d['id'],
+                        'name' => $d['name'],
+                        'surname' => $d['surname'],
                     ])->values()->toArray(),
                 ];
-            })
-            ->toArray();
+            }
+            usort($list, fn ($a, $b) => strcasecmp($a['team_name'], $b['team_name']));
+            
+            // Add teams that might not have drivers yet
+            foreach ($this->teams as $team) {
+                if (!collect($list)->contains('id', $team['id'])) {
+                    $list[] = [
+                        'id' => $team['id'],
+                        'team_name' => $team['team_name'],
+                        'display_name' => $team['display_name'],
+                        'drivers' => []
+                    ];
+                }
+            }
+            
+            $this->teamsWithDrivers = $list;
+        } else {
+            $this->teamsWithDrivers = Teams::where('is_active', true)
+                ->with('drivers')
+                ->orderBy('team_name')
+                ->get()
+                ->map(function ($team) {
+                    return [
+                        'id' => $team->id,
+                        'team_name' => $team->team_name,
+                        'display_name' => $team->display_name,
+                        'drivers' => $team->drivers->map(fn ($d) => [
+                            'id' => $d->id,
+                            'name' => $d->name,
+                            'surname' => $d->surname,
+                        ])->values()->toArray(),
+                    ];
+                })
+                ->toArray();
+        }
 
         // Race/sprint: do not pre-fill driver order; user builds it by dragging from pool
         if (empty($this->teamOrder) && in_array($this->type, ['preseason', 'midseason']) && ! empty($this->teams)) {
@@ -341,6 +378,15 @@ class PredictionForm extends Component
     {
         if ($this->isLocked) {
             $this->addError('base', 'This prediction can no longer be edited.');
+
+            return;
+        }
+
+        // Server-side deadline enforcement — the frontend also checks this, but we
+        // verify it here so a user cannot bypass the check by manipulating the request.
+        $deadline = $this->predictionDeadline;
+        if ($deadline !== null && now()->greaterThanOrEqualTo($deadline)) {
+            $this->addError('base', 'The prediction deadline has passed. Predictions are now closed.');
 
             return;
         }
