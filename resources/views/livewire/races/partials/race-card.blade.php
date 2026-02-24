@@ -93,7 +93,7 @@
                 </div>
             @endif
 
-            <div class="flex items-center space-x-4">
+            <div class="flex flex-wrap items-center gap-2">
                 <x-mary-button variant="outline" size="sm" icon="o-eye" wire:click="viewDetails({{ (int) ($race['round'] ?? 0) }})">
                     View Details
                 </x-mary-button>

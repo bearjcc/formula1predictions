@@ -214,6 +214,13 @@ class F1ApiService
             }
         }
 
+        $results = $race->getResultsArray();
+        // Show as completed when we have results, so UI matches reality even if DB status was set from schedule-only sync
+        $status = ! empty($results) ? 'completed' : $race->status;
+        if ($status === 'completed' && $race->status !== 'completed') {
+            $race->update(['status' => 'completed']);
+        }
+
         return [
             'round' => $race->round,
             'date' => $raceDate,
@@ -221,8 +228,8 @@ class F1ApiService
             'raceName' => $race->display_name,
             'circuit' => $circuit,
             'laps' => $race->laps,
-            'status' => $race->status,
-            'results' => $race->getResultsArray(),
+            'status' => $status,
+            'results' => $results,
             'slug' => $race->slug,
             'weekend_start' => $weekendStart,
             'weekend_end' => $raceDate,

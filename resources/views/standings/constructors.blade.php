@@ -39,7 +39,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-1.5">
                                     @if($seasonStarted)
-                                        <x-mary-badge variant="outline">{{ $row['position'] }}</x-mary-badge>
+                                        <x-mary-badge variant="outline" :value="$row['position']" />
                                         @if($seasonEnded && in_array($row['position'], [1, 2, 3], true))
                                             <x-mary-icon name="o-trophy" class="w-5 h-5 text-amber-500 dark:text-amber-400" title="{{ __('Position clinched') }}" />
                                         @endif

@@ -94,10 +94,12 @@ test('current season races page returns 200 and shows error state when API fails
     $response->assertSee('We\'re having trouble loading race data right now');
 });
 
-test('races list shows all races grouped as next, future, and past', function () {
-    mock(F1ApiService::class, function ($mock) {
+test('races list shows all races grouped as next, future, and past for current season', function () {
+    $year = (int) config('f1.current_season', 2026);
+
+    mock(F1ApiService::class, function ($mock) use ($year) {
         $mock->shouldReceive('getRacesForYear')
-            ->with(2024)
+            ->with($year)
             ->andReturn([
                 [
                     'round' => 1,
@@ -106,7 +108,7 @@ test('races list shows all races grouped as next, future, and past', function ()
                         'circuitName' => 'Albert Park',
                         'country' => 'Australia',
                     ],
-                    'date' => '2024-03-15',
+                    'date' => "{$year}-03-15",
                     'time' => '04:00:00Z',
                     'status' => 'upcoming',
                     'results' => [],
@@ -118,7 +120,7 @@ test('races list shows all races grouped as next, future, and past', function ()
                         'circuitName' => 'Circuit Gilles Villeneuve',
                         'country' => 'Canada',
                     ],
-                    'date' => '2024-06-09',
+                    'date' => "{$year}-06-09",
                     'time' => '18:00:00Z',
                     'status' => 'completed',
                     'results' => [
@@ -128,11 +130,36 @@ test('races list shows all races grouped as next, future, and past', function ()
             ]);
     });
 
-    Livewire::test(RacesList::class, ['year' => 2024])
+    Livewire::test(RacesList::class, ['year' => $year])
         ->assertSee('Australian Grand Prix')
         ->assertSee('Canadian Grand Prix')
         ->assertSee('Next race')
         ->assertSee('Past races');
+});
+
+test('completed season shows flat races list without next or past grouping', function () {
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2025)
+            ->andReturn([
+                [
+                    'round' => 5,
+                    'raceName' => 'Miami Grand Prix',
+                    'circuit' => ['circuitName' => 'Miami', 'country' => 'USA'],
+                    'date' => '2025-05-04',
+                    'time' => '20:00:00Z',
+                    'status' => 'upcoming',
+                    'results' => [],
+                ],
+            ]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2025])
+        ->assertSee('Miami Grand Prix')
+        ->assertSee('Races (1)')
+        ->assertDontSee('Next race')
+        ->assertDontSee('Past races')
+        ->assertDontSee('Future races');
 });
 
 test('non-admin users do not see refresh races button', function () {

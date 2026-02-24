@@ -15,16 +15,16 @@
                             Position
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            Driver
+                            Points
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            Country
+                            Driver
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                             Constructor
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            Points
+                            Country
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                             Wins
@@ -40,7 +40,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-1.5">
                                     @if($seasonStarted)
-                                        <x-mary-badge variant="outline">{{ $row['position'] }}</x-mary-badge>
+                                        <x-mary-badge variant="outline" :value="$row['position']" />
                                         @if($seasonEnded && in_array($row['position'], [1, 2, 3], true))
                                             <x-mary-icon name="o-trophy" class="w-5 h-5 text-amber-500 dark:text-amber-400" title="{{ __('Position clinched') }}" />
                                         @endif
@@ -50,9 +50,15 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="font-semibold text-green-600 dark:text-green-400">{{ number_format($row['points'], 0) }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <x-constructor-bar :teamName="$row['team_name'] ?? null">
                                     <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
                                 </x-constructor-bar>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p>{{ $row['team_display_name'] ?? $row['team_name'] ?? '—' }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($row['nationality'] ?? null)
@@ -65,12 +71,6 @@
                                 @else
                                     <span class="text-zinc-500">—</span>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <p>{{ $row['team_display_name'] ?? $row['team_name'] ?? '—' }}</p>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-semibold text-green-600 dark:text-green-400">{{ number_format($row['points'], 0) }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <p>{{ $row['wins'] }}</p>

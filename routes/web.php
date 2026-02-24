@@ -23,24 +23,6 @@ Route::get('/scoring', function () {
     return view('scoring');
 })->name('scoring');
 
-// Opt-in Railway env check: set RAILWAY_ENV_DEBUG=1 and RAILWAY_DUMMY_VAR=anything in Railway,
-// redeploy, then GET /railway-env-check to verify env vars reach the app. Remove RAILWAY_ENV_DEBUG after use.
-Route::get('/railway-env-check', function () {
-    if (! getenv('RAILWAY_ENV_DEBUG')) {
-        abort(404);
-    }
-
-    return response()->json([
-        'ok' => true,
-        'message' => 'Env check (only visible when RAILWAY_ENV_DEBUG is set)',
-        'admin_email_set' => ! empty(getenv('ADMIN_EMAIL')),
-        'admin_password_set' => ! empty(getenv('ADMIN_PASSWORD')),
-        'admin_name_set' => ! empty(getenv('ADMIN_NAME')),
-        'railway_dummy_var' => getenv('RAILWAY_DUMMY_VAR') ?: null,
-        'config_admin_email_set' => ! empty(config('admin.promotable_admin_email')),
-        'config_admin_password_set' => ! empty(config('admin.admin_password')),
-    ], 200, ['Content-Type' => 'application/json']);
-})->name('railway-env-check');
 
 // Dev and testing demo routes
 if (app()->environment(['local', 'testing'])) {
@@ -188,13 +170,27 @@ Route::middleware(['validate.year'])->group(function () {
         $season = (int) $year;
         $driverStandings = Standings::getDriverStandings($season, null);
         $standingsByEntityId = $driverStandings->keyBy('entity_id');
-        $allDrivers = Drivers::active()->with('team')->get();
 
-        // Fallback: driver_id -> team_name from drivers championship (when driver.team_id is not set)
+        // Only show drivers who are in this season: from standings (entity_id) or from API championship list
+        $entityIds = $driverStandings->pluck('entity_id')->unique()->filter()->values();
+        $allDrivers = collect();
+        if ($entityIds->isNotEmpty()) {
+            $byDriverId = Drivers::whereIn('driver_id', $entityIds)->with('team')->get();
+            $numericIds = $entityIds->filter(fn ($id) => ctype_digit((string) $id))->values();
+            $byId = $numericIds->isNotEmpty()
+                ? Drivers::whereIn('id', $numericIds->map(fn ($id) => (int) $id))->with('team')->get()
+                : collect();
+            $allDrivers = $byDriverId->merge($byId)->unique('id')->values();
+        }
         $driverIdToTeamName = [];
+        $apiDriverStats = [];
         try {
             $data = $f1->fetchDriversChampionship($season);
             $entries = $data['drivers_championship'] ?? [];
+            if ($allDrivers->isEmpty() && $entries !== []) {
+                $apiDriverIds = collect($entries)->pluck('driverId')->filter()->unique()->values()->all();
+                $allDrivers = Drivers::whereIn('driver_id', $apiDriverIds)->with('team')->get();
+            }
             $teamIds = collect($entries)->pluck('teamId')->filter()->unique()->all();
             $teams = Teams::whereIn('team_id', $teamIds)->pluck('team_name', 'team_id');
             foreach ($entries as $entry) {
@@ -203,17 +199,25 @@ Route::middleware(['validate.year'])->group(function () {
                 if ($driverId !== null && $teamId !== null && isset($teams[$teamId])) {
                     $driverIdToTeamName[$driverId] = $teams[$teamId];
                 }
+                if ($driverId !== null) {
+                    $apiDriverStats[$driverId] = [
+                        'points' => (float) ($entry['points'] ?? 0),
+                        'wins' => (int) ($entry['wins'] ?? 0),
+                        'podiums' => (int) ($entry['podiums'] ?? 0),
+                    ];
+                }
             }
         } catch (\Throwable) {
             // API may not have data for future/past years; use empty fallback
         }
 
         $countriesByName = Countries::all()->keyBy('name');
-        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId, $driverIdToTeamName, $countriesByName) {
+        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId, $driverIdToTeamName, $countriesByName, $apiDriverStats) {
             $s = $standingsByEntityId->get((string) $driver->id) ?? $standingsByEntityId->get($driver->driver_id ?? '');
-            $points = $s ? (float) $s->points : 0.0;
-            $wins = $s ? (int) ($s->wins ?? 0) : 0;
-            $podiums = $s ? (int) ($s->podiums ?? 0) : 0;
+            $apiStats = $driver->driver_id ? ($apiDriverStats[$driver->driver_id] ?? null) : null;
+            $points = $s ? (float) $s->points : ($apiStats['points'] ?? 0.0);
+            $wins = $s ? (int) ($s->wins ?? 0) : ($apiStats['wins'] ?? 0);
+            $podiums = $s ? (int) ($s->podiums ?? 0) : ($apiStats['podiums'] ?? 0);
             $driverName = trim($driver->name.' '.$driver->surname);
             $teamName = $driver->team?->team_name
                 ?? ($driver->driver_id ? ($driverIdToTeamName[$driver->driver_id] ?? null) : null);
@@ -253,11 +257,32 @@ Route::middleware(['validate.year'])->group(function () {
     })->name('standings.drivers');
 
     // constructor standings
-    Route::get('/{year}/standings/constructors', function ($year) {
+    Route::get('/{year}/standings/constructors', function (F1ApiService $f1, $year) {
         $season = (int) $year;
         $teamStandings = Standings::getConstructorStandings($season, null);
         $standingsByEntityId = $teamStandings->keyBy('entity_id');
-        $allTeams = Teams::active()->with('drivers')->get();
+        $entityIds = $teamStandings->pluck('entity_id')->unique()->filter()->values();
+        $allTeams = collect();
+        if ($entityIds->isNotEmpty()) {
+            $byTeamId = Teams::whereIn('team_id', $entityIds)->with('drivers')->get();
+            $numericIds = $entityIds->filter(fn ($id) => ctype_digit((string) $id))->values();
+            $byId = $numericIds->isNotEmpty()
+                ? Teams::whereIn('id', $numericIds->map(fn ($id) => (int) $id))->with('drivers')->get()
+                : collect();
+            $allTeams = $byTeamId->merge($byId)->unique('id')->values();
+        }
+        if ($allTeams->isEmpty()) {
+            try {
+                $data = $f1->fetchConstructorsChampionship($season);
+                $entries = $data['constructors_championship'] ?? [];
+                $apiTeamIds = collect($entries)->pluck('teamId')->filter()->unique()->values()->all();
+                if ($apiTeamIds !== []) {
+                    $allTeams = Teams::whereIn('team_id', $apiTeamIds)->with('drivers')->get();
+                }
+            } catch (\Throwable) {
+                // leave empty
+            }
+        }
         $countriesByName = Countries::all()->keyBy('name');
         $rows = $allTeams->map(function ($team) use ($standingsByEntityId, $countriesByName) {
             $s = $standingsByEntityId->get((string) $team->id) ?? $standingsByEntityId->get($team->team_id ?? '');

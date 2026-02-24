@@ -232,6 +232,46 @@
     }
 }
 
+/* ============================================================
+   Landscape phone optimizations
+   Targets phones in landscape (short viewport, wider width).
+   Breakpoint: height ≤ 500px covers iPhone SE–15 in landscape.
+   ============================================================ */
+
+/* Reduce driver ordering panel heights so the full list is usable */
+@media (max-height: 500px) and (orientation: landscape) {
+    .landscape-driver-slots {
+        max-height: 200px !important;
+    }
+
+    .landscape-driver-pool {
+        max-height: 120px !important;
+    }
+}
+
+/* Tighten vertical padding on the main layout in landscape to reclaim space */
+@media (max-height: 500px) and (orientation: landscape) {
+    header {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    main {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+}
+
+/* Show race-card info in a single row on landscape phones */
+@media (max-height: 500px) and (orientation: landscape) {
+    .grid.grid-cols-1.md\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+}
+
+/* ============================================================ */
+
 /* Mobile-specific utility classes */
 @media (max-width: 768px) {
     .mobile-hidden {
