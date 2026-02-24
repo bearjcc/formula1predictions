@@ -100,15 +100,17 @@ class RacesList extends Component
     /**
      * Preseason prediction deadline and first race name for the current year.
      *
-     * @return array{deadline: \Carbon\Carbon|null, first_race_name: string|null}
+     * @return array{deadline: \Carbon\Carbon|null, first_race_name: string|null, open: bool}
      */
     public function getPreseasonInfoProperty(): array
     {
         $firstRace = Races::getFirstRaceOfSeason($this->year);
+        $deadline = Races::getPreseasonDeadlineForSeason($this->year);
 
         return [
-            'deadline' => Races::getPreseasonDeadlineForSeason($this->year),
+            'deadline' => $deadline,
             'first_race_name' => $firstRace?->display_name,
+            'open' => $deadline !== null && $deadline->isFuture(),
         ];
     }
 
@@ -152,26 +154,38 @@ class RacesList extends Component
 
     /**
      * Races grouped by month (Y-m) for calendar view.
+     * Each month includes races whose weekend overlaps that month.
      *
      * @return array<string, list<array<string, mixed>>>
      */
     public function getRacesByMonthProperty(): array
     {
+        $year = $this->year;
         $byMonth = [];
         foreach ($this->races as $race) {
             if (! is_array($race) || empty($race['date'])) {
                 continue;
             }
+            $weekendStart = $race['weekend_start'] ?? $race['date'];
+            $weekendEnd = $race['weekend_end'] ?? $race['date'];
             try {
-                $date = Carbon::parse($race['date']);
+                $start = Carbon::parse($weekendStart);
+                $end = Carbon::parse($weekendEnd);
             } catch (\Throwable) {
                 continue;
             }
-            $key = $date->format('Y-m');
-            if (! isset($byMonth[$key])) {
-                $byMonth[$key] = [];
+            for ($m = 1; $m <= 12; $m++) {
+                $first = Carbon::createFromDate($year, $m, 1);
+                $last = $first->copy()->endOfMonth();
+                if ($end->lt($first) || $start->gt($last)) {
+                    continue;
+                }
+                $key = $first->format('Y-m');
+                if (! isset($byMonth[$key])) {
+                    $byMonth[$key] = [];
+                }
+                $byMonth[$key][] = $race;
             }
-            $byMonth[$key][] = $race;
         }
         ksort($byMonth);
 

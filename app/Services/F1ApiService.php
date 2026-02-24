@@ -199,15 +199,34 @@ class F1ApiService
             'circuitId' => $race->circuit_api_id,
         ], fn ($v) => $v !== null && $v !== '');
 
+        $raceDate = $race->date->format('Y-m-d');
+        $weekendStart = $raceDate;
+        if ($race->qualifying_start) {
+            $q = $race->qualifying_start->format('Y-m-d');
+            if ($q < $weekendStart) {
+                $weekendStart = $q;
+            }
+        }
+        if ($race->sprint_qualifying_start) {
+            $sq = $race->sprint_qualifying_start->format('Y-m-d');
+            if ($sq < $weekendStart) {
+                $weekendStart = $sq;
+            }
+        }
+
         return [
             'round' => $race->round,
-            'date' => $race->date->format('Y-m-d'),
+            'date' => $raceDate,
             'time' => $race->time ? $race->time->format('H:i:s') : '00:00:00',
             'raceName' => $race->display_name,
             'circuit' => $circuit,
             'laps' => $race->laps,
             'status' => $race->status,
             'results' => $race->getResultsArray(),
+            'slug' => $race->slug,
+            'weekend_start' => $weekendStart,
+            'weekend_end' => $raceDate,
+            'predictions_open' => $race->allowsPredictions(),
         ];
     }
 
