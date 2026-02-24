@@ -4,5 +4,9 @@
 @section('headerSubtitle', __('Submit your predicted finishing order and fastest lap.'))
 
 @section('content')
-    <livewire:predictions.prediction-form :race="$race ?? null" />
+    <livewire:predictions.prediction-form
+        :race="$race ?? null"
+        :preseason="$preseason ?? false"
+        :preseason-year="$year ?? null"
+    />
 @endsection

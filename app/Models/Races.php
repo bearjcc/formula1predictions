@@ -132,6 +132,27 @@ class Races extends Model
     }
 
     /**
+     * Whether the season has started (at least one race completed).
+     */
+    public static function seasonHasStarted(int $season): bool
+    {
+        return static::where('season', $season)->completed()->exists();
+    }
+
+    /**
+     * Whether the season has ended (all scheduled races completed; positions are final/clinched).
+     */
+    public static function seasonHasEnded(int $season): bool
+    {
+        $total = static::where('season', $season)->count();
+        if ($total === 0) {
+            return false;
+        }
+
+        return static::where('season', $season)->completed()->count() === $total;
+    }
+
+    /**
      * Next race (by round) for the given season that still allows predictions.
      * Used when "Start predicting" has no race_id: redirect to this race.
      */
@@ -146,7 +167,7 @@ class Races extends Model
     }
 
     /**
-     * Get the race's full name.
+     * Get the race's full name (stored in DB, for matching).
      */
     public function getFullNameAttribute(): string
     {
@@ -154,11 +175,27 @@ class Races extends Model
     }
 
     /**
-     * Get the race's slug for URLs.
+     * Short name for display and URLs: strip redundant "Formula 1" / "F1" prefix.
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        $trimmed = trim($this->race_name);
+        foreach (['Formula 1 ', 'F1 '] as $prefix) {
+            if (stripos($trimmed, $prefix) === 0) {
+                $trimmed = trim(substr($trimmed, strlen($prefix)));
+                break;
+            }
+        }
+
+        return $trimmed !== '' ? $trimmed : $this->race_name;
+    }
+
+    /**
+     * Get the race's slug for URLs (uses display name).
      */
     public function getSlugAttribute(): string
     {
-        return str($this->race_name)
+        return str($this->display_name)
             ->lower()
             ->replace([' ', '&', '-'], '-')
             ->slug();
@@ -264,6 +301,25 @@ class Races extends Model
         }
 
         return $this->sprint_qualifying_start->copy()->subHour();
+    }
+
+    /**
+     * Preseason prediction deadline for a season: same as the first race's prediction deadline.
+     * Returns null if no first race or no qualifying_start.
+     */
+    public static function getPreseasonDeadlineForSeason(int $season): ?\Carbon\Carbon
+    {
+        $firstRace = static::where('season', $season)->orderBy('round')->first();
+
+        return $firstRace?->getRacePredictionDeadline();
+    }
+
+    /**
+     * First race of the season (by round). Used for preseason deadline and display.
+     */
+    public static function getFirstRaceOfSeason(int $season): ?self
+    {
+        return static::where('season', $season)->orderBy('round')->first();
     }
 
     /**

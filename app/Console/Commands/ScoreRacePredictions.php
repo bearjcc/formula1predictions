@@ -60,7 +60,7 @@ class ScoreRacePredictions extends Command
 
     private function processRace(Races $race, bool $dryRun): int
     {
-        $this->info("Processing {$race->race_name} ($race->season Round $race->round)...");
+        $this->info("Processing {$race->display_name} ($race->season Round $race->round)...");
 
         // Try to fetch newest results from API first
         try {

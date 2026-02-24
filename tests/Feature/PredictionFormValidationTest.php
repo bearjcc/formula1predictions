@@ -153,7 +153,7 @@ test('preseason prediction requires team order', function () {
 
 test('preseason prediction team order must have between 1 and max teams', function () {
     $user = User::factory()->create();
-    $maxTeams = config('f1.max_teams', 11);
+    $maxTeams = config('f1.max_constructors', 11);
     $teams = Teams::factory()->count($maxTeams + 5)->create();
     $drivers = Drivers::factory()->count(config('f1.max_drivers', 22))->create();
     $this->actingAs($user);
@@ -192,7 +192,7 @@ test('preseason prediction team order must have between 1 and max teams', functi
     $response->assertSessionHasNoErrors();
 });
 
-test('preseason prediction requires driver championship order', function () {
+test('preseason prediction does not require driver championship order', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -200,35 +200,37 @@ test('preseason prediction requires driver championship order', function () {
         'type' => 'preseason',
         'season' => 2024,
         'prediction_data' => [
-            'team_order' => Teams::factory()->count(10)->create()->pluck('id')->toArray(),
-            // Missing driver_championship
+            'team_order' => Teams::factory()->count(5)->create()->pluck('id')->toArray(),
+        ],
+    ]);
+
+    $response->assertSessionHasNoErrors();
+});
+
+test('midseason prediction requires driver championship order', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $response = $this->post('/predictions', [
+        'type' => 'midseason',
+        'season' => 2024,
+        'prediction_data' => [
+            'team_order' => Teams::factory()->count(5)->create()->pluck('id')->toArray(),
         ],
     ]);
 
     $response->assertSessionHasErrors(['prediction_data.driver_championship']);
 });
 
-test('preseason prediction driver championship must have between 1 and max drivers', function () {
+test('midseason prediction driver championship must have between 1 and max drivers', function () {
     $user = User::factory()->create();
     $maxDrivers = config('f1.max_drivers', 22);
     $drivers = Drivers::factory()->count($maxDrivers + 5)->create();
-    $teams = Teams::factory()->count(config('f1.max_teams', 11))->create();
+    $teams = Teams::factory()->count(config('f1.max_constructors', 11))->create();
     $this->actingAs($user);
 
-    // Empty driver championship fails (min 1)
     $response = $this->post('/predictions', [
-        'type' => 'preseason',
-        'season' => 2024,
-        'prediction_data' => [
-            'team_order' => $teams->pluck('id')->toArray(),
-            'driver_championship' => [],
-        ],
-    ]);
-    $response->assertSessionHasErrors(['prediction_data.driver_championship']);
-
-    // Too many drivers (max 20)
-    $response = $this->post('/predictions', [
-        'type' => 'preseason',
+        'type' => 'midseason',
         'season' => 2024,
         'prediction_data' => [
             'team_order' => $teams->pluck('id')->toArray(),
@@ -237,9 +239,9 @@ test('preseason prediction driver championship must have between 1 and max drive
     ]);
     $response->assertSessionHasErrors(['prediction_data.driver_championship']);
 
-    // Partial driver championship (e.g. 10 drivers) passes
+    // Partial driver championship (e.g. 10 drivers) passes for midseason
     $response = $this->post('/predictions', [
-        'type' => 'preseason',
+        'type' => 'midseason',
         'season' => 2024,
         'prediction_data' => [
             'team_order' => $teams->pluck('id')->toArray(),

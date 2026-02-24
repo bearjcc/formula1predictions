@@ -11,6 +11,7 @@ function applyAppearance() {
   const isDark = appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.classList.toggle('dark', isDark);
   document.documentElement.setAttribute('data-appearance', appearance);
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 
 document.addEventListener('livewire:init', () => {

@@ -3,7 +3,7 @@
 @php
   $appearance = session('appearance', config('f1.default_appearance', 'system'));
 @endphp
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}" data-theme="{{ $appearance === 'dark' ? 'dark' : 'light' }}">
 <head>
     @include('partials.head')
 </head>
@@ -38,21 +38,17 @@
                             <x-mary-icon name="o-calendar" class="w-4 h-4" />
                             <span>{{ __('Races') }}</span>
                         </a>
-                        <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings') && !request()->routeIs('standings.predictions') && !request()->routeIs('standings.teams') && !request()->routeIs('standings.drivers') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
+                        <a href="{{ route('standings', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings') && !request()->routeIs('standings.predictions') && !request()->routeIs('standings.constructors') && !request()->routeIs('standings.drivers') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />
                             <span>{{ __('Standings') }}</span>
                         </a>
-                        <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.predictions') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
+                        <a href="{{ route('predictions.index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('predictions.*') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
-                            <span>{{ __('Predictions') }}</span>
+                            <span>{{ __('My Predictions') }}</span>
                         </a>
                         <a href="{{ route('leaderboard.index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('leaderboard.*') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-trophy" class="w-4 h-4" />
                             <span>{{ __('Leaderboard') }}</span>
-                        </a>
-                        <a href="{{ route('analytics') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('analytics') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
-                            <x-mary-icon name="o-chart-bar" class="w-4 h-4" />
-                            <span>{{ __('Analytics') }}</span>
                         </a>
                         <a href="{{ route('scoring') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('scoring') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-calculator" class="w-4 h-4" />
@@ -62,11 +58,11 @@
                 </div>
 
                 <div>
-                    <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('Teams & Drivers') }}</h3>
+                    <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{{ __('Constructors & Drivers') }}</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('standings.teams', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.teams') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
+                        <a href="{{ route('standings.constructors', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.constructors') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-users" class="w-4 h-4" />
-                            <span>{{ __('Teams') }}</span>
+                            <span>{{ __('Constructors') }}</span>
                         </a>
                         <a href="{{ route('standings.drivers', ['year' => config('f1.current_season')]) }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('standings.drivers') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
                             <x-mary-icon name="o-user" class="w-4 h-4" />
@@ -104,7 +100,7 @@
                                 <x-mary-avatar class="w-8 h-8" placeholder="{{ strtoupper(substr(Auth::user()->name, 0, 2)) }}" />
                                 <span class="text-sm font-medium truncate max-w-[120px]">{{ Auth::user()->name }}</span>
                             </div>
-                            <x-mary-icon name="o-chevron-up" class="w-4 h-4 text-zinc-500" />
+                            <x-mary-icon name="o-chevron-up" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                         </div>
                         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 dark:bg-zinc-800 rounded-box w-52 mb-2">
                             <li><a href="{{ route('settings.profile') }}" wire:navigate><x-mary-icon name="o-user" class="w-4 h-4" /> {{ __('Profile') }}</a></li>
@@ -160,8 +156,8 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-4">
-                        <!-- Notification Dropdown -->
+                    <div class="flex items-center space-x-2">
+                        <livewire:layout.appearance-toggle />
                         @auth
                             <livewire:notifications.notification-dropdown />
                         @endauth

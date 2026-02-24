@@ -67,7 +67,7 @@
                                                 Prediction scored
                                             </p>
                                             <p class="text-xs text-zinc-600 dark:text-zinc-300 truncate">
-                                                {{ $notification->data['race_name'] ?? ($notification->data['season'] ?? 'Season') }}
+                                                {{ $notification->data['display_name'] ?? $notification->data['race_name'] ?? ($notification->data['season'] ?? 'Season') }}
                                                 @if(isset($notification->data['score']))
                                                     &nbsp;&middot;&nbsp;{{ $notification->data['score'] }} pts
                                                 @endif

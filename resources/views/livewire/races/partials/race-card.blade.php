@@ -14,7 +14,7 @@
         <div class="flex-1">
             <div class="flex items-center space-x-3 mb-3">
                 <x-mary-badge variant="outline" class="{{ $badgeClass }}">
-                    {{ ucfirst($status) }}
+                    {{ $race['round'] ?? '?' }}
                 </x-mary-badge>
                 <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{{ $race['raceName'] ?? 'Race' }}</h3>
             </div>
@@ -42,16 +42,32 @@
                     </span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <x-mary-icon name="o-flag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                    <span class="text-zinc-700 dark:text-zinc-300">{{ $circuit['country'] ?? 'TBA' }}</span>
+                    @php
+                        $countryName = $circuit['country'] ?? null;
+                        $countryCode = $countryName ? (config('country_flags.'.$countryName) ?? null) : null;
+                    @endphp
+                    @if($countryCode)
+                        <span class="fi fi-{{ $countryCode }} fis inline-block w-4 h-4 rounded-sm align-middle bg-cover" aria-hidden="true"></span>
+                    @else
+                        <x-mary-icon name="o-flag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                    @endif
+                    <span class="text-zinc-700 dark:text-zinc-300">{{ $countryName ?? 'TBA' }}</span>
                 </div>
             </div>
 
             @if(!empty($circuit['circuitLength']))
+                @php
+                    $lengthKm = (float) $circuit['circuitLength'];
+                    if ($lengthKm > 100) {
+                        $lengthKm = $lengthKm / 1000;
+                    }
+                    $lengthFormatted = number_format($lengthKm, 1) . ' km';
+                    $lapsFormatted = isset($race['laps']) && $race['laps'] !== null && $race['laps'] !== '' ? (int) $race['laps'] . ' laps' : null;
+                @endphp
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div class="flex items-center space-x-2">
                         <x-mary-icon name="o-map" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                        <span class="text-zinc-700 dark:text-zinc-300">Length: {{ $circuit['circuitLength'] }}</span>
+                        <span class="text-zinc-700 dark:text-zinc-300">Length: {{ $lengthFormatted }}@if($lapsFormatted), {{ $lapsFormatted }}@endif</span>
                     </div>
                     <div class="flex items-center space-x-2">
                         <x-mary-icon name="o-clock" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
@@ -78,7 +94,7 @@
             @endif
 
             <div class="flex items-center space-x-4">
-                <x-mary-button variant="outline" size="sm" icon="o-eye">
+                <x-mary-button variant="outline" size="sm" icon="o-eye" wire:click="viewDetails({{ (int) ($race['round'] ?? 0) }})">
                     View Details
                 </x-mary-button>
                 @if(($race['status'] ?? '') === 'completed' && !empty($race['results']))
@@ -96,9 +112,6 @@
                         Make Prediction
                     </x-mary-button>
                 @endif
-                <x-mary-button variant="outline" size="sm" icon="o-users">
-                    Predictions
-                </x-mary-button>
             </div>
         </div>
     </div>

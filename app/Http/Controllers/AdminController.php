@@ -237,7 +237,7 @@ class AdminController extends Controller
         try {
             ScoreRacePredictionsJob::dispatch($race->id, $request->boolean('force_update'));
 
-            return redirect()->back()->with('success', "Scoring job queued for {$race->race_name}");
+            return redirect()->back()->with('success', "Scoring job queued for {$race->display_name}");
 
         } catch (\Throwable $e) {
             Log::error('AdminController@queueRaceScoring failed', ['race_id' => $race->id, 'exception' => $e]);
@@ -338,7 +338,7 @@ class AdminController extends Controller
 
         $label = $race->half_points ? 'enabled' : 'disabled';
 
-        return redirect()->back()->with('success', "Half-points {$label} for {$race->race_name}");
+        return redirect()->back()->with('success', "Half-points {$label} for {$race->display_name}");
     }
 
     /**

@@ -105,7 +105,7 @@
                     </div>
                 </x-mary-card>
 
-                <!-- Teams Card -->
+                <!-- Constructors Card -->
                 <x-mary-card class="group relative hover:shadow-xl transition-all duration-300 overflow-hidden bg-card">
                     <div class="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
                     <div class="relative p-6">
@@ -114,16 +114,16 @@
                                 <x-mary-icon name="o-users" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-heading-3">Teams</h3>
+                                <h3 class="text-heading-3">Constructors</h3>
                                 <p class="text-sm text-auto-muted">Constructor standings</p>
                             </div>
                         </div>
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
-                            Explore F1 teams, their drivers, performance statistics, and constructor championship standings.
+                            Explore F1 constructors, their drivers, performance statistics, and constructor championship standings.
                         </p>
-                        <a href="{{ route('standings.teams', ['year' => config('f1.current_season')]) }}" wire:navigate
+                        <a href="{{ route('standings.constructors', ['year' => config('f1.current_season')]) }}" wire:navigate
                             class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                            View Teams
+                            View Constructors
                         </a>
                     </div>
                 </x-mary-card>

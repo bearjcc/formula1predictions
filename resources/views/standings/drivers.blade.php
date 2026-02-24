@@ -1,4 +1,6 @@
 <x-layouts.layout :title="$year . ' Driver Standings'" :headerSubtitle="'Current driver championship standings for the ' . $year . ' Formula 1 season'">
+    <x-standings-tabs :year="$year" />
+
     <!-- Driver Standings Table -->
     <x-mary-card class="overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
@@ -16,7 +18,10 @@
                             Driver
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            Team
+                            Country
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            Constructor
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                             Points
@@ -33,41 +38,36 @@
                     @forelse($driverRows as $row)
                         <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    @if($row['position'] === 1)
-                                        <x-mary-badge class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                            {{ $row['position'] }}
-                                        </x-mary-badge>
-                                    @elseif($row['position'] === 2)
-                                        <x-mary-badge class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                                            {{ $row['position'] }}
-                                        </x-mary-badge>
-                                    @elseif($row['position'] === 3)
-                                        <x-mary-badge class="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                                            {{ $row['position'] }}
-                                        </x-mary-badge>
-                                    @else
+                                <div class="flex items-center gap-1.5">
+                                    @if($seasonStarted)
                                         <x-mary-badge variant="outline">{{ $row['position'] }}</x-mary-badge>
+                                        @if($seasonEnded && in_array($row['position'], [1, 2, 3], true))
+                                            <x-mary-icon name="o-trophy" class="w-5 h-5 text-amber-500 dark:text-amber-400" title="{{ __('Position clinched') }}" />
+                                        @endif
+                                    @else
+                                        <span class="text-zinc-500 dark:text-zinc-400">0</span>
                                     @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                                            <x-mary-icon name="o-user" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                                        </div>
-                                    </div>
-                                    <div class="ml-4">
-                                        <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
-                                        @if($row['nationality'] ?? null)
-                                            <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $row['nationality'] }}</p>
-                                        @endif
-                                    </div>
-                                </div>
+                                <x-constructor-bar :teamName="$row['team_name'] ?? null">
+                                    <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
+                                </x-constructor-bar>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <p>{{ $row['team_name'] ?? '—' }}</p>
+                                @if($row['nationality'] ?? null)
+                                    <div class="flex items-center gap-2">
+                                        @if($row['country_flag_url'] ?? null)
+                                            <img src="{{ $row['country_flag_url'] }}" alt="" class="h-6 w-auto max-w-10 object-contain" loading="lazy" />
+                                        @endif
+                                        <span class="text-sm text-zinc-700 dark:text-zinc-300">{{ $row['nationality'] }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-zinc-500">—</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p>{{ $row['team_display_name'] ?? $row['team_name'] ?? '—' }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="font-semibold text-green-600 dark:text-green-400">{{ number_format($row['points'], 0) }}</span>
@@ -81,7 +81,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                            <td colspan="7" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">
                                 {{ __('No driver standings data for this season yet. Standings are updated from our database after each race.') }}
                             </td>
                         </tr>

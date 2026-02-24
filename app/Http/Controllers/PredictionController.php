@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePredictionRequest;
 use App\Http\Requests\UpdatePredictionRequest;
 use App\Models\Prediction;
+use App\Models\Races;
+use App\Services\ScoringService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +24,9 @@ class PredictionController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('predictions.index', compact('predictions'));
+        $nextRace = Races::nextAvailableForPredictions();
+
+        return view('predictions.index', compact('predictions', 'nextRace'));
     }
 
     /**
@@ -48,11 +52,16 @@ class PredictionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Prediction $prediction): View
+    public function show(Prediction $prediction, ScoringService $scoringService): View
     {
         Gate::authorize('view', $prediction);
 
-        return view('predictions.show', compact('prediction'));
+        $breakdown = null;
+        if ($prediction->status === 'scored' && in_array($prediction->type, ['race', 'sprint'], true) && $prediction->race) {
+            $breakdown = $scoringService->getPredictionBreakdown($prediction, $prediction->race);
+        }
+
+        return view('predictions.show', compact('prediction', 'breakdown'));
     }
 
     /**

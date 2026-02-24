@@ -2,9 +2,6 @@
     {{-- #region Page Header --}}
     <div class="mb-8 flex justify-end">
         <div class="flex items-center gap-3">
-            <x-mary-button variant="outline" size="sm" icon="o-chart-bar" link="{{ route('analytics') }}" wire:navigate>
-                View Stats
-            </x-mary-button>
             <x-mary-button variant="primary" size="sm" icon="o-plus" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
                 Make Prediction
             </x-mary-button>
@@ -67,6 +64,22 @@
         {{-- Upcoming Races --}}
         <x-mary-card class="lg:col-span-2 p-6">
             <h3 class="text-heading-3 mb-4">Upcoming Races</h3>
+            @if($preseasonDeadline && !$hasPreseasonPrediction)
+                <div class="mb-4 p-4 bg-zinc-50 dark:bg-zinc-700 rounded-lg flex items-center justify-between gap-3">
+                    <div>
+                        <h4 class="font-semibold">Preseason prediction</h4>
+                        <p class="text-sm text-auto-muted mt-1">
+                            Due at same time as first race.
+                            @if($firstRace)
+                                Closes {{ $preseasonDeadline->diffForHumans() }}
+                            @endif
+                        </p>
+                    </div>
+                    <x-mary-button variant="outline" size="sm" icon="o-pencil-square" link="{{ route('predict.preseason', ['year' => $season]) }}" wire:navigate>
+                        Make prediction
+                    </x-mary-button>
+                </div>
+            @endif
             @if($upcomingRaces->isNotEmpty())
                 <div class="space-y-4">
                     @foreach($upcomingRaces as $race)
@@ -80,7 +93,7 @@
                                     <x-mary-icon name="o-flag" class="w-6 h-6 text-red-600 dark:text-red-400" />
                                 </div>
                                 <div>
-                                    <h4 class="font-semibold">{{ $race->race_name }}</h4>
+                                    <h4 class="font-semibold">{{ $race->display_name }}</h4>
                                     <p class="text-sm text-auto-muted">
                                         {{ $race->date?->format('M j, Y') }}
                                         @if($race->locality)
@@ -155,7 +168,7 @@
                             <x-mary-icon name="{{ $prediction->status === 'scored' ? 'o-check' : 'o-clock' }}" class="w-5 h-5 {{ $prediction->status === 'scored' ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400' }}" />
                         </div>
                         <div class="flex-1">
-                            <h4 class="font-semibold">{{ ucfirst($prediction->type) }} - {{ $prediction->race?->race_name ?? 'Unknown race' }}</h4>
+                            <h4 class="font-semibold">{{ ucfirst($prediction->type) }} - {{ $prediction->race?->display_name ?? ($prediction->type === 'preseason' ? $prediction->season . ' Season' : 'Unknown race') }}</h4>
                             <p class="text-sm text-auto-muted">
                                 {{ $prediction->season }} Season
                                 @if($prediction->status === 'scored' && $prediction->score !== null)
@@ -185,9 +198,6 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <x-mary-button variant="primary" size="lg" icon="o-plus" class="h-20" link="{{ route('races', ['year' => $season]) }}" wire:navigate>
                 Make Prediction
-            </x-mary-button>
-            <x-mary-button variant="outline" size="lg" icon="o-chart-bar" class="h-20" link="{{ route('analytics') }}" wire:navigate>
-                View Statistics
             </x-mary-button>
             <x-mary-button variant="outline" size="lg" icon="o-trophy" class="h-20" link="{{ route('leaderboard.index', ['season' => $season]) }}" wire:navigate>
                 Leaderboard

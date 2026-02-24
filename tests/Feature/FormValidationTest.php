@@ -126,7 +126,7 @@ test('store prediction request validates driver order must have between 1 and ma
 });
 
 test('store prediction request validates team order must have between 1 and max teams', function () {
-    $maxTeams = config('f1.max_teams', 11);
+    $maxTeams = config('f1.max_constructors', 11);
     $teams = Teams::factory()->count($maxTeams + 5)->create();
     $drivers = Drivers::factory()->count(config('f1.max_drivers', 22))->create();
 

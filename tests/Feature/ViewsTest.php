@@ -33,7 +33,7 @@ describe('Year-specific views load correctly', function () {
         '/{year}/races' => 'races',
         '/{year}/standings' => 'standings',
         '/{year}/standings/drivers' => 'standings.drivers',
-        '/{year}/standings/teams' => 'standings.teams',
+        '/{year}/standings/constructors' => 'standings.constructors',
         '/{year}/standings/predictions' => 'standings.predictions',
     ];
 
@@ -82,13 +82,13 @@ describe('Non-year-specific views load correctly', function () {
         $response->assertSee('F1 Countries', false);
     });
 
-    it('loads team view for /team/{slug}', function () {
+    it('loads constructor view for /constructor/{slug}', function () {
         Teams::factory()->create(['team_name' => 'Mercedes']);
 
-        $response = $this->get('/team/mercedes');
+        $response = $this->get('/constructor/mercedes');
         $response->assertOk();
-        $response->assertViewIs('team');
-        $response->assertViewHas('team');
+        $response->assertViewIs('constructor');
+        $response->assertViewHas('constructor');
     });
 
     it('loads driver view for /driver/{slug}', function () {
@@ -127,8 +127,8 @@ describe('Non-year-specific views load correctly', function () {
         $response->assertViewHas('race');
     });
 
-    it('returns 404 for non-existent team slug', function () {
-        $response = $this->get('/team/nonexistent');
+    it('returns 404 for non-existent constructor slug', function () {
+        $response = $this->get('/constructor/nonexistent');
         $response->assertNotFound();
     });
 
@@ -152,10 +152,10 @@ describe('Views have basic structure', function () {
         $response->assertSee('2023');
     });
 
-    it('team page shows the team name', function () {
+    it('constructor page shows the constructor name', function () {
         Teams::factory()->create(['team_name' => 'Mercedes']);
 
-        $response = $this->get('/team/mercedes');
+        $response = $this->get('/constructor/mercedes');
         $response->assertSee('Mercedes');
     });
 });

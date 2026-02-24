@@ -35,9 +35,9 @@ class RaceResultsAvailable extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Race Results Available: {$this->race->race_name}")
+            ->subject("Race Results Available: {$this->race->display_name}")
             ->greeting("Hello {$notifiable->name}!")
-            ->line("The results for {$this->race->race_name} are now available.")
+            ->line("The results for {$this->race->display_name} are now available.")
             ->line('Your predictions for this race have been scored and your points have been updated.')
             ->action('View Results', url("/{$this->race->season}/race/{$this->race->id}"))
             ->action('View Your Predictions', url('/predictions'))
@@ -57,7 +57,7 @@ class RaceResultsAvailable extends Notification implements ShouldQueue
             'race_name' => $this->race->race_name,
             'season' => $this->race->season,
             'round' => $this->race->round,
-            'message' => "Race results for {$this->race->race_name} are now available",
+            'message' => "Race results for {$this->race->display_name} are now available",
             'action_url' => "/{$this->race->season}/race/{$this->race->id}",
         ];
     }

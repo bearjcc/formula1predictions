@@ -49,7 +49,7 @@ class PredictionScored extends Notification implements ShouldQueue
             ->line("Your {$predictionType} has been scored!");
 
         if ($this->prediction->type === 'race' && $this->prediction->race) {
-            $message->line("Race: {$this->prediction->race->race_name}")
+            $message->line("Race: {$this->prediction->race->display_name}")
                 ->action('View Race Results', url("/{$this->prediction->season}/race/{$this->prediction->race->id}"));
         }
 
@@ -79,7 +79,7 @@ class PredictionScored extends Notification implements ShouldQueue
             'message' => sprintf(
                 'Your %s prediction for %s has been scored: %d points (%.1f%% accuracy)',
                 $this->prediction->type,
-                $this->prediction->race?->race_name ?? "{$this->prediction->season} season",
+                $this->prediction->race?->display_name ?? "{$this->prediction->season} season",
                 $this->score,
                 $this->accuracy
             ),

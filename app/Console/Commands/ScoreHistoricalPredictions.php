@@ -77,7 +77,7 @@ class ScoreHistoricalPredictions extends Command
 
     private function processRace(Races $race, bool $dryRun, int &$totalProcessed, int &$totalScored): void
     {
-        $this->info("Processing race: {$race->season} Round {$race->round} - {$race->race_name}");
+        $this->info("Processing race: {$race->season} Round {$race->round} - {$race->display_name}");
 
         // Get predictions that need scoring for this race
         $predictions = $race->predictions()

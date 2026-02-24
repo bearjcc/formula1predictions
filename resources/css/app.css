@@ -51,6 +51,13 @@
         --color-accent-content: var(--color-red-500);
         --color-accent-foreground: var(--color-neutral-800);
     }
+    /* DaisyUI base colors in dark mode: match zinc palette for minimal contrast with page */
+    [data-theme="dark"] {
+        --color-base-100: var(--color-zinc-800);
+        --color-base-200: var(--color-zinc-700);
+        --color-base-300: var(--color-zinc-600);
+        --color-base-content: var(--color-zinc-100);
+    }
 }
 
 @layer base {
@@ -75,7 +82,7 @@
 */
 
 .mary-table-pagination span[aria-current="page"] > span {
-    @apply bg-primary text-base-100
+    @apply bg-primary text-white
 }
 
 .mary-table-pagination button {

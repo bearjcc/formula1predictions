@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Mail\ResetPasswordMail;
 use App\Mail\VerifyEmailMail;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +17,7 @@ use Laravel\Cashier\Billable;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Billable, HasFactory, Notifiable, \Illuminate\Auth\MustVerifyEmail;
+    use Billable, HasFactory, MustVerifyEmailTrait, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -138,6 +139,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'championshiporderbot@example.com',
             'circuitbot@example.com',
             'smartbot@example.com',
+            'lastyearorderbot@example.com',
         ], true);
     }
 

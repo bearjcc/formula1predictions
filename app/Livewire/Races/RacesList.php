@@ -5,6 +5,7 @@ namespace App\Livewire\Races;
 use App\Exceptions\F1ApiException;
 use App\Models\Races;
 use App\Services\F1ApiService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -19,6 +20,9 @@ class RacesList extends Component
     public bool $loading = true;
 
     public ?string $error = null;
+
+    /** @var 'list'|'calendar' */
+    public string $viewMode = 'list';
 
     public function mount(int $year)
     {
@@ -62,6 +66,22 @@ class RacesList extends Component
     }
 
     /**
+     * Redirect to the race detail page.
+     */
+    public function viewDetails(int $round): void
+    {
+        $race = Races::where('season', $this->year)->where('round', $round)->first();
+
+        if (! $race) {
+            $this->error = 'Race details not found in database. Please sync races first.';
+
+            return;
+        }
+
+        $this->redirect(route('race.detail', ['slug' => $race->slug]));
+    }
+
+    /**
      * Redirect to prediction creation with race context
      */
     public function makePrediction(int $round): void
@@ -75,6 +95,21 @@ class RacesList extends Component
         }
 
         $this->redirect(route('predict.create', ['race_id' => $race->id]));
+    }
+
+    /**
+     * Preseason prediction deadline and first race name for the current year.
+     *
+     * @return array{deadline: \Carbon\Carbon|null, first_race_name: string|null}
+     */
+    public function getPreseasonInfoProperty(): array
+    {
+        $firstRace = Races::getFirstRaceOfSeason($this->year);
+
+        return [
+            'deadline' => Races::getPreseasonDeadlineForSeason($this->year),
+            'first_race_name' => $firstRace?->display_name,
+        ];
     }
 
     /** @return array{past: array, next: array|null, future: array} */
@@ -103,6 +138,44 @@ class RacesList extends Component
         }
 
         return ['past' => $past, 'next' => $next, 'future' => $future];
+    }
+
+    public function showCalendar(): void
+    {
+        $this->viewMode = 'calendar';
+    }
+
+    public function showList(): void
+    {
+        $this->viewMode = 'list';
+    }
+
+    /**
+     * Races grouped by month (Y-m) for calendar view.
+     *
+     * @return array<string, list<array<string, mixed>>>
+     */
+    public function getRacesByMonthProperty(): array
+    {
+        $byMonth = [];
+        foreach ($this->races as $race) {
+            if (! is_array($race) || empty($race['date'])) {
+                continue;
+            }
+            try {
+                $date = Carbon::parse($race['date']);
+            } catch (\Throwable) {
+                continue;
+            }
+            $key = $date->format('Y-m');
+            if (! isset($byMonth[$key])) {
+                $byMonth[$key] = [];
+            }
+            $byMonth[$key][] = $race;
+        }
+        ksort($byMonth);
+
+        return $byMonth;
     }
 
     public function getStatusBadgeVariant(string $status): string

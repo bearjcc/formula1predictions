@@ -38,6 +38,13 @@ class PredictionForm extends Component
 
     public array $driverChampionship = [];
 
+    /** @var array<int, int> team_id => driver_id (preseason teammate battles) */
+    public array $teammateBattles = [];
+
+    public ?int $redFlags = null;
+
+    public ?int $safetyCars = null;
+
     public array $superlatives = [];
 
     // Available data
@@ -45,18 +52,30 @@ class PredictionForm extends Component
 
     public array $teams = [];
 
+    /** Teams with drivers for preseason teammate battles. */
+    public array $teamsWithDrivers = [];
+
     public ?Races $race = null;
 
     public ?Prediction $editingPrediction = null;
 
     public bool $isLocked = false;
 
-    public function mount(?Races $race = null, ?Prediction $existingPrediction = null): void
-    {
+    public function mount(
+        ?Races $race = null,
+        ?Prediction $existingPrediction = null,
+        bool $preseason = false,
+        ?int $preseasonYear = null
+    ): void {
         $this->season = config('f1.current_season');
         $this->editingPrediction = null;
         $this->race = $race;
         $this->isLocked = false;
+
+        if ($preseason) {
+            $this->type = 'preseason';
+            $this->season = $preseasonYear ?? config('f1.current_season');
+        }
 
         $this->loadData();
 
@@ -85,6 +104,15 @@ class PredictionForm extends Component
             } else {
                 $this->teamOrder = $predictionData['team_order'] ?? $this->teamOrder;
                 $this->driverChampionship = $predictionData['driver_championship'] ?? $this->driverChampionship;
+                $rawTb = $predictionData['teammate_battles'] ?? [];
+                if (is_array($rawTb)) {
+                    $this->teammateBattles = [];
+                    foreach ($rawTb as $k => $v) {
+                        $this->teammateBattles[(int) $k] = (int) $v;
+                    }
+                }
+                $this->redFlags = isset($predictionData['red_flags']) ? (int) $predictionData['red_flags'] : null;
+                $this->safetyCars = isset($predictionData['safety_cars']) ? (int) $predictionData['safety_cars'] : null;
                 $this->superlatives = $predictionData['superlatives'] ?? [];
             }
 
@@ -113,6 +141,7 @@ class PredictionForm extends Component
                     'team' => [
                         'id' => $driver->team?->id,
                         'team_name' => $driver->team?->team_name,
+                        'display_name' => $driver->team?->display_name,
                     ],
                 ];
             })
@@ -126,7 +155,26 @@ class PredictionForm extends Component
                 return [
                     'id' => $team->id,
                     'team_name' => $team->team_name,
+                    'display_name' => $team->display_name,
                     'nationality' => $team->nationality,
+                ];
+            })
+            ->toArray();
+
+        $this->teamsWithDrivers = Teams::where('is_active', true)
+            ->with('drivers')
+            ->orderBy('team_name')
+            ->get()
+            ->map(function ($team) {
+                return [
+                    'id' => $team->id,
+                    'team_name' => $team->team_name,
+                    'display_name' => $team->display_name,
+                    'drivers' => $team->drivers->map(fn ($d) => [
+                        'id' => $d->id,
+                        'name' => $d->name,
+                        'surname' => $d->surname,
+                    ])->values()->toArray(),
                 ];
             })
             ->toArray();
@@ -136,7 +184,7 @@ class PredictionForm extends Component
             $this->teamOrder = collect($this->teams)->pluck('id')->toArray();
         }
 
-        if (empty($this->driverChampionship) && in_array($this->type, ['preseason', 'midseason']) && ! empty($this->drivers)) {
+        if (empty($this->driverChampionship) && $this->type === 'midseason' && ! empty($this->drivers)) {
             $this->driverChampionship = collect($this->drivers)->pluck('id')->toArray();
         }
     }
@@ -160,6 +208,9 @@ class PredictionForm extends Component
         $this->dnfPredictions = [];
         $this->teamOrder = [];
         $this->driverChampionship = [];
+        $this->teammateBattles = [];
+        $this->redFlags = null;
+        $this->safetyCars = null;
         $this->superlatives = [];
     }
 
@@ -257,10 +308,14 @@ class PredictionForm extends Component
     }
 
     /**
-     * Get the prediction deadline for display (race or sprint, 1 hour before qualifying).
+     * Get the prediction deadline for display (race or sprint, 1 hour before qualifying; preseason = first race deadline).
      */
     public function getPredictionDeadlineProperty(): ?\Carbon\Carbon
     {
+        if ($this->type === 'preseason') {
+            return Races::getPreseasonDeadlineForSeason($this->season);
+        }
+
         if ($this->race === null || ! in_array($this->type, ['race', 'sprint'], true)) {
             return null;
         }
@@ -337,17 +392,20 @@ class PredictionForm extends Component
             'teamOrder' => [
                 'required_if:type,preseason,midseason',
                 'array',
-                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:'.config('f1.max_teams', 11), 'min:0|max:'.config('f1.max_teams', 11)),
+                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:'.config('f1.max_constructors', 11), 'min:0|max:'.config('f1.max_constructors', 11)),
             ],
             'teamOrder.*' => 'integer|exists:teams,id',
             'driverChampionship' => [
-                'required_if:type,preseason,midseason',
+                'required_if:type,midseason',
                 'array',
-                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:'.config('f1.max_drivers', 22), 'min:0|max:'.config('f1.max_drivers', 22)),
+                ValidationRule::when($this->type === 'midseason', 'min:1|max:'.config('f1.max_drivers', 22), 'nullable'),
             ],
             'driverChampionship.*' => [
-                'required',
+                'required_if:type,midseason',
                 function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! in_array($this->type, ['midseason'], true)) {
+                        return;
+                    }
                     $exists = is_numeric($value)
                         ? \App\Models\Drivers::where('id', (int) $value)->exists()
                         : \App\Models\Drivers::where('driver_id', (string) $value)->exists();
@@ -356,7 +414,22 @@ class PredictionForm extends Component
                     }
                 },
             ],
+            'teammateBattles' => ['nullable', 'array'],
+            'teammateBattles.*' => ['required', 'integer', 'exists:drivers,id'],
+            'redFlags' => ['nullable', 'integer', 'min:0'],
+            'safetyCars' => ['nullable', 'integer', 'min:0'],
         ]);
+
+        if ($this->type === 'preseason' && ! empty($this->teammateBattles)) {
+            foreach ($this->teammateBattles as $teamId => $driverId) {
+                $driver = Drivers::find($driverId);
+                if ($driver && (int) $driver->team_id !== (int) $teamId) {
+                    $this->addError('teammateBattles', __('The selected driver must belong to that team.'));
+
+                    return;
+                }
+            }
+        }
 
         if ($this->type === 'sprint' && ($this->race === null || ! $this->race->hasSprint())) {
             $this->addError('type', 'Sprint predictions are only available for races that have a sprint session.');
@@ -410,7 +483,18 @@ class PredictionForm extends Component
             }
         } else {
             $data['team_order'] = $this->teamOrder;
-            $data['driver_championship'] = $this->driverChampionship;
+            if ($this->type === 'midseason') {
+                $data['driver_championship'] = $this->driverChampionship;
+            }
+            if ($this->type === 'preseason') {
+                $data['teammate_battles'] = array_filter($this->teammateBattles, fn ($v) => $v !== null && $v !== '');
+                if ($this->redFlags !== null) {
+                    $data['red_flags'] = $this->redFlags;
+                }
+                if ($this->safetyCars !== null) {
+                    $data['safety_cars'] = $this->safetyCars;
+                }
+            }
             if (! empty($this->superlatives)) {
                 $data['superlatives'] = $this->superlatives;
             }

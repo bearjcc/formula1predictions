@@ -20,11 +20,11 @@ return [
     | Max Grid Size (2026+)
     |--------------------------------------------------------------------------
     |
-    | 2026 season: 11 teams, 22 drivers. Used for validation and UI limits.
+    | 2026 season: 11 constructors, 22 drivers. Used for validation and UI limits.
     |
     */
     'max_drivers' => (int) env('F1_MAX_DRIVERS', 22),
-    'max_teams' => (int) env('F1_MAX_TEAMS', 11),
+    'max_constructors' => (int) env('F1_MAX_CONSTRUCTORS', env('F1_MAX_TEAMS', 11)),
 
     /*
     |--------------------------------------------------------------------------
@@ -51,5 +51,19 @@ return [
     |
     */
     'default_appearance' => env('F1_DEFAULT_APPEARANCE', 'system'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Season actuals (preseason scoring)
+    |--------------------------------------------------------------------------
+    |
+    | Red flag and safety car counts for the full season. Set after season end
+    | so preseason predictions can be scored. Keys: season year => [red_flags, safety_cars].
+    | Null means that category is not scored for that season.
+    |
+    */
+    'season_actuals' => [
+        // 2025 => ['red_flags' => null, 'safety_cars' => null],
+    ],
 
 ];

@@ -12,9 +12,9 @@ class DraggableTeamList extends Component
 
     public array $teamOrder = [];
 
-    public string $title = 'Team Championship Order';
+    public string $title = 'Constructor Championship Order';
 
-    public function mount(array $teams = [], array $teamOrder = [], string $title = 'Team Championship Order')
+    public function mount(array $teams = [], array $teamOrder = [], string $title = 'Constructor Championship Order')
     {
         $this->teams = $teams;
         $this->title = $title;

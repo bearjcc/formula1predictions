@@ -66,7 +66,7 @@ class SendTestNotification extends Command
             ]);
 
             $notificationService->sendRaceResultsAvailableNotification($race);
-            $this->info("Sent race results available notification for: {$race->race_name}");
+            $this->info("Sent race results available notification for: {$race->display_name}");
         } elseif ($type === 'prediction') {
             // Create a test race and prediction
             $race = \App\Models\Races::factory()->create([

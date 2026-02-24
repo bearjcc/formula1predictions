@@ -9,8 +9,8 @@ Enable Laravel email verification for normal registrations. **Auth changes are r
 ## 1. User model: enable MustVerifyEmail
 
 - [x] **Uncomment and use the contract:** In `app/Models/User.php`, uncomment `use Illuminate\Contracts\Auth\MustVerifyEmail` and add `implements MustVerifyEmail` to the class declaration.
-- [ ] **Use the trait:** Add `use Illuminate\Auth\MustVerifyEmail;` so the model has `hasVerifiedEmail()`, `markEmailAsVerified()`, and `sendEmailVerificationNotification()`. (The trait implements the contract.)
-- [ ] **Keep existing cast:** `email_verified_at` is already in `casts()`; no change.
+- [x] **Use the trait:** Add `use Illuminate\Auth\MustVerifyEmail;` so the model has `hasVerifiedEmail()`, `markEmailAsVerified()`, and `sendEmailVerificationNotification()`. (The trait implements the contract.)
+- [x] **Keep existing cast:** `email_verified_at` is already in `casts()`; no change.
 
 Result: New registrations will receive the framework’s verification email (Registered event → SendEmailVerificationNotification). No change needed in the registration Livewire/Volt component.
 

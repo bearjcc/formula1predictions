@@ -10,6 +10,9 @@ use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Policies\CircuitsPolicy;
 use App\Policies\CountriesPolicy;
 use App\Policies\DriversPolicy;
@@ -52,6 +55,32 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        // #region Auth email customization (verification + password reset)
+        VerifyEmail::toMailUsing(function (object $notifiable, string $url): MailMessage {
+            return (new MailMessage)
+                ->subject(__('Verify your email address'))
+                ->markdown('emails.verify-email', ['url' => $url]);
+        });
+
+        ResetPassword::createUrlUsing(function (User $user, string $token): string {
+            return url(route('password.reset', [
+                'token' => $token,
+                'email' => $user->getEmailForPasswordReset(),
+            ], false));
+        });
+
+        ResetPassword::toMailUsing(function (object $notifiable, string $token): MailMessage {
+            $url = url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+
+            return (new MailMessage)
+                ->subject(__('Reset your password'))
+                ->markdown('emails.reset-password', ['url' => $url]);
+        });
+        // #endregion
 
         // When DB_URL and DB_DATABASE are both set, strip url from mysql config and
         // inject parsed connection params so ConfigurationUrlParser never overwrites

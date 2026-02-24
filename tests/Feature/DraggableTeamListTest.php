@@ -20,9 +20,9 @@ test('draggable team list component can be rendered', function () {
 
     Livewire::test(DraggableTeamList::class, [
         'teams' => $teams,
-        'title' => '2024 Team Championship',
+        'title' => '2024 Constructor Championship',
     ])
-        ->assertSee('2024 Team Championship')
+        ->assertSee('2024 Constructor Championship')
         ->assertSee('Team Order (Drag to Reorder)')
         ->assertSee('Drag teams to reorder your predictions');
 });
