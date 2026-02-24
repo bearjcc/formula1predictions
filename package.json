@@ -22,7 +22,6 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
-        "lighthouse": "^13.0.0",
         "@axe-core/puppeteer": "^4.10.2",
         "@tailwindcss/vite": "^4.1.18",
         "autoprefixer": "^10.4.24",
