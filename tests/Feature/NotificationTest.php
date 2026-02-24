@@ -234,3 +234,24 @@ test('notifications implement ShouldQueue interface', function () {
         ->and(new PredictionScored($prediction, 100, 90.0))->toBeInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class)
         ->and(new PredictionDeadlineReminder($race))->toBeInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class);
 });
+
+test('race results notification is only sent to users who predicted the race', function () {
+    Notification::fake();
+
+    $race = Races::factory()->create();
+
+    $predictor = User::factory()->create();
+    $nonPredictor = User::factory()->create();
+
+    Prediction::factory()->create([
+        'user_id' => $predictor->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+    ]);
+
+    $notificationService = new NotificationService;
+    $notificationService->sendRaceResultsAvailableNotification($race);
+
+    Notification::assertSentTo($predictor, RaceResultsAvailable::class);
+    Notification::assertNotSentTo($nonPredictor, RaceResultsAvailable::class);
+});

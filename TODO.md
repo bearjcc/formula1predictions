@@ -119,10 +119,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: .env.example
   - Done: Set SESSION_ENCRYPT=true in .env.example so production deployments copied from the template use encrypted sessions by default. Added ProductionConfigTest assertion to ensure the template keeps this default.
 
-- [ ] **F1-060: Optimize NotificationService user loading**
+- [x] **F1-060: Optimize NotificationService user loading** _(done 2026-02-24)_
   - Type: performance | Priority: P2 | Risk: low | Owner: agent
   - Affected: app/Services/NotificationService.php
-  - NotificationService loads ALL users into memory with User::all(). Use chunking or pagination.
+  - Done: NotificationService now uses chunked queries (chunkById) for all bulk notifications so it no longer loads all users into memory at once. Added coverage to ensure race-results notifications only target users who actually predicted that race.
 
 - [x] **F1-061: Remove empty scaffold controllers (dead code)** _(done 2026-02-18)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
@@ -276,16 +276,15 @@ Longer-horizon ideas and exploratory improvements.
   - Done: Orphan predict/create.blade.php removed in F1-107; create flow uses predictions/create-livewire only.
   - Three color-coded info boxes use `bg-zinc-50`, `bg-blue-50`, `bg-amber-50` with no `dark:` variants. In dark mode these are completely invisible (nearly white boxes on dark background). Add appropriate dark mode variants: e.g. `dark:bg-zinc-700`, `dark:bg-blue-900/30`, `dark:bg-amber-900/30`.
 
-- [ ] **F1-098: Replace daisyUI modal in delete-user-form** _(found 2026-02-10 audit)_
+- [x] **F1-098: Replace daisyUI modal in delete-user-form** _(done 2026-02-24)_
   - Type: UI | Priority: P3 | Risk: low | Owner: agent
   - Affected: resources/views/livewire/settings/delete-user-form.blade.php
-  - Uses HTML5 `<dialog>` with daisyUI `.modal`/`.modal-box` classes and inline `onclick="deleteModal.showModal()"` handlers. Should use `<x-mary-modal>` component with Alpine.js or Livewire event handling for consistency with the rest of the app.
+  - Done: Settings delete-user form now uses the `<x-mary-modal>` component wired to Livewire state (`confirmingUserDeletion`) with Mary buttons instead of a daisyUI `<dialog>` and inline onclick handlers.
 
-- [ ] **F1-099: Define or replace undefined CSS utility classes** _(found 2026-02-10 audit)_
+- [x] **F1-099: Define or replace undefined CSS utility classes** _(done 2026-02-24)_
   - Type: UI | Priority: P2 | Risk: low | Owner: agent
   - Affected: resources/views/home.blade.php, dashboard.blade.php, standings views, races.blade.php
-  - `.text-auto-muted` used in 5+ views, `.bg-card` used in 6 instances on home.blade.php, `.text-shadow` used in home.blade.php hero. None are defined in DESIGN_SYSTEM.md or the app CSS.
-  - Either define these classes in the design system CSS (resources/css/app.css) or replace with standard Tailwind utilities.
+  - Done: Design system CSS (`resources/css/design-system.css`) defines `.text-auto-muted` and `.bg-card` as zinc-based auto-switching utilities; `resources/css/app.css` defines `.text-shadow`. Home, dashboard, scoring, standings, and detail views now consistently use these documented utilities instead of ad-hoc classes.
 
 - [ ] **F1-100: Update focus ring colors to F1 brand** _(found 2026-02-10 audit)_
   - Type: UI | Priority: P3 | Risk: low | Owner: agent
