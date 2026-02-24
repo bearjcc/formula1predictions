@@ -51,6 +51,7 @@ test('user can delete their account', function () {
     $this->actingAs($user);
 
     $response = Volt::test('settings.delete-user-form')
+        ->call('confirmUserDeletion')
         ->set('password', 'password')
         ->call('deleteUser');
 
@@ -60,6 +61,23 @@ test('user can delete their account', function () {
 
     expect($user->fresh())->toBeNull();
     expect(auth()->check())->toBeFalse();
+});
+
+test('delete account modal can be opened and cancelled', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $response = Volt::test('settings.delete-user-form')
+        ->call('confirmUserDeletion')
+        ->assertSet('confirmingUserDeletion', true)
+        ->set('password', 'password')
+        ->call('cancelUserDeletion')
+        ->assertSet('confirmingUserDeletion', false)
+        ->assertSet('password', '');
+
+    $response->assertHasNoErrors();
+    expect($user->fresh())->not->toBeNull();
 });
 
 test('correct password must be provided to delete account', function () {
