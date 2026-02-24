@@ -183,7 +183,7 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: database/migrations/
   - Redundant indexes on 4 tables (unique + explicit index on same column). Clean up.
 
-- [ ] **F1-067: Remove empty no-op migration file**
+- [x] **F1-067: Remove empty no-op migration file** _(done 2026-02-24)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
   - Affected: database/migrations/2025_08_26_100104
   - Empty no-op migration file. Remove.
