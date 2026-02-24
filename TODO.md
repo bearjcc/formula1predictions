@@ -292,10 +292,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: resources/views/livewire/auth/login.blade.php (predict/create and components/prediction-form were removed in F1-107/F1-108).
   - Multiple files use `focus:ring-indigo-500` or `focus:ring-blue-500` for focus indicators. DESIGN_SYSTEM.md specifies F1 brand red as primary. Update to `focus:ring-red-600 dark:focus:ring-red-500`.
 
-- [ ] **F1-101: Remove dead duplicate leaderboard routes** _(found 2026-02-10 audit)_
+- [x] **F1-101: Remove dead duplicate leaderboard routes** _(done 2026-02-24)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent
-  - Affected: routes/web.php (lines 87-95)
-  - `/leaderboard/livewire` and `/leaderboard/user/{user}/livewire` are duplicate routes with Livewire wrappers. The non-Livewire versions (`leaderboard.index`, `leaderboard.user-stats`) are the primary routes linked in navigation. Remove the dead duplicates.
+  - Affected: routes/web.php
+  - `/leaderboard/livewire` and `/leaderboard/user/{user}/livewire` were duplicate routes with Livewire wrappers whose views were removed. The non-Livewire versions (`leaderboard.index`, `leaderboard.user-stats`) are the primary routes linked in navigation. Removed the dead duplicates and added route tests to ensure the legacy URLs remain unregistered.
 
 - [x] **F1-102: Clean up RacesController empty CRUD methods** _(done 2026-02-18)_
   - Type: cleanup | Priority: P3 | Risk: low | Owner: agent

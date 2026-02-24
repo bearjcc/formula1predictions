@@ -3,7 +3,9 @@
 use App\Models\Prediction;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 
+use function Pest\Laravel\get;
 use function Pest\Laravel\mock;
 
 uses(RefreshDatabase::class);
@@ -24,13 +26,18 @@ describe('year-specific routes return 200 for valid years', function () {
     $validYears = ['2022', '2023', '2024', '2025', '2026'];
     $yearRoutes = [
         '/{year}/races',
-        '/{year}/standings',
         '/{year}/standings/drivers',
         '/{year}/standings/constructors',
         '/{year}/standings/predictions',
     ];
 
     foreach ($validYears as $year) {
+        it("route /{$year}/standings redirects to drivers standings", function () use ($year) {
+            /** @var \Tests\TestCase $this */
+            $response = $this->get("/{$year}/standings");
+            $response->assertRedirect("/{$year}/standings/drivers");
+        });
+
         foreach ($yearRoutes as $route) {
             $testRoute = str_replace('{year}', $year, $route);
 
@@ -155,6 +162,18 @@ describe('route naming works correctly', function () {
         expect(route('circuit', ['slug' => 'silverstone']))->toContain('/circuit/silverstone');
         expect(route('country', ['slug' => 'belgium']))->toContain('/country/belgium');
         expect(route('race.detail', ['slug' => 'british-grand-prix']))->toContain('/race/british-grand-prix');
+    });
+});
+
+describe('leaderboard routes', function () {
+    it('does not register legacy livewire leaderboard routes', function () {
+        expect(Route::has('leaderboard.livewire'))->toBeFalse();
+        expect(Route::has('leaderboard.user-stats-livewire'))->toBeFalse();
+    });
+
+    it('returns 404 for legacy livewire leaderboard URLs', function () {
+        get('/leaderboard/livewire')->assertNotFound();
+        get('/leaderboard/user/1/livewire')->assertNotFound();
     });
 });
 

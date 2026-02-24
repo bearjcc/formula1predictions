@@ -123,15 +123,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('leaderboard')->name('leaderboard.')->group(function () {
         Route::get('/', [LeaderboardController::class, 'index'])->name('index');
         Route::get('/compare', [LeaderboardController::class, 'compare'])->name('compare');
-        Route::get('/livewire', function () {
-            return view('leaderboard.index-livewire');
-        })->name('livewire');
         Route::get('/season/{season}', [LeaderboardController::class, 'season'])->name('season');
         Route::get('/race/{season}/{raceRound}', [LeaderboardController::class, 'race'])->name('race');
         Route::get('/user/{user}', [LeaderboardController::class, 'userStats'])->name('user-stats');
-        Route::get('/user/{user}/livewire', function ($user) {
-            return view('leaderboard.user-stats-livewire', ['user' => $user]);
-        })->name('user-stats-livewire');
     });
 
     // Monetization (Stripe/Season Supporter) — deferred to later release; re-enable with F1-031
@@ -159,6 +153,24 @@ Route::prefix('api/f1')->middleware(['auth', 'throttle:api'])->group(function ()
 if (app()->environment(['local', 'testing'])) {
     Route::get('/api/f1/test', [RacesController::class, 'testApi'])->name('f1.test');
 }
+
+Route::get('/railway-env-check', function () {
+    if (! env('RAILWAY_ENV_DEBUG')) {
+        abort(404);
+    }
+
+    $adminEmail = config('admin.email');
+    $adminPassword = config('admin.password');
+
+    return response()->json([
+        'ok' => true,
+        'admin_email_set' => filled(env('ADMIN_EMAIL')),
+        'admin_password_set' => filled(env('ADMIN_PASSWORD')),
+        'railway_dummy_var' => env('RAILWAY_DUMMY_VAR'),
+        'config_admin_email_set' => filled($adminEmail),
+        'config_admin_password_set' => filled($adminPassword),
+    ]);
+});
 
 // Year specific routes
 Route::middleware(['validate.year'])->group(function () {
