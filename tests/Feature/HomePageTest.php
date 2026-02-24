@@ -33,12 +33,12 @@ test('home page card links resolve to valid routes', function () {
     // Countries card intentionally hidden (F1-106)
 });
 
-test('home page standings link returns 200', function () {
+test('home page standings link redirects to drivers standings', function () {
     // Keep this in sync with config('f1.current_season')
     $year = 2026;
 
     /** @var \Tests\TestCase $this */
     $response = $this->get(route('standings', ['year' => $year]));
 
-    $response->assertOk();
+    $response->assertRedirect(route('standings.drivers', ['year' => $year]));
 });

@@ -45,6 +45,13 @@ test('env example documents production mail session and logging', function () {
     expect($content)->toContain('LOG_STACK');
 });
 
+test('env example documents optional MAIL_FEEDBACK_TO for feedback form', function () {
+    $path = base_path('.env.example');
+    expect($path)->toBeReadableFile();
+    $content = file_get_contents($path);
+    expect($content)->toContain('MAIL_FEEDBACK_TO');
+});
+
 // endregion
 
 // region .env.production.example template (F1-075)

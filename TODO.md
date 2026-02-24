@@ -252,10 +252,9 @@ Longer-horizon ideas and exploratory improvements.
   - Type: accessibility | Priority: P2 | Risk: low | Owner: agent
   - Done: predictions/show.blade.php — `text-zinc-500` on dark sidebar → `text-zinc-300 dark:text-zinc-200`; score → `text-green-400 dark:text-green-300`; Notes heading and card subtitle → `text-zinc-600 dark:text-zinc-400`. Leaderboard index/season/race/compare and global-leaderboard: `text-gray-400`/`opacity-50`/`text-zinc-500` → `text-zinc-600 dark:text-zinc-400` or `text-zinc-300` for medals. AccessibilityTest and pint --dirty run.
 
-- [ ] **F1-094: Migrate leaderboard views from daisyUI to Mary UI** _(found 2026-02-10 audit)_
+- [x] **F1-094: Migrate leaderboard views from daisyUI to Mary UI** _(duplicate of Now item; done 2026-02-20)_
   - Type: UI | Priority: P2 | Risk: medium | Owner: agent
-  - Affected: resources/views/leaderboard/index.blade.php, resources/views/leaderboard/compare.blade.php
-  - Both files use old `@extends('components.layouts.layout')` pattern (should be `<x-layouts.layout>`) and 45+ daisyUI classes: `.btn`, `.btn-primary`, `.btn-outline`, `.card`, `.card-body`, `.form-control`, `.select`, `.select-bordered`, `.table`, `.table-zebra`, `.badge`, `.badge-outline`, `.bg-base-100`.
+  - Same work as Now section; leaderboard index/compare already migrated.
   - Migrate to Mary UI components (`x-mary-button`, `x-mary-card`, `x-mary-table`, `x-mary-badge`, `x-mary-select`) and the new layout pattern.
 
 - [x] **F1-095: Add mobile responsive wrappers to data tables** _(done 2026-02-20)_
@@ -267,7 +266,7 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: dashboard widgets, prediction summary component, and draggable demo view
   - DESIGN_SYSTEM.md specifies zinc as the neutral palette. Remaining `bg-gray-*` / `text-gray-*` usage in Blade views has been replaced with the corresponding `zinc-*` classes, and a regression test enforces the absence of Tailwind `gray-*` neutrals in views.
 
-- [ ] **F1-100: Repo map and orphan audit** _(done 2026-02-18)_
+- [x] **F1-100: Repo map and orphan audit** _(done 2026-02-18)_
   - Type: docs | Priority: P3 | Risk: none | Owner: agent
   - Done: Created docs/REPO-MAP-AND-ORPHANS.md with full route-to-view map and list of orphan views, controllers, and form requests. Optional follow-up: remove orphans or add route for public scoring page.
 
