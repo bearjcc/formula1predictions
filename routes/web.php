@@ -76,7 +76,20 @@ Route::middleware(['auth'])->group(function () {
         } else {
             $nextRace = Races::nextAvailableForPredictions();
             if ($nextRace !== null) {
-                return redirect()->route('predict.create', ['race_id' => $nextRace->id]);
+                return to_route('predict.create', ['race_id' => $nextRace->id]);
+            }
+        }
+
+        // If the user already has a prediction for this race, send them to edit it instead
+        if ($race !== null) {
+            $existing = $request->user()->predictions()
+                ->where('season', $race->season)
+                ->where('race_round', $race->round)
+                ->whereIn('type', ['race', 'sprint'])
+                ->first();
+            if ($existing !== null) {
+                return to_route('predictions.edit', $existing)
+                    ->with('info', 'You already have a prediction for this race.');
             }
         }
 
@@ -179,7 +192,7 @@ Route::middleware(['validate.year'])->group(function () {
     })->name('races');
 
     Route::get('/{year}/standings', function ($year) {
-        return redirect()->route('standings.drivers', ['year' => $year], 302);
+        return to_route('standings.drivers', ['year' => $year], 302);
     })->name('standings');
 
     Route::get('/{year}/standings/drivers', function (F1ApiService $f1, $year) {
@@ -345,7 +358,7 @@ Route::middleware(['validate.year'])->group(function () {
     })->name('standings.constructors');
 
     Route::get('/{year}/standings/teams', function ($year) {
-        return redirect()->route('standings.constructors', ['year' => $year], 301);
+        return to_route('standings.constructors', ['year' => $year], 301);
     });
 
     // prediction standings

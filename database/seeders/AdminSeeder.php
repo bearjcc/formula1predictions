@@ -52,7 +52,7 @@ class AdminSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        $user->forceFill(['is_admin' => true])->save();
+        $user->forceFill(['is_admin' => true, 'email_verified_at' => now()])->save();
 
         if ($this->command) {
             if ($user->wasRecentlyCreated) {

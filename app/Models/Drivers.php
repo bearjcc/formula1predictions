@@ -147,7 +147,13 @@ class Drivers extends Model
             $byId = $numericIds->isNotEmpty()
                 ? static::whereIn('id', $numericIds->map(fn ($id) => (int) $id))->with('team')->get()
                 : new Collection;
-            $allDrivers = $byDriverId->merge($byId)->unique('id')->values();
+            // Deduplicate first by DB primary key, then by driver_id string so that
+            // two separate DB records for the same logical driver (e.g. a manually
+            // seeded record and an API-synced one) don't both appear in the list.
+            $allDrivers = $byDriverId->merge($byId)
+                ->unique('id')
+                ->unique(fn ($d) => $d->driver_id !== null ? strtolower($d->driver_id) : "id:{$d->id}")
+                ->values();
         }
 
         if ($allDrivers->isEmpty() && $f1 !== null) {

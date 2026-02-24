@@ -26,10 +26,14 @@ function callPrivate(string $method, mixed ...$args): mixed
     $service = new ScoringService(
         app(\App\Services\F1ApiService::class)
     );
-    $ref = new ReflectionMethod($service, $method);
-    $ref->setAccessible(true);
 
-    return $ref->invoke($service, ...$args);
+    $closure = function (...$innerArgs) use ($method) {
+        return $this->{$method}(...$innerArgs);
+    };
+
+    $bound = $closure->bindTo($service, $service);
+
+    return $bound(...$args);
 }
 
 // ---------------------------------------------------------------------------

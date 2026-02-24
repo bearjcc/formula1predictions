@@ -39,13 +39,14 @@ class PredictionPolicy
      */
     public function update(User $user, Prediction $prediction): bool
     {
-        // Users can only update their own predictions that are still in draft status
         // Admins and moderators can update any prediction
         if ($user->hasRole('admin') || $user->hasRole('moderator')) {
             return true;
         }
 
-        return $user->id === $prediction->user_id && $prediction->status === 'draft';
+        // Users can edit their own predictions while they are still editable
+        // (not locked/scored and before the deadline — matches Prediction::isEditable())
+        return $user->id === $prediction->user_id && $prediction->isEditable();
     }
 
     /**
@@ -53,13 +54,13 @@ class PredictionPolicy
      */
     public function delete(User $user, Prediction $prediction): bool
     {
-        // Users can only delete their own predictions that are still in draft status
         // Admins and moderators can delete any prediction
         if ($user->hasRole('admin') || $user->hasRole('moderator')) {
             return true;
         }
 
-        return $user->id === $prediction->user_id && $prediction->status === 'draft';
+        // Users can only delete predictions that are still editable
+        return $user->id === $prediction->user_id && $prediction->isEditable();
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Models\Standings;
 use App\Models\User;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use function Pest\Laravel\artisan;
 
 uses(RefreshDatabase::class)->group('slow');
 
@@ -18,7 +19,7 @@ test('bots:seed runs all bot seeders', function () {
     ]);
     Drivers::factory()->create(['driver_id' => 'x']);
 
-    $this->artisan('bots:seed')
+    artisan('bots:seed')
         ->assertSuccessful();
 
     expect(User::where('email', 'lastbot@example.com')->exists())->toBeTrue();
@@ -33,7 +34,7 @@ test('bots:seed --only runs specified bots only', function () {
         'entity_id' => 'x', 'entity_name' => 'X', 'position' => 1,
     ]);
 
-    $this->artisan('bots:seed', ['--only' => 'season,random'])
+    artisan('bots:seed', ['--only' => 'season,random'])
         ->assertSuccessful();
 
     expect(User::where('email', 'seasonbot@example.com')->exists())->toBeTrue();
@@ -42,7 +43,7 @@ test('bots:seed --only runs specified bots only', function () {
 });
 
 test('bots:seed --only fails on unknown bot name', function () {
-    $this->artisan('bots:seed', ['--only' => 'championship-order,invalid-bot'])
+    artisan('bots:seed', ['--only' => 'championship-order,invalid-bot'])
         ->assertFailed();
 });
 
@@ -63,7 +64,7 @@ test('bots:seed --only=last-year-order --season=2025,2026 creates predictions fo
     $mockF1->shouldReceive('syncDriversForSeason')->with(2025);
     app()->instance(F1ApiService::class, $mockF1);
 
-    $this->artisan('bots:seed', ['--only' => 'last-year-order', '--season' => '2025,2026'])
+    artisan('bots:seed', ['--only' => 'last-year-order', '--season' => '2025,2026'])
         ->assertSuccessful();
 
     $bot = User::where('email', 'lastyearorderbot@example.com')->first();

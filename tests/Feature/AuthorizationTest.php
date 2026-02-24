@@ -180,13 +180,13 @@ test('users can manage their own predictions', function () {
     expect($user->can('view', $ownPrediction))->toBeTrue();
     expect($user->can('view', $submittedPrediction))->toBeTrue();
 
-    // Users can only update draft predictions
+    // Users can update any prediction that is still editable (not locked/scored, before deadline)
     expect($user->can('update', $ownPrediction))->toBeTrue();
-    expect($user->can('update', $submittedPrediction))->toBeFalse();
+    expect($user->can('update', $submittedPrediction))->toBeTrue();
 
-    // Users can only delete draft predictions
+    // Users can delete any prediction that is still editable (not locked/scored, before deadline)
     expect($user->can('delete', $ownPrediction))->toBeTrue();
-    expect($user->can('delete', $submittedPrediction))->toBeFalse();
+    expect($user->can('delete', $submittedPrediction))->toBeTrue();
 
     // Users can submit draft predictions
     expect($user->can('submit', $ownPrediction))->toBeTrue();

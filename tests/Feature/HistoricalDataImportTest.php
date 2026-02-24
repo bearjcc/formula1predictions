@@ -10,6 +10,7 @@ use App\Services\ChartDataService;
 use Database\Seeders\HistoricalPredictionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use function Pest\Laravel\artisan;
 
 uses(RefreshDatabase::class)->group('slow');
 
@@ -109,14 +110,14 @@ test('legacy import artisan command runs seeder and is idempotent', function () 
     }
 
     // First run
-    $result = $this->artisan('legacy:import-historical-predictions');
+    $result = artisan('legacy:import-historical-predictions');
     $result->assertExitCode(0);
 
     $predictionCount = Prediction::count();
     $raceCount = Races::count();
 
     // Second run should also succeed without throwing, even if no fixtures are present
-    $result = $this->artisan('legacy:import-historical-predictions');
+    $result = artisan('legacy:import-historical-predictions');
     $result->assertExitCode(0);
 });
 

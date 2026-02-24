@@ -6,12 +6,14 @@ use App\Livewire\Predictions\DraggableTeamList;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
 test('draggable team list component can be rendered', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $teams = [
         ['id' => 1, 'team_name' => 'Mercedes', 'nationality' => 'German'],
@@ -28,8 +30,9 @@ test('draggable team list component can be rendered', function () {
 });
 
 test('draggable team list initializes with correct team order', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $teams = [
         ['id' => 1, 'team_name' => 'Mercedes', 'nationality' => 'German'],
@@ -45,8 +48,9 @@ test('draggable team list initializes with correct team order', function () {
 });
 
 test('draggable team list can update team order', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $teams = [
         ['id' => 1, 'team_name' => 'Mercedes', 'nationality' => 'German'],
@@ -63,8 +67,9 @@ test('draggable team list can update team order', function () {
 });
 
 test('draggable team list returns correct prediction data', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $teams = [
         ['id' => 1, 'team_name' => 'Mercedes', 'nationality' => 'German'],
@@ -80,8 +85,9 @@ test('draggable team list returns correct prediction data', function () {
 });
 
 test('draggable team list handles empty teams gracefully', function () {
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $component = Livewire::test(DraggableTeamList::class, [
         'teams' => [],

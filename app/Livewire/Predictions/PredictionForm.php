@@ -512,6 +512,21 @@ class PredictionForm extends Component
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
+            // Guard against duplicate submissions: if a prediction already exists for
+            // this user/type/season/race_round combination, redirect to edit it.
+            if (in_array($this->type, ['race', 'sprint'], true) && $this->raceRound !== null) {
+                $duplicate = $user->predictions()
+                    ->where('type', $this->type)
+                    ->where('season', $this->season)
+                    ->where('race_round', $this->raceRound)
+                    ->first();
+                if ($duplicate !== null) {
+                    $this->redirect(route('predictions.edit', $duplicate));
+
+                    return;
+                }
+            }
+
             $prediction = $user->predictions()->create([
                 'type' => $this->type,
                 'season' => $this->season,

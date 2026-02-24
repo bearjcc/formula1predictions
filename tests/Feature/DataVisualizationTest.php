@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\ChartDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
@@ -166,8 +167,10 @@ test('chart components can change season', function () {
 });
 
 test('analytics page shows enhanced statistics', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $response = $this->get('/analytics');
     $response->assertStatus(200);
@@ -180,8 +183,10 @@ test('analytics page shows enhanced statistics', function () {
 });
 
 test('prediction accuracy chart supports luck and variance view', function () {
+    /** @var \Tests\TestCase $this */
+    /** @var User $user */
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $component = Livewire::test('charts.prediction-accuracy-chart', ['season' => 2024])
         ->set('chartType', 'predictor-luck-variance')

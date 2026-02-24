@@ -226,7 +226,7 @@ test('current season races page shows loading state with no races', function () 
 // region Railway env check (opt-in diagnostic)
 describe('railway-env-check route', function () {
     it('returns 404 when RAILWAY_ENV_DEBUG is not set', function () {
-        $response = $this->get('/railway-env-check');
+        $response = get('/railway-env-check');
         $response->assertNotFound();
     });
 
@@ -235,7 +235,7 @@ describe('railway-env-check route', function () {
         putenv('RAILWAY_DUMMY_VAR=test-value');
 
         try {
-            $response = $this->get('/railway-env-check');
+            $response = get('/railway-env-check');
             $response->assertOk();
             $response->assertJsonStructure(['ok', 'admin_email_set', 'admin_password_set', 'railway_dummy_var', 'config_admin_email_set', 'config_admin_password_set']);
             $response->assertJsonPath('ok', true);

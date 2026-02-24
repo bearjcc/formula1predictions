@@ -3,12 +3,15 @@
 use App\Models\User;
 use Database\Seeders\TestUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Volt as LivewireVolt;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\seed;
 
 uses(RefreshDatabase::class)->group('slow');
 
 test('test user seeder creates expected users', function () {
-    $this->seed(TestUserSeeder::class);
+    seed(TestUserSeeder::class);
 
     expect(User::where('email', 'test@example.com')->exists())->toBeTrue()
         ->and(User::where('email', 'admin@example.com')->exists())->toBeTrue()
@@ -26,7 +29,7 @@ test('test user seeder creates expected users', function () {
 });
 
 test('test user can log in and access dashboard', function () {
-    $this->seed(TestUserSeeder::class);
+    seed(TestUserSeeder::class);
 
     $response = LivewireVolt::test('auth.login')
         ->set('email', 'test@example.com')
@@ -34,21 +37,21 @@ test('test user can log in and access dashboard', function () {
         ->call('login');
 
     $response->assertHasNoErrors()->assertRedirect();
-    $this->assertAuthenticated();
+    expect(Auth::check())->toBeTrue();
 });
 
 test('admin user can access admin dashboard', function () {
-    $this->seed(TestUserSeeder::class);
+    seed(TestUserSeeder::class);
 
     $admin = User::where('email', 'admin@example.com')->first();
 
-    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response = actingAs($admin)->get('/admin/dashboard');
 
     $response->assertOk();
 });
 
 test('unverified user can log in', function () {
-    $this->seed(TestUserSeeder::class);
+    seed(TestUserSeeder::class);
 
     $response = LivewireVolt::test('auth.login')
         ->set('email', 'unverified@example.com')
@@ -56,5 +59,5 @@ test('unverified user can log in', function () {
         ->call('login');
 
     $response->assertHasNoErrors()->assertRedirect();
-    $this->assertAuthenticated();
+    expect(Auth::check())->toBeTrue();
 });
