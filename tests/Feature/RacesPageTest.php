@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Races\RacesList;
+use App\Models\Prediction;
+use App\Models\Races;
 use App\Models\User;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -189,4 +191,154 @@ test('admins can refresh races data', function () {
 
     Livewire::test(RacesList::class, ['year' => 2024])
         ->call('refreshRaces');
+});
+
+test('race card shows Edit Prediction button when user already has a prediction for open race', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $race = Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'status' => 'upcoming',
+    ]);
+
+    Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'season' => 2026,
+        'race_round' => 1,
+        'race_id' => $race->id,
+    ]);
+
+    mock(F1ApiService::class, function ($mock) use ($race) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2026)
+            ->andReturn([
+                [
+                    'round' => $race->round,
+                    'raceName' => $race->display_name,
+                    'circuit' => ['circuitName' => 'Test Circuit', 'country' => 'Australia'],
+                    'date' => '2026-03-15',
+                    'status' => 'upcoming',
+                    'predictions_open' => true,
+                    'results' => [],
+                ],
+            ]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2026])
+        ->assertSee('Edit Prediction')
+        ->assertDontSee('Make Prediction');
+});
+
+test('race card shows Make Prediction button when user has no prediction for open race', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'status' => 'upcoming',
+    ]);
+
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2026)
+            ->andReturn([
+                [
+                    'round' => 1,
+                    'raceName' => 'Australian Grand Prix',
+                    'circuit' => ['circuitName' => 'Albert Park', 'country' => 'Australia'],
+                    'date' => '2026-03-15',
+                    'status' => 'upcoming',
+                    'predictions_open' => true,
+                    'results' => [],
+                ],
+            ]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2026])
+        ->assertSee('Make Prediction')
+        ->assertDontSee('Edit Prediction');
+});
+
+test('race card shows score badge when prediction is scored', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $race = Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'status' => 'completed',
+    ]);
+
+    Prediction::factory()->scored(42)->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'season' => 2026,
+        'race_round' => 1,
+        'race_id' => $race->id,
+    ]);
+
+    mock(F1ApiService::class, function ($mock) use ($race) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2026)
+            ->andReturn([
+                [
+                    'round' => $race->round,
+                    'raceName' => $race->display_name,
+                    'circuit' => ['circuitName' => 'Albert Park', 'country' => 'Australia'],
+                    'date' => '2026-03-15',
+                    'status' => 'completed',
+                    'predictions_open' => false,
+                    'results' => [],
+                ],
+            ]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2026])
+        ->assertSee('42 pts')
+        ->assertDontSee('Make Prediction')
+        ->assertDontSee('Edit Prediction');
+});
+
+test('race card shows locked state when prediction is locked and no score yet', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $race = Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'status' => 'ongoing',
+    ]);
+
+    Prediction::factory()->locked()->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'season' => 2026,
+        'race_round' => 1,
+        'race_id' => $race->id,
+    ]);
+
+    mock(F1ApiService::class, function ($mock) use ($race) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2026)
+            ->andReturn([
+                [
+                    'round' => $race->round,
+                    'raceName' => $race->display_name,
+                    'circuit' => ['circuitName' => 'Albert Park', 'country' => 'Australia'],
+                    'date' => '2026-03-15',
+                    'status' => 'ongoing',
+                    'predictions_open' => false,
+                    'results' => [],
+                ],
+            ]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2026])
+        ->assertSee('Prediction locked')
+        ->assertDontSee('Edit Prediction')
+        ->assertDontSee('Make Prediction');
 });

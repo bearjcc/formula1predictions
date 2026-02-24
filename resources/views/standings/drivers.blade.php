@@ -54,11 +54,32 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-constructor-bar :teamName="$row['team_name'] ?? null">
-                                    <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
+                                    @if(!empty($row['driver_slug'] ?? null))
+                                        <a
+                                            href="{{ route('driver', ['slug' => $row['driver_slug']]) }}"
+                                            class="inline-flex items-center gap-1 text-auto-primary hover:underline"
+                                        >
+                                            <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
+                                        </a>
+                                    @else
+                                        <h3 class="font-semibold">{{ $row['driver_name'] }}</h3>
+                                    @endif
                                 </x-constructor-bar>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <p>{{ $row['team_display_name'] ?? $row['team_name'] ?? '—' }}</p>
+                                @php
+                                    $teamDisplayName = $row['team_display_name'] ?? $row['team_name'] ?? '—';
+                                @endphp
+                                @if(!empty($row['team_slug'] ?? null))
+                                    <a
+                                        href="{{ route('constructor', ['slug' => $row['team_slug']]) }}"
+                                        class="text-auto-primary hover:underline"
+                                    >
+                                        {{ $teamDisplayName }}
+                                    </a>
+                                @else
+                                    <p>{{ $teamDisplayName }}</p>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($row['nationality'] ?? null)

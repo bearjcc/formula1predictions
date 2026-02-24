@@ -50,7 +50,19 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-constructor-bar :teamName="$row['team_name']">
-                                    <h4 class="font-semibold">{{ $row['team_display_name'] ?? $row['team_name'] }}</h4>
+                                    @php
+                                        $teamDisplayName = $row['team_display_name'] ?? $row['team_name'];
+                                    @endphp
+                                    @if(!empty($row['team_slug'] ?? null))
+                                        <a
+                                            href="{{ route('constructor', ['slug' => $row['team_slug']]) }}"
+                                            class="inline-flex items-center gap-1 text-auto-primary hover:underline"
+                                        >
+                                            <h4 class="font-semibold">{{ $teamDisplayName }}</h4>
+                                        </a>
+                                    @else
+                                        <h4 class="font-semibold">{{ $teamDisplayName }}</h4>
+                                    @endif
                                 </x-constructor-bar>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
