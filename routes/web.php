@@ -214,14 +214,14 @@ Route::middleware(['validate.year'])->group(function () {
             $points = $s ? (float) $s->points : 0.0;
             $wins = $s ? (int) ($s->wins ?? 0) : 0;
             $podiums = $s ? (int) ($s->podiums ?? 0) : 0;
-            $name = trim($driver->name.' '.$driver->surname);
+            $driverName = trim($driver->name.' '.$driver->surname);
             $teamName = $driver->team?->team_name
                 ?? ($driver->driver_id ? ($driverIdToTeamName[$driver->driver_id] ?? null) : null);
             $country = $driver->nationality ? $countriesByName->get($driver->nationality) : null;
 
             return [
-                'sort_name' => $name,
-                'driver_name' => $name,
+                'sort_name' => trim($driver->surname.' '.$driver->name),
+                'driver_name' => $driverName,
                 'nationality' => $driver->nationality,
                 'country_flag_url' => $country ? $country->flag_url : '',
                 'team_name' => $teamName,
