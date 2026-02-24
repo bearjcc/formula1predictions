@@ -471,6 +471,17 @@
             draggedIndex: null,
             draggedOverIndex: null,
 
+            // #region pointer/touch drag (mobile and desktop)
+            pointerDragActive: false,
+            pointerDriverIndex: null,
+            pointerGhost: null,
+            pointerThreshold: 10,
+            pointerStartX: 0,
+            pointerStartY: 0,
+            _pointerMoveBound: null,
+            _pointerUpBound: null,
+            // #endregion
+
             getConstructorColor(teamName) {
                 if (!teamName || !this.constructorColors) return null;
                 const k = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === String(teamName).trim().toLowerCase());
@@ -511,7 +522,103 @@
 
             getDriverById(id) {
                 return this.drivers.find(driver => driver.id === id);
+            },
+
+            // #region pointer/touch drag methods
+            pointerDown(e, index) {
+                if (e.button !== undefined && e.button !== 0) return;
+                this.pointerDriverIndex = index;
+                this.pointerStartX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+                this.pointerStartY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+                this.pointerDragActive = false;
+                this._pointerMoveBound = (ev) => this.pointerMove(ev);
+                this._pointerUpBound = (ev) => this.pointerUp(ev);
+                document.addEventListener('pointermove', this._pointerMoveBound, { passive: false });
+                document.addEventListener('pointerup', this._pointerUpBound);
+                document.addEventListener('pointercancel', this._pointerUpBound);
+            },
+
+            pointerMove(e) {
+                const x = e.clientX ?? 0;
+                const y = e.clientY ?? 0;
+                if (!this.pointerDragActive) {
+                    const dx = x - this.pointerStartX;
+                    const dy = y - this.pointerStartY;
+                    if (dx * dx + dy * dy < this.pointerThreshold * this.pointerThreshold) return;
+                    this.pointerDragActive = true;
+                    this.draggedIndex = this.pointerDriverIndex;
+                    this.showGhost(x, y);
+                }
+                e.preventDefault();
+                this.moveGhost(x, y);
+                const under = document.elementFromPoint(x, y);
+                const driverRow = under?.closest?.('[data-drop-driver]');
+                if (driverRow) {
+                    const idx = driverRow.getAttribute('data-drop-driver');
+                    if (idx !== null && idx !== '') this.draggedOverIndex = parseInt(idx, 10);
+                } else {
+                    this.draggedOverIndex = null;
+                }
+            },
+
+            pointerUp(e) {
+                document.removeEventListener('pointermove', this._pointerMoveBound);
+                document.removeEventListener('pointerup', this._pointerUpBound);
+                document.removeEventListener('pointercancel', this._pointerUpBound);
+                this._pointerMoveBound = null;
+                this._pointerUpBound = null;
+                const x = e.clientX ?? 0;
+                const y = e.clientY ?? 0;
+                if (this.pointerDragActive && this.pointerDriverIndex !== null) {
+                    const under = document.elementFromPoint(x, y);
+                    const driverRow = under?.closest?.('[data-drop-driver]');
+                    if (driverRow) {
+                        const dropIndex = parseInt(driverRow.getAttribute('data-drop-driver'), 10);
+                        if (!isNaN(dropIndex) && dropIndex !== this.pointerDriverIndex) {
+                            const newOrder = [...this.driverOrder];
+                            const [draggedItem] = newOrder.splice(this.pointerDriverIndex, 1);
+                            newOrder.splice(dropIndex, 0, draggedItem);
+                            this.driverOrder = newOrder;
+                            $wire.updateDriverOrder(newOrder);
+                        }
+                    }
+                }
+                this.removeGhost();
+                this.pointerDragActive = false;
+                this.pointerDriverIndex = null;
+                this.draggedIndex = null;
+                this.draggedOverIndex = null;
+            },
+
+            showGhost(x, y) {
+                this.removeGhost();
+                const driverId = this.driverOrder[this.pointerDriverIndex];
+                const driver = this.getDriverById(driverId);
+                const name = driver ? ((driver.name ? driver.name + ' ' : '') + (driver.surname || '')).trim() : '';
+                const el = document.createElement('div');
+                el.setAttribute('data-drag-ghost', '1');
+                el.className = 'fixed z-[100] pointer-events-none px-3 py-1.5 rounded border-2 border-blue-400 bg-white dark:bg-zinc-800 shadow-lg text-sm font-medium text-zinc-900 dark:text-zinc-100';
+                el.textContent = name;
+                el.style.left = (x - 8) + 'px';
+                el.style.top = (y - 8) + 'px';
+                document.body.appendChild(el);
+                this.pointerGhost = el;
+            },
+
+            moveGhost(x, y) {
+                if (this.pointerGhost) {
+                    this.pointerGhost.style.left = (x - 8) + 'px';
+                    this.pointerGhost.style.top = (y - 8) + 'px';
+                }
+            },
+
+            removeGhost() {
+                if (this.pointerGhost && this.pointerGhost.parentNode) {
+                    this.pointerGhost.parentNode.removeChild(this.pointerGhost);
+                }
+                this.pointerGhost = null;
             }
+            // #endregion
         }"
         class="space-y-4"
     >
@@ -519,7 +626,7 @@
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 flex items-center justify-between">
                 <div>
                     <h4 class="font-bold text-zinc-900 dark:text-white">{{ $raceName }} Predicted Order</h4>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag to reorder. Points awarded based on proximity to actual finish.</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag or touch to reorder. Points awarded based on proximity to actual finish.</p>
                 </div>
                 <span wire:loading wire:target="updateDriverOrder" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
                     <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
@@ -532,15 +639,17 @@
                         x-show="getDriverById(driverId)"
                         :class="{
                             'bg-blue-50/50 dark:bg-blue-900/10': draggedOverIndex === index,
-                            'opacity-40': draggedIndex === index
+                            'opacity-40': draggedIndex !== null && draggedIndex === index && pointerDragActive
                         }"
-                        class="group p-3 sm:p-4 cursor-move hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-all duration-150 relative select-none"
+                        class="group p-3 sm:p-4 cursor-move hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-all duration-150 relative select-none touch-none"
+                        :data-drop-driver="index"
                         draggable="true"
                         @dragstart="dragStart(index)"
                         @dragover="dragOver($event, index)"
                         @dragleave="draggedOverIndex = null"
                         @drop="drop($event, index)"
                         @dragend="dragEnd()"
+                        @pointerdown="pointerDown($event, index)"
                     >
                         <div class="flex items-center space-x-3 sm:space-x-5">
                             <div class="flex-shrink-0 text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400">
