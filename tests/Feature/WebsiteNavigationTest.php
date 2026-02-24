@@ -77,7 +77,7 @@ test('api race endpoints are accessible with mocked F1 API', function () {
     $responseCurrent->assertOk();
 });
 
-test('sidebar does not show Countries navigation link while country page is unfinished', function () {
+test('sidebar shows Countries navigation link when country page is ready', function () {
     /** @var \Tests\TestCase $this */
     /** @var User $user */
     $user = User::factory()->create();
@@ -85,14 +85,14 @@ test('sidebar does not show Countries navigation link while country page is unfi
     $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
-    $response->assertDontSee('Countries', false);
-    $response->assertDontSee(route('countries'), false);
+    $response->assertSee('Countries', false);
+    $response->assertSee(route('countries'), false);
 });
 
-test('home page does not show Countries navigation card while country page is unfinished', function () {
+test('home page shows Countries navigation card when country page is ready', function () {
     /** @var \Tests\TestCase $this */
     $response = $this->get('/');
 
     $response->assertOk();
-    $response->assertDontSee('View Countries', false);
+    $response->assertSee('View Countries', false);
 });
