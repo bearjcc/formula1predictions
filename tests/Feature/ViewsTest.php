@@ -76,12 +76,6 @@ describe('Year-specific views load correctly', function () {
 
 // Test non-year-specific views
 describe('Non-year-specific views load correctly', function () {
-    it('loads countries index (Livewire full-page) for /countries', function () {
-        $response = $this->get('/countries');
-        $response->assertOk();
-        $response->assertSee('F1 Countries', false);
-    });
-
     it('loads constructor view for /constructor/{slug}', function () {
         Teams::factory()->create(['team_name' => 'Mercedes']);
 
@@ -107,15 +101,6 @@ describe('Non-year-specific views load correctly', function () {
         $response->assertOk();
         $response->assertViewIs('circuit');
         $response->assertViewHas('circuit');
-    });
-
-    it('loads country view for /country/{slug}', function () {
-        Countries::factory()->create(['name' => 'Belgium']);
-
-        $response = $this->get('/country/belgium');
-        $response->assertOk();
-        $response->assertViewIs('country');
-        $response->assertViewHas('country');
     });
 
     it('loads race detail view for /race/{slug}', function () {

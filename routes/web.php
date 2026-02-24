@@ -378,9 +378,6 @@ Route::middleware(['validate.year'])->group(function () {
     })->name('race');
 });
 
-// non year specific routes
-Route::get('/countries', App\Livewire\Pages\CountriesIndex::class)->name('countries');
-
 Route::get('/constructor/{slug}', function ($slug) {
     $constructor = Teams::with('drivers')->get()->first(fn ($t) => $t->slug === $slug);
     abort_unless($constructor, 404);
@@ -403,13 +400,6 @@ Route::get('/circuit/{slug}', function ($slug) {
 
     return view('circuit', ['circuit' => $circuit]);
 })->name('circuit');
-
-Route::get('/country/{slug}', function ($slug) {
-    $country = Countries::all()->first(fn ($c) => $c->slug === $slug);
-    abort_unless($country, 404);
-
-    return view('country', ['country' => $country]);
-})->name('country');
 
 Route::get('/race/{slug}', function ($slug) {
     $race = Races::all()->first(fn ($r) => $r->slug === $slug);

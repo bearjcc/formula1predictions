@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Circuits;
-use App\Models\Countries;
 use App\Models\Drivers;
 use App\Models\Races;
 use App\Models\Teams;
@@ -118,32 +117,6 @@ test('circuit detail page displays real circuit data', function () {
 
 test('circuit detail page returns 404 for non-existent slug', function () {
     $response = $this->get('/circuit/non-existent-circuit');
-    $response->assertNotFound();
-});
-
-// --- Country Detail Page ---
-
-test('country detail page displays real country data', function () {
-    Countries::factory()->create([
-        'name' => 'United Kingdom',
-        'code' => 'gb',
-        'f1_races_hosted' => 78,
-        'world_championships_won' => 20,
-        'drivers_count' => 163,
-        'teams_count' => 15,
-        'circuits_count' => 5,
-    ]);
-
-    $response = $this->get('/country/united-kingdom');
-
-    $response->assertOk();
-    $response->assertSee('United Kingdom');
-    $response->assertSee('78');
-    $response->assertSee('20');
-});
-
-test('country detail page returns 404 for non-existent slug', function () {
-    $response = $this->get('/country/non-existent-country');
     $response->assertNotFound();
 });
 

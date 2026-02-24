@@ -76,23 +76,3 @@ test('api race endpoints are accessible with mocked F1 API', function () {
     $responseCurrent = $this->get('/api/f1/races/2026');
     $responseCurrent->assertOk();
 });
-
-test('sidebar shows Countries navigation link when country page is ready', function () {
-    /** @var \Tests\TestCase $this */
-    /** @var User $user */
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->get('/dashboard');
-
-    $response->assertOk();
-    $response->assertSee('Countries', false);
-    $response->assertSee(route('countries'), false);
-});
-
-test('home page shows Countries navigation card when country page is ready', function () {
-    /** @var \Tests\TestCase $this */
-    $response = $this->get('/');
-
-    $response->assertOk();
-    $response->assertSee('View Countries', false);
-});

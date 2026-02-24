@@ -93,11 +93,6 @@ describe('non-year-specific routes return 200', function () {
         $this->get(route('scoring'))->assertOk();
     });
 
-    it('route /countries responds with 200', function () {
-        /** @var \Tests\TestCase $this */
-        $this->get('/countries')->assertOk();
-    });
-
     it('route /constructor/{slug} responds with 200', function () {
         /** @var \Tests\TestCase $this */
         \App\Models\Teams::factory()->create(['team_name' => 'Mercedes']);
@@ -119,7 +114,7 @@ describe('non-year-specific routes return 200', function () {
     it('route /country/{slug} responds with 200', function () {
         /** @var \Tests\TestCase $this */
         \App\Models\Countries::factory()->create(['name' => 'Belgium']);
-        $this->get('/country/belgium')->assertOk();
+        $this->get('/country/belgium')->assertNotFound();
     });
 
     it('route /race/{slug} responds with 200', function () {
@@ -156,11 +151,9 @@ describe('route naming works correctly', function () {
 
     it('can generate correct URLs for non-year-specific routes', function () {
         expect(route('scoring'))->toContain('/scoring');
-        expect(route('countries'))->toContain('/countries');
         expect(route('constructor', ['slug' => 'mercedes']))->toContain('/constructor/mercedes');
         expect(route('driver', ['slug' => 'lewis-hamilton']))->toContain('/driver/lewis-hamilton');
         expect(route('circuit', ['slug' => 'silverstone']))->toContain('/circuit/silverstone');
-        expect(route('country', ['slug' => 'belgium']))->toContain('/country/belgium');
         expect(route('race.detail', ['slug' => 'british-grand-prix']))->toContain('/race/british-grand-prix');
     });
 });
