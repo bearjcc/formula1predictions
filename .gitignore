@@ -31,6 +31,7 @@ yarn-error.log
 # Log files
 /laravel.log
 storage/logs/*.log
+storage/logs/**/*.log
 deployment/logs/
 
 # Lighthouse audit reports (generate with npm run audit:lighthouse)

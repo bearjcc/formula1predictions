@@ -32,8 +32,8 @@ class UpdatePredictionRequest extends FormRequest
             'race_id' => ['nullable', 'integer', 'exists:races,id'],
             'prediction_data' => ['sometimes', 'required', 'array'],
             'prediction_data.driver_order' => ['required_if:type,race,sprint', 'array', 'min:1', 'max:'.config('f1.max_drivers', 22)],
-            'prediction_data.driver_order.*' => ['required_if:type,race,sprint', 'string', 'exists:drivers,driver_id'],
-            'prediction_data.fastest_lap' => ['nullable', 'string', 'exists:drivers,driver_id'],
+            'prediction_data.driver_order.*' => ['nullable'],
+            'prediction_data.fastest_lap' => ['nullable'],
             'prediction_data.dnf_predictions' => ['nullable', 'array'],
             'prediction_data.dnf_predictions.*' => ['string', 'exists:drivers,driver_id'],
             'prediction_data.team_order' => ['required_if:type,preseason,midseason', 'array', 'min:1', 'max:'.config('f1.max_constructors', 11)],
@@ -57,6 +57,40 @@ class UpdatePredictionRequest extends FormRequest
     {
         $validator->after(function (Validator $validator): void {
             $type = $this->input('type');
+            if (in_array($type, ['race', 'sprint'], true)) {
+                $driverOrder = $this->input('prediction_data.driver_order', []);
+                if (is_array($driverOrder)) {
+                    foreach ($driverOrder as $value) {
+                        if ($value === null || $value === '') {
+                            continue;
+                        }
+                        $exists = is_numeric($value)
+                            ? Drivers::where('id', (int) $value)->exists()
+                            : Drivers::where('driver_id', (string) $value)->exists();
+                        if (! $exists) {
+                            $validator->errors()->add(
+                                'prediction_data.driver_order',
+                                'The selected driver is invalid.'
+                            );
+
+                            break;
+                        }
+                    }
+                }
+
+                $fastestLap = $this->input('prediction_data.fastest_lap');
+                if ($fastestLap !== null && $fastestLap !== '') {
+                    $exists = is_numeric($fastestLap)
+                        ? Drivers::where('id', (int) $fastestLap)->exists()
+                        : Drivers::where('driver_id', (string) $fastestLap)->exists();
+                    if (! $exists) {
+                        $validator->errors()->add(
+                            'prediction_data.fastest_lap',
+                            'The selected driver is invalid.'
+                        );
+                    }
+                }
+            }
             $teammateBattles = $this->input('prediction_data.teammate_battles', []);
             if ($type !== 'preseason' || ! is_array($teammateBattles)) {
                 return;

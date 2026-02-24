@@ -18,26 +18,26 @@ class NotificationService
      */
     public function sendRaceResultsAvailableNotification(Races $race): void
     {
-        $users = User::whereHas('predictions', function ($query) use ($race) {
+        User::whereHas('predictions', function ($query) use ($race) {
             $query->where('race_id', $race->id)
                 ->where('type', 'race');
-        })->get();
+        })->chunkById(500, function ($users) use ($race) {
+            Notification::send($users, new RaceResultsAvailable($race));
 
-        Notification::send($users, new RaceResultsAvailable($race));
-
-        // Dispatch real-time events for each user
-        foreach ($users as $user) {
-            event(new NotificationReceived($user, [
-                'type' => 'race_results_available',
-                'race_id' => $race->id,
-                'race_name' => $race->race_name,
-                'display_name' => $race->display_name,
-                'season' => $race->season,
-                'round' => $race->round,
-                'message' => "Race results for {$race->display_name} are now available",
-                'action_url' => "/{$race->season}/race/{$race->id}",
-            ]));
-        }
+            // Dispatch real-time events for each user in the chunk
+            foreach ($users as $user) {
+                event(new NotificationReceived($user, [
+                    'type' => 'race_results_available',
+                    'race_id' => $race->id,
+                    'race_name' => $race->race_name,
+                    'display_name' => $race->display_name,
+                    'season' => $race->season,
+                    'round' => $race->round,
+                    'message' => "Race results for {$race->display_name} are now available",
+                    'action_url' => "/{$race->season}/race/{$race->id}",
+                ]));
+            }
+        });
     }
 
     /**
@@ -73,8 +73,9 @@ class NotificationService
      */
     public function sendPredictionDeadlineReminder(Races $race, string $deadlineType = 'qualifying'): void
     {
-        $users = User::all();
-        Notification::send($users, new PredictionDeadlineReminder($race, $deadlineType));
+        User::chunkById(500, function ($users) use ($race, $deadlineType) {
+            Notification::send($users, new PredictionDeadlineReminder($race, $deadlineType));
+        });
     }
 
     /**
@@ -82,12 +83,12 @@ class NotificationService
      */
     public function sendPredictionDeadlineReminderToNonPredictors(Races $race, string $deadlineType = 'qualifying'): void
     {
-        $users = User::whereDoesntHave('predictions', function ($query) use ($race) {
+        User::whereDoesntHave('predictions', function ($query) use ($race) {
             $query->where('race_id', $race->id)
                 ->where('type', 'race');
-        })->get();
-
-        Notification::send($users, new PredictionDeadlineReminder($race, $deadlineType));
+        })->chunkById(500, function ($users) use ($race, $deadlineType) {
+            Notification::send($users, new PredictionDeadlineReminder($race, $deadlineType));
+        });
     }
 
     /**
@@ -96,8 +97,6 @@ class NotificationService
      */
     public function sendPreseasonDeadlineReminder(int $season): void
     {
-        $users = User::all();
-
         $race = Races::getFirstRaceOfSeason($season);
         if ($race === null) {
             $race = new Races([
@@ -107,7 +106,9 @@ class NotificationService
             ]);
         }
 
-        Notification::send($users, new PredictionDeadlineReminder($race, 'preseason'));
+        User::chunkById(500, function ($users) use ($race) {
+            Notification::send($users, new PredictionDeadlineReminder($race, 'preseason'));
+        });
     }
 
     /**
@@ -115,8 +116,6 @@ class NotificationService
      */
     public function sendMidseasonDeadlineReminder(int $season): void
     {
-        $users = User::all();
-
         // Create a dummy race object for the notification
         $race = new Races([
             'season' => $season,
@@ -124,6 +123,8 @@ class NotificationService
             'round' => 0,
         ]);
 
-        Notification::send($users, new PredictionDeadlineReminder($race, 'midseason'));
+        User::chunkById(500, function ($users) use ($race) {
+            Notification::send($users, new PredictionDeadlineReminder($race, 'midseason'));
+        });
     }
 }

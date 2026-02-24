@@ -188,10 +188,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: database/migrations/2025_08_26_100104
   - Empty no-op migration file. Remove.
 
-- [ ] **F1-068: Add index on predictions.race_id**
+- [x] **F1-068: Add index on predictions.race_id** _(done 2026-02-24)_
   - Type: performance | Priority: P2 | Risk: low | Owner: agent
   - Affected: database/migrations/
-  - Missing index on predictions.race_id. Add for query performance.
+  - Done: Added migration to create an index on predictions.race_id and a database schema test (DatabaseIndexesTest) to assert the index exists after migrations.
 
 - [x] **F1-069: Enable email verification** _(duplicate; see Now section — done 2026-02-20)_
 
@@ -199,10 +199,10 @@ Longer-horizon ideas and exploratory improvements.
   - Type: security | Priority: P2 | Risk: low | Owner: agent
   - Moved `laravel/tinker` to `require-dev`; add ProductionConfigTest assertion if not already present.
 
-- [ ] **F1-071: Update .gitignore for storage/logs/ subdirectories**
+- [x] **F1-071: Update .gitignore for storage/logs/ subdirectories** _(done 2026-02-24)_
   - Type: security | Priority: P2 | Risk: low | Owner: agent
   - Affected: .gitignore
-  - .gitignore doesn't cover storage/logs/ subdirectories. Add.
+  - Added pattern to ignore `storage/logs/**/*.log` so log files in subdirectories are not committed.
 
 - [x] **F1-072: Set up CI/CD pipeline** _(done 2026-02-19)_
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: mixed
