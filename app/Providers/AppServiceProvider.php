@@ -10,9 +10,12 @@ use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Event;
+use App\Listeners\SendNewUserRegisteredNotification;
 use App\Policies\CircuitsPolicy;
 use App\Policies\CountriesPolicy;
 use App\Policies\DriversPolicy;
@@ -55,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        Event::listen(Registered::class, SendNewUserRegisteredNotification::class);
 
         // #region Auth email customization (verification + password reset)
         VerifyEmail::toMailUsing(function (object $notifiable, string $url): MailMessage {

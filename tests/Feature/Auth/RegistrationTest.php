@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\NewUserRegistered;
 use App\Mail\VerifyEmailMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -65,4 +66,40 @@ test('verification email is sent on registration when user must verify email', f
     Mail::assertSent(VerifyEmailMail::class, function (VerifyEmailMail $mail) use ($user) {
         return $mail->hasTo($user->getEmailForVerification());
     });
+});
+
+test('admin receives NewUserRegistered email when ADMIN_EMAIL is set', function () {
+    Mail::fake();
+    $adminEmail = 'admin@example.com';
+    config(['admin.promotable_admin_email' => $adminEmail]);
+
+    Volt::test('auth.register')
+        ->set('name', 'Newbie User')
+        ->set('email', 'newbie@example.com')
+        ->set('password', 'password')
+        ->set('password_confirmation', 'password')
+        ->call('register');
+
+    $user = User::where('email', 'newbie@example.com')->first();
+    expect($user)->not->toBeNull();
+
+    Mail::assertSent(NewUserRegistered::class, function (NewUserRegistered $mail) use ($adminEmail, $user) {
+        return $mail->hasTo($adminEmail)
+            && $mail->user->is($user)
+            && $mail->user->name === 'Newbie User';
+    });
+});
+
+test('admin does not receive NewUserRegistered when ADMIN_EMAIL is not set', function () {
+    Mail::fake();
+    config(['admin.promotable_admin_email' => null]);
+
+    Volt::test('auth.register')
+        ->set('name', 'No Admin Notify')
+        ->set('email', 'noadmin@example.com')
+        ->set('password', 'password')
+        ->set('password_confirmation', 'password')
+        ->call('register');
+
+    Mail::assertNotSent(NewUserRegistered::class);
 });
