@@ -14,7 +14,7 @@
 <body class="min-h-screen antialiased bg-white dark:bg-zinc-900 overflow-x-hidden">
     <div class="flex min-h-screen min-w-0">
         <!-- Sidebar - Hidden on mobile, shown on desktop -->
-        <div id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-50 w-64 lg:h-screen bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
             <!-- App Logo/Title -->
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
                 <div class="flex items-center justify-between">
