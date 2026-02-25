@@ -222,10 +222,16 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Send the email verification notification using our styled mailable.
+     * No-op if email is missing (e.g. legacy accounts); avoids 500 when resending.
      */
     public function sendEmailVerificationNotification(): void
     {
-        Mail::to($this->getEmailForVerification())->send(new VerifyEmailMail($this));
+        $email = $this->getEmailForVerification();
+        if (empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        Mail::to($email)->send(new VerifyEmailMail($this));
     }
 
     /**

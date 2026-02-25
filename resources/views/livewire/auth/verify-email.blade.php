@@ -9,6 +9,7 @@ use Livewire\Volt\Component;
 new #[Layout('components.layouts.layout', ['title' => 'Verify your email', 'headerSubtitle' => 'We sent a verification link to your email address.'])] class extends Component {
     /**
      * Send an email verification notification to the user.
+     * Catches mail/send failures so legacy or misconfigured setups show a message instead of 500.
      */
     public function sendVerification(): void
     {
@@ -18,9 +19,13 @@ new #[Layout('components.layouts.layout', ['title' => 'Verify your email', 'head
             return;
         }
 
-        Auth::user()->sendEmailVerificationNotification();
-
-        Session::flash('status', 'verification-link-sent');
+        try {
+            Auth::user()->sendEmailVerificationNotification();
+            Session::flash('status', 'verification-link-sent');
+        } catch (\Throwable $e) {
+            report($e);
+            Session::flash('status', 'verification-link-failed');
+        }
     }
 
     /**
@@ -43,6 +48,10 @@ new #[Layout('components.layouts.layout', ['title' => 'Verify your email', 'head
         @if (session('status') == 'verification-link-sent')
             <p class="mt-4 font-medium text-green-600 dark:text-green-400 break-words">
                 {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+            </p>
+        @elseif (session('status') == 'verification-link-failed')
+            <p class="mt-4 font-medium text-amber-600 dark:text-amber-400 break-words">
+                {{ __('We could not send the verification email. Please try again later or contact support.') }}
             </p>
         @endif
 

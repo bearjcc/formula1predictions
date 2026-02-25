@@ -52,6 +52,7 @@ new class extends Component {
 
     /**
      * Send an email verification notification to the current user.
+     * Catches mail/send failures so legacy or misconfigured setups show a message instead of 500.
      */
     public function resendVerificationNotification(): void
     {
@@ -63,9 +64,13 @@ new class extends Component {
             return;
         }
 
-        $user->sendEmailVerificationNotification();
-
-        Session::flash('status', 'verification-link-sent');
+        try {
+            $user->sendEmailVerificationNotification();
+            Session::flash('status', 'verification-link-sent');
+        } catch (\Throwable $e) {
+            report($e);
+            Session::flash('status', 'verification-link-failed');
+        }
     }
 }; ?>
 
@@ -92,6 +97,10 @@ new class extends Component {
                         @if (session('status') === 'verification-link-sent')
                             <p class="mt-2 font-medium text-green-600 dark:text-green-400">
                                 {{ __('A new verification link has been sent to your email address.') }}
+                            </p>
+                        @elseif (session('status') === 'verification-link-failed')
+                            <p class="mt-2 font-medium text-amber-600 dark:text-amber-400">
+                                {{ __('We could not send the verification email. Please try again later or contact support.') }}
                             </p>
                         @endif
                     </div>
