@@ -2,7 +2,7 @@
     <div
         x-data="{
             teams: @js($teams),
-            teamOrder: @js($teamOrder),
+            teamOrder: $wire.$entangle('teamOrder'),
             constructorColors: @js(config('constructor_colors')),
             draggedIndex: null,
             draggedOverIndex: null,
@@ -43,10 +43,10 @@
             drop(e, dropIndex) {
                 e.preventDefault();
                 if (this.draggedIndex !== null && this.draggedIndex !== dropIndex) {
-                    const newOrder = [...this.teamOrder];
+                    const current = Array.isArray(this.teamOrder) ? this.teamOrder : [];
+                    const newOrder = [...current];
                     const [draggedItem] = newOrder.splice(this.draggedIndex, 1);
                     newOrder.splice(dropIndex, 0, draggedItem);
-                    this.teamOrder = newOrder;
                     $wire.updateTeamOrder(newOrder);
                 }
                 this.draggedIndex = null;
@@ -108,10 +108,10 @@
                     if (teamRow) {
                         const dropIndex = parseInt(teamRow.getAttribute('data-drop-team'), 10);
                         if (!isNaN(dropIndex) && dropIndex !== this.pointerTeamIndex) {
-                            const newOrder = [...this.teamOrder];
+                            const current = Array.isArray(this.teamOrder) ? this.teamOrder : [];
+                            const newOrder = [...current];
                             const [draggedItem] = newOrder.splice(this.pointerTeamIndex, 1);
                             newOrder.splice(dropIndex, 0, draggedItem);
-                            this.teamOrder = newOrder;
                             $wire.updateTeamOrder(newOrder);
                         }
                     }
@@ -125,7 +125,8 @@
 
             showGhost(x, y) {
                 this.removeGhost();
-                const teamId = this.teamOrder[this.pointerTeamIndex];
+                const current = Array.isArray(this.teamOrder) ? this.teamOrder : [];
+                const teamId = current[this.pointerTeamIndex];
                 const team = this.getTeamById(teamId);
                 const name = team ? (team.display_name || team.team_name || '') : '';
                 const el = document.createElement('div');
@@ -160,10 +161,6 @@
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
                 <div class="flex items-center justify-between">
                     <h4 class="font-medium text-zinc-900 dark:text-zinc-100">{{ $title }}</h4>
-                    <span wire:loading wire:target="updateTeamOrder" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                        <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                        Saving…
-                    </span>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Constructor order — drag or touch to reorder your predictions.</p>
             </div>
@@ -182,7 +179,7 @@
                             'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700': draggedOverIndex === index,
                             'opacity-40': draggedIndex !== null && draggedIndex === index && pointerDragActive
                         }"
-                        class="p-4 cursor-move hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none"
+                        class="p-4 min-h-[44px] cursor-move hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none flex items-center"
                         :data-drop-team="index"
                         draggable="true"
                         @dragstart="dragStart(index)"

@@ -30,7 +30,7 @@ class DraggableTeamList extends Component
     public function updateTeamOrder(array $newOrder): void
     {
         $this->teamOrder = $newOrder;
-        $this->dispatch('team-order-updated', order: $newOrder);
+        $this->dispatch('team-order-updated', order: $newOrder)->to(PredictionForm::class);
     }
 
     public function getTeamOrderData(): array

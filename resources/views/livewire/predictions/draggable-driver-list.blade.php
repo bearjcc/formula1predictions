@@ -247,10 +247,6 @@
             <div class="px-1 py-1">
                 <div class="flex items-center justify-between">
                     <h4 class="font-bold text-zinc-900 dark:text-white text-sm">Your prediction (1&ndash;{{ $maxSlots }})</h4>
-                    <span wire:loading wire:target="updateDriverOrder,toggleDnf,setFastestLap,updateTeamOrder" class="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                        <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                        Saving…
-                    </span>
                 </div>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag to reorder. Tap unplaced to fill first empty. Positions {{ $this->dnfEligibleFromSlot + 1 }}+ can be marked DNF.</p>
             </div>
@@ -355,10 +351,6 @@
                 <div class="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50">
                     <div class="flex items-center justify-between">
                         <h4 class="font-bold text-zinc-900 dark:text-white">Your prediction (1&ndash;{{ $maxSlots }})</h4>
-                        <span wire:loading wire:target="updateDriverOrder,toggleDnf,setFastestLap,updateTeamOrder" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                            <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                            Saving…
-                        </span>
                     </div>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Drag drivers from the right or reorder here. Positions outside points ({{ $this->dnfEligibleFromSlot + 1 }}+) can be marked DNF.</p>
                 </div>

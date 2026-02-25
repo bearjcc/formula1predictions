@@ -539,6 +539,8 @@ class PredictionForm extends Component
             session()->flash('success', 'Prediction created successfully.');
         }
 
+        $this->dispatch('prediction-saved');
+
         $this->redirect(route('predictions.index'));
     }
 
