@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Feedback;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
@@ -35,6 +36,9 @@ test('admin can load all admin view pages', function () {
         ->assertOk();
     actingAs($this->admin)
         ->get(route('admin.settings'))
+        ->assertOk();
+    actingAs($this->admin)
+        ->get(route('admin.feedback'))
         ->assertOk();
 });
 
@@ -416,3 +420,94 @@ test('bulk score validation requires race_ids', function () {
         ->post(route('admin.bulk-score'), [])
         ->assertSessionHasErrors('race_ids');
 });
+
+// #region Promote/demote admin (F1-078)
+test('admin can promote user to admin', function () {
+    expect($this->user->is_admin)->not->toBeTrue();
+
+    actingAs($this->admin)
+        ->from(route('admin.users'))
+        ->post(route('admin.users.promote-admin', $this->user))
+        ->assertRedirect(route('admin.users'))
+        ->assertSessionHas('success');
+
+    $this->user->refresh();
+    expect($this->user->is_admin)->toBeTrue();
+});
+
+test('admin can demote another user from admin', function () {
+    $otherAdmin = User::factory()->admin()->create(['email' => 'otheradmin@example.com']);
+    expect((bool) $otherAdmin->is_admin)->toBeTrue();
+
+    actingAs($this->admin)
+        ->from(route('admin.users'))
+        ->post(route('admin.users.demote-admin', $otherAdmin))
+        ->assertRedirect(route('admin.users'))
+        ->assertSessionHas('success');
+
+    $otherAdmin->refresh();
+    expect($otherAdmin->is_admin)->toBeFalse();
+});
+
+test('admin cannot demote self', function () {
+    actingAs($this->admin)
+        ->from(route('admin.users'))
+        ->post(route('admin.users.demote-admin', $this->admin))
+        ->assertRedirect(route('admin.users'))
+        ->assertSessionHas('error');
+
+    $this->admin->refresh();
+    expect($this->admin->is_admin)->toBeTrue();
+});
+
+test('regular user cannot promote user to admin', function () {
+    actingAs($this->user)
+        ->post(route('admin.users.promote-admin', $this->admin))
+        ->assertForbidden();
+});
+
+test('regular user cannot demote admin', function () {
+    $otherAdmin = User::factory()->admin()->create();
+
+    actingAs($this->user)
+        ->post(route('admin.users.demote-admin', $otherAdmin))
+        ->assertForbidden();
+});
+// #endregion
+
+// #region Feedback moderation (F1-078)
+test('regular user cannot access admin feedback page', function () {
+    actingAs($this->user)
+        ->get(route('admin.feedback'))
+        ->assertForbidden();
+});
+
+test('admin can delete feedback', function () {
+    $feedback = Feedback::create([
+        'user_id' => $this->user->id,
+        'message' => 'Test message',
+        'subject' => 'Test subject',
+    ]);
+    $id = $feedback->id;
+
+    actingAs($this->admin)
+        ->from(route('admin.feedback'))
+        ->delete(route('admin.feedback.delete', $feedback))
+        ->assertRedirect(route('admin.feedback'))
+        ->assertSessionHas('success');
+
+    expect(Feedback::find($id))->toBeNull();
+});
+
+test('regular user cannot delete feedback via admin', function () {
+    $feedback = Feedback::create([
+        'user_id' => $this->user->id,
+        'message' => 'Test',
+        'subject' => null,
+    ]);
+
+    actingAs($this->user)
+        ->delete(route('admin.feedback.delete', $feedback))
+        ->assertForbidden();
+});
+// #endregion

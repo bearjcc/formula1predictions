@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ScoreRacePredictionsJob;
 use App\Models\Drivers;
+use App\Models\Feedback;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\Teams;
@@ -70,6 +71,42 @@ class AdminController extends Controller
 
             return redirect()->route('admin.dashboard')->with('error', 'Unable to load users. Please try again.');
         }
+    }
+
+    /**
+     * Promote a user to admin.
+     */
+    public function promoteUserToAdmin(User $user): RedirectResponse
+    {
+        $this->authorize('manageRoles', $user);
+
+        if ($user->is_admin) {
+            return redirect()->back()->with('error', 'User is already an admin.');
+        }
+
+        $user->forceFill(['is_admin' => true])->save();
+
+        return redirect()->back()->with('success', "{$user->name} has been promoted to admin.");
+    }
+
+    /**
+     * Demote a user from admin (cannot demote self).
+     */
+    public function demoteUserFromAdmin(User $user): RedirectResponse
+    {
+        $this->authorize('manageRoles', $user);
+
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'You cannot demote yourself.');
+        }
+
+        if (! $user->is_admin) {
+            return redirect()->back()->with('error', 'User is not an admin.');
+        }
+
+        $user->forceFill(['is_admin' => false])->save();
+
+        return redirect()->back()->with('success', "{$user->name} has been demoted from admin.");
     }
 
     /**
@@ -166,6 +203,38 @@ class AdminController extends Controller
         $prediction->delete();
 
         return redirect()->back()->with('success', 'Prediction deleted successfully.');
+    }
+
+    /**
+     * Show feedback (moderation) page.
+     */
+    public function feedback(): View|RedirectResponse
+    {
+        $this->authorize('viewAny', Feedback::class);
+
+        try {
+            $feedback = Feedback::with('user')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            return view('admin.feedback', compact('feedback'));
+        } catch (\Throwable $e) {
+            Log::error('AdminController@feedback failed', ['exception' => $e]);
+
+            return redirect()->route('admin.dashboard')->with('error', 'Unable to load feedback. Please try again.');
+        }
+    }
+
+    /**
+     * Delete feedback (moderate content).
+     */
+    public function deleteFeedback(Feedback $feedback): RedirectResponse
+    {
+        $this->authorize('delete', $feedback);
+
+        $feedback->delete();
+
+        return redirect()->back()->with('success', 'Feedback deleted.');
     }
 
     /**

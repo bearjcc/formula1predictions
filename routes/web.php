@@ -27,7 +27,6 @@ Route::get('/scoring', function () {
     return view('scoring');
 })->name('scoring');
 
-
 // Dev and testing demo routes
 if (app()->environment(['local', 'testing'])) {
     Route::get('/components', function () {
@@ -117,10 +116,14 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->middleware(['admin', 'throttle:admin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::post('/users/{user}/promote-admin', [AdminController::class, 'promoteUserToAdmin'])->name('users.promote-admin');
+        Route::post('/users/{user}/demote-admin', [AdminController::class, 'demoteUserFromAdmin'])->name('users.demote-admin');
         Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
         Route::get('/races', [AdminController::class, 'races'])->name('races');
         Route::get('/scoring', [AdminController::class, 'scoring'])->name('scoring');
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        Route::get('/feedback', [AdminController::class, 'feedback'])->name('feedback');
+        Route::delete('/feedback/{feedback}', [AdminController::class, 'deleteFeedback'])->name('feedback.delete');
 
         // Prediction management actions
         Route::post('/predictions/{prediction}/score', [AdminController::class, 'scorePrediction'])->name('predictions.score');

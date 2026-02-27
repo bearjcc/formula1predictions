@@ -19,9 +19,11 @@
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Admin</th>
                             <th>Predictions</th>
                             <th>Total score</th>
                             <th>Registered</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -29,13 +31,35 @@
                             <tr>
                                 <td class="font-medium">{{ $u->name }}</td>
                                 <td>{{ $u->email }}</td>
+                                <td>
+                                    @if($u->is_admin)
+                                        <span class="badge badge-primary">Admin</span>
+                                    @else
+                                        <span class="text-zinc-500 dark:text-zinc-400">—</span>
+                                    @endif
+                                </td>
                                 <td>{{ $u->predictions_count ?? 0 }}</td>
                                 <td>{{ $u->predictions_sum_score ?? 0 }}</td>
                                 <td class="text-zinc-600 dark:text-zinc-400">{{ $u->created_at->format('M j, Y') }}</td>
+                                <td class="flex flex-wrap gap-2">
+                                    @if(!$u->is_admin)
+                                        <form action="{{ route('admin.users.promote-admin', $u) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary btn-sm">Promote to admin</button>
+                                        </form>
+                                    @elseif($u->id !== auth()->id())
+                                        <form action="{{ route('admin.users.demote-admin', $u) }}" method="POST" class="inline" onsubmit="return confirm('Demote this user from admin?');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline btn-sm">Demote</button>
+                                        </form>
+                                    @else
+                                        <span class="text-zinc-500 dark:text-zinc-400 text-sm">(you)</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center text-zinc-600 dark:text-zinc-400">No users yet.</td>
+                                <td colspan="7" class="text-center text-zinc-600 dark:text-zinc-400">No users yet.</td>
                             </tr>
                         @endforelse
                     </tbody>

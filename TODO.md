@@ -234,10 +234,10 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: README.md, AGENTS.md
   - Done: README “Railway deployment” and AGENTS “Railway” describe cron via railway/run-cron.sh loop or Railway cron; queue worker as separate service with php artisan queue:work.
 
-- [ ] **F1-078: Admin panel with appropriate actions**
+- [x] **F1-078: Admin panel with appropriate actions** _(done 2026-02-28)_
   - Type: feature | Priority: P2 | Risk: medium | Owner: mixed
   - Affected: routes, controllers, policies, admin views
-  - Central admin UI for managing users, content, and app operations (e.g. promote admin, lock predictions, moderate content). Build on existing admin routes/controllers; add actions as needed.
+  - Done: Promote/demote admin from admin users page (POST promote-admin, demote-admin; cannot demote self). Feedback moderation: GET admin/feedback, DELETE feedback with FeedbackPolicy. Dashboard link to View Feedback. AdminControllerTest extended with promote/demote and feedback tests.
 
 - [ ] **F1-079: RSS-compatible News page for admins to post updates**
   - Type: feature | Priority: P2 | Risk: medium | Owner: mixed

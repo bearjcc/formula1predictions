@@ -2,29 +2,31 @@
 
 namespace App\Providers;
 
+use App\Listeners\SendNewUserRegisteredNotification;
 use App\Models\Circuits;
 use App\Models\Countries;
 use App\Models\Drivers;
+use App\Models\Feedback;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\Event;
-use App\Listeners\SendNewUserRegisteredNotification;
 use App\Policies\CircuitsPolicy;
 use App\Policies\CountriesPolicy;
 use App\Policies\DriversPolicy;
+use App\Policies\FeedbackPolicy;
 use App\Policies\PredictionPolicy;
 use App\Policies\RacesPolicy;
 use App\Policies\StandingsPolicy;
 use App\Policies\TeamsPolicy;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -125,6 +127,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register policies
         Gate::policy(User::class, \App\Policies\UserPolicy::class);
+        Gate::policy(Feedback::class, FeedbackPolicy::class);
         Gate::policy(Prediction::class, PredictionPolicy::class);
         Gate::policy(Races::class, RacesPolicy::class);
         Gate::policy(Drivers::class, DriversPolicy::class);
