@@ -6,11 +6,9 @@ Set-Location $root
 
 $batch1 = @(
     "tests/Unit",
-    "tests/Feature/AccessibilityTest.php",
     "tests/Feature/AdminControllerTest.php",
     "tests/Feature/Auth",
     "tests/Feature/AutoLockPredictionsTest.php",
-    "tests/Feature/BasicPhase1Test.php",
     "tests/Feature/BotPredictionsSeederTest.php",
     "tests/Feature/BotsSeedCommandTest.php",
     "tests/Feature/ChampionshipOrderBotSeederTest.php",
@@ -31,6 +29,7 @@ $batch2 = @(
     "tests/Feature/LivewirePredictionFormTest.php",
     "tests/Feature/MobileOptimizationTest.php",
     "tests/Feature/ModelRelationshipsTest.php",
+    "tests/Feature/NewsPageTest.php",
     "tests/Feature/NotificationTest.php",
     "tests/Feature/PredictionStandingsTest.php",
     "tests/Feature/PredictionControllerTest.php",

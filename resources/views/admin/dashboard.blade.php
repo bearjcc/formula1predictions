@@ -79,6 +79,9 @@
                     <a href="{{ route('admin.feedback') }}" class="btn btn-outline w-full">
                         View Feedback
                     </a>
+                    <a href="{{ route('admin.news.index') }}" class="btn btn-outline w-full">
+                        News
+                    </a>
                     <a href="{{ route('admin.settings') }}" class="btn btn-outline w-full">
                         System Settings
                     </a>

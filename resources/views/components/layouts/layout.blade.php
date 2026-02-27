@@ -58,6 +58,10 @@
                             <x-mary-icon name="o-calculator" class="w-4 h-4" />
                             <span>{{ __('How scoring works') }}</span>
                         </a>
+                        <a href="{{ route('news.index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 {{ request()->routeIs('news.*') ? 'bg-zinc-100 dark:bg-zinc-800 border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 font-medium' : 'border-transparent' }}" wire:navigate>
+                            <x-mary-icon name="o-newspaper" class="w-4 h-4" />
+                            <span>{{ __('News') }}</span>
+                        </a>
                     </div>
                 </div>
 

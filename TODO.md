@@ -239,10 +239,9 @@ Longer-horizon ideas and exploratory improvements.
   - Affected: routes, controllers, policies, admin views
   - Done: Promote/demote admin from admin users page (POST promote-admin, demote-admin; cannot demote self). Feedback moderation: GET admin/feedback, DELETE feedback with FeedbackPolicy. Dashboard link to View Feedback. AdminControllerTest extended with promote/demote and feedback tests.
 
-- [ ] **F1-079: RSS-compatible News page for admins to post updates**
+- [x] **F1-079: RSS-compatible News page for admins to post updates** _(done 2026-02-28)_
   - Type: feature | Priority: P2 | Risk: medium | Owner: mixed
-  - Affected: database (news/announcements table or similar), admin UI, public News page, RSS feed route
-  - News/announcements model and CRUD for admins; public News page and RSS feed so users can subscribe to updates.
+  - Done: `news` table (title, slug, body, excerpt, published_at, user_id); News model and NewsPolicy; admin CRUD at /admin/news (index, create, store, edit, update, destroy); public GET /news (paginated), GET /news/{id} (show), GET /news/feed (RSS 2.0); sidebar and dashboard links. Tests: AdminControllerTest (admin news pages and CRUD, guest/user forbidden), NewsPageTest (public index/show/feed, draft/future 404).
 
 - [x] **F1-080: Feedback page for users to message site owner** _(done 2026-02-19)_
   - Type: feature | Priority: P2 | Risk: low | Owner: agent

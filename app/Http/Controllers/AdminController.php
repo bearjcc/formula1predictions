@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\ScoreRacePredictionsJob;
 use App\Models\Drivers;
 use App\Models\Feedback;
+use App\Models\News;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\Teams;
@@ -236,6 +237,118 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Feedback deleted.');
     }
+
+    // region News (admin CRUD)
+
+    /**
+     * List news posts (admin).
+     */
+    public function newsIndex(): View|RedirectResponse
+    {
+        $this->authorize('viewAny', News::class);
+
+        try {
+            $news = News::with('user')
+                ->orderByDesc('published_at')
+                ->orderByDesc('created_at')
+                ->paginate(20);
+
+            return view('admin.news.index', compact('news'));
+        } catch (\Throwable $e) {
+            Log::error('AdminController@newsIndex failed', ['exception' => $e]);
+
+            return redirect()->route('admin.dashboard')->with('error', 'Unable to load news. Please try again.');
+        }
+    }
+
+    /**
+     * Show create news form.
+     */
+    public function newsCreate(): View|RedirectResponse
+    {
+        $this->authorize('create', News::class);
+
+        return view('admin.news.create');
+    }
+
+    /**
+     * Store a new news post.
+     */
+    public function newsStore(Request $request): RedirectResponse
+    {
+        $this->authorize('create', News::class);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string',
+            'excerpt' => 'nullable|string|max:500',
+            'published_at' => 'nullable|date',
+        ]);
+
+        $slug = \Illuminate\Support\Str::slug($validated['title']);
+        if (News::where('slug', $slug)->exists()) {
+            $slug = $slug.'-'.now()->format('YmdHis');
+        }
+
+        $news = News::create([
+            'title' => $validated['title'],
+            'slug' => $slug,
+            'body' => $validated['body'],
+            'excerpt' => $validated['excerpt'] ?? null,
+            'published_at' => $validated['published_at'] ?? null,
+            'user_id' => auth()->id(),
+        ]);
+
+        return redirect()->route('admin.news.index')->with('success', 'News post created.');
+    }
+
+    /**
+     * Show edit news form.
+     */
+    public function newsEdit(News $news): View|RedirectResponse
+    {
+        $this->authorize('update', $news);
+
+        return view('admin.news.edit', compact('news'));
+    }
+
+    /**
+     * Update a news post.
+     */
+    public function newsUpdate(Request $request, News $news): RedirectResponse
+    {
+        $this->authorize('update', $news);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string',
+            'excerpt' => 'nullable|string|max:500',
+            'published_at' => 'nullable|date',
+        ]);
+
+        $news->update([
+            'title' => $validated['title'],
+            'body' => $validated['body'],
+            'excerpt' => $validated['excerpt'] ?? null,
+            'published_at' => $validated['published_at'] ?? null,
+        ]);
+
+        return redirect()->route('admin.news.index')->with('success', 'News post updated.');
+    }
+
+    /**
+     * Delete a news post.
+     */
+    public function newsDestroy(News $news): RedirectResponse
+    {
+        $this->authorize('delete', $news);
+
+        $news->delete();
+
+        return redirect()->back()->with('success', 'News post deleted.');
+    }
+
+    // endregion
 
     /**
      * Show system settings page.

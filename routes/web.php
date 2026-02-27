@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\RacesController;
 use App\Models\Circuits;
@@ -26,6 +27,11 @@ Route::get('/how-it-works', function () {
 Route::get('/scoring', function () {
     return view('scoring');
 })->name('scoring');
+
+// Public news and RSS (feed route before /news/{news} to avoid "feed" as id)
+Route::get('/news/feed', [NewsController::class, 'feed'])->name('news.feed');
+Route::get('/news', [NewsController::class, 'index'])->name('news.index');
+Route::get('/news/{news}', [NewsController::class, 'show'])->name('news.show')->whereNumber('news');
 
 // Dev and testing demo routes
 if (app()->environment(['local', 'testing'])) {
@@ -124,6 +130,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
         Route::get('/feedback', [AdminController::class, 'feedback'])->name('feedback');
         Route::delete('/feedback/{feedback}', [AdminController::class, 'deleteFeedback'])->name('feedback.delete');
+
+        // News (admin CRUD)
+        Route::get('/news', [AdminController::class, 'newsIndex'])->name('news.index');
+        Route::get('/news/create', [AdminController::class, 'newsCreate'])->name('news.create');
+        Route::post('/news', [AdminController::class, 'newsStore'])->name('news.store');
+        Route::get('/news/{news}/edit', [AdminController::class, 'newsEdit'])->name('news.edit');
+        Route::put('/news/{news}', [AdminController::class, 'newsUpdate'])->name('news.update');
+        Route::delete('/news/{news}', [AdminController::class, 'newsDestroy'])->name('news.destroy');
 
         // Prediction management actions
         Route::post('/predictions/{prediction}/score', [AdminController::class, 'scorePrediction'])->name('predictions.score');

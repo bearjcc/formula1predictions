@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Feedback;
+use App\Models\News;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
@@ -40,6 +41,104 @@ test('admin can load all admin view pages', function () {
     actingAs($this->admin)
         ->get(route('admin.feedback'))
         ->assertOk();
+    actingAs($this->admin)
+        ->get(route('admin.news.index'))
+        ->assertOk();
+});
+
+test('guest cannot access admin news routes', function () {
+    $this->get(route('admin.news.index'))
+        ->assertRedirect();
+    $this->get(route('admin.news.create'))
+        ->assertRedirect();
+});
+
+test('regular user cannot access admin news routes', function () {
+    actingAs($this->user)
+        ->get(route('admin.news.index'))
+        ->assertForbidden();
+    actingAs($this->user)
+        ->get(route('admin.news.create'))
+        ->assertForbidden();
+});
+
+test('admin can create news post', function () {
+    actingAs($this->admin)
+        ->from(route('admin.news.create'))
+        ->post(route('admin.news.store'), [
+            'title' => 'Test post',
+            'body' => 'Body content here.',
+            'excerpt' => 'Short excerpt',
+            'published_at' => now()->format('Y-m-d\TH:i'),
+        ])
+        ->assertRedirect(route('admin.news.index'))
+        ->assertSessionHas('success');
+
+    $post = News::first();
+    expect($post)->not->toBeNull()
+        ->and($post->title)->toBe('Test post')
+        ->and($post->body)->toBe('Body content here.')
+        ->and($post->excerpt)->toBe('Short excerpt')
+        ->and($post->published_at)->not->toBeNull()
+        ->and($post->user_id)->toBe($this->admin->id);
+});
+
+test('admin can edit and update news post', function () {
+    $post = News::create([
+        'title' => 'Original',
+        'slug' => 'original',
+        'body' => 'Body',
+        'user_id' => $this->admin->id,
+        'published_at' => now(),
+    ]);
+
+    actingAs($this->admin)
+        ->get(route('admin.news.edit', $post))
+        ->assertOk();
+
+    actingAs($this->admin)
+        ->from(route('admin.news.edit', $post))
+        ->put(route('admin.news.update', $post), [
+            'title' => 'Updated title',
+            'body' => 'Updated body',
+            'excerpt' => 'Updated excerpt',
+            'published_at' => $post->published_at->format('Y-m-d\TH:i'),
+        ])
+        ->assertRedirect(route('admin.news.index'))
+        ->assertSessionHas('success');
+
+    $post->refresh();
+    expect($post->title)->toBe('Updated title')
+        ->and($post->body)->toBe('Updated body')
+        ->and($post->excerpt)->toBe('Updated excerpt');
+});
+
+test('admin can delete news post', function () {
+    $post = News::create([
+        'title' => 'To delete',
+        'slug' => 'to-delete',
+        'body' => 'Body',
+        'user_id' => $this->admin->id,
+        'published_at' => now(),
+    ]);
+    $id = $post->id;
+
+    actingAs($this->admin)
+        ->from(route('admin.news.index'))
+        ->delete(route('admin.news.destroy', $post))
+        ->assertRedirect(route('admin.news.index'))
+        ->assertSessionHas('success');
+
+    expect(News::find($id))->toBeNull();
+});
+
+test('regular user cannot create news', function () {
+    actingAs($this->user)
+        ->post(route('admin.news.store'), [
+            'title' => 'Test',
+            'body' => 'Body',
+        ])
+        ->assertForbidden();
 });
 
 test('regular user cannot score prediction', function () {
