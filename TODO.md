@@ -86,6 +86,10 @@ Short-horizon, high-value tasks for **complete, playable, shippable** state. **2
 
 Medium-horizon improvements that should be tackled soon.
 
+- [x] **F1-110: Add RSS feed discovery on news index page** _(done 2026-02-28)_
+  - Type: feature | Priority: P3 | Risk: low | Owner: agent
+  - Public news index includes in `<head>` `<link rel="alternate" type="application/rss+xml" href=".../news/feed">` via @push('head') and @stack('head') in partials.head. NewsPageTest asserts the link is present.
+
 - [x] **F1-050: Configure production mail, session security, and logging** _(done 2026-02-10)_
   - Type: security | Priority: P1 | Risk: high | Owner: agent
   - Affected: .env.example, config/session.php, config/logging.php, tests/Feature/ProductionConfigTest.php

@@ -13,6 +13,17 @@ test('public news index returns 200 and empty state when no news', function () {
         ->assertSee('No news posts yet');
 });
 
+test('public news index includes RSS feed discovery link in head', function () {
+    $response = $this->get(route('news.index'))
+        ->assertOk();
+
+    $html = $response->getContent();
+    expect($html)
+        ->toContain('rel="alternate"')
+        ->toContain('type="application/rss+xml"')
+        ->toContain('href="'.url('/news/feed').'"');
+});
+
 test('public news index shows published posts', function () {
     News::create([
         'title' => 'First post',

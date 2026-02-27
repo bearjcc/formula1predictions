@@ -1,3 +1,6 @@
+@push('head')
+    <link rel="alternate" type="application/rss+xml" href="{{ url('/news/feed') }}" title="{{ config('app.name') }} News">
+@endpush
 <x-layouts.layout title="News" headerSubtitle="Updates and announcements">
     <div class="max-w-4xl mx-auto py-8 px-4">
         <div class="mb-6 flex items-center justify-between">
