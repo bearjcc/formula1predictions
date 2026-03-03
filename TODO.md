@@ -106,10 +106,10 @@ Medium-horizon improvements that should be tackled soon.
 
 Longer-horizon ideas and exploratory improvements.
 
-- [ ] **F1-031: Monetization strategy (premium features)** _(deferred to later release)_
+- [ ] **F1-031: Monetization strategy (premium features)** _(deferred; not a priority at current user scale)_
   - Type: feature | Priority: P3 | Risk: high | Owner: human
   - Non-gambling, non-ad monetization to recover costs. Ideas: premium stats/analytics, badges, special abilities. Free tier must allow full gameplay. No 3rd party ads. Minimal self-promotion (lock icon + "become a member" button). Needs cost-per-user and revenue-per-user analysis.
-  - Note: Monetization and payments for cost recovery are in scope; only gambling/real-money betting is forbidden. Implementing payment/billing code requires explicit human approval. Stripe/Season Supporter routes and settings UI are commented out until this is picked up.
+  - Note: Not pursuing Stripe/Season Supporter at current user count. Stripe/Season Supporter routes and settings UI remain commented out. Implementing payment/billing code requires explicit human approval.
 
 - [ ] **F1-019: Phase 2 legacy import (CSV/JSON external sources)**
   - Type: feature | Priority: P3 | Risk: high | Owner: mixed
@@ -212,11 +212,6 @@ Longer-horizon ideas and exploratory improvements.
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: mixed
   - Affected: .github/workflows/ci.yml
   - Done: CI workflow and test-batches.sh added. GitHub Actions on push/PR to main and master; PHP 8.4, two-batch tests via scripts/test-batches.sh, npm run build, optional Pint (continue-on-error). Documented in README and AGENTS.md.
-
-- [ ] **F1-073: Create Dockerfile and docker-compose for production** _(cancelled – Railway uses Railpack, not Docker)_
-  - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent
-  - Affected: (n/a – deployment handled by Railway Railpack)
-  - Note: App is only hosted on Railway using Railpack, so a Dockerfile + docker-compose are not needed and would be dead weight in this repo.
 
 - [x] **F1-074: Create deployment script** _(done 2026-02-10)_
   - Type: infrastructure | Priority: P2 | Risk: medium | Owner: agent

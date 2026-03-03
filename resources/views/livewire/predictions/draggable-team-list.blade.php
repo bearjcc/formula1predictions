@@ -24,13 +24,16 @@
                 return k ? this.constructorColors[k] : null;
             },
 
-            dragStart(index) {
+            dragStart(e, index) {
                 this.draggedIndex = index;
                 this.$el.classList.add('opacity-50');
+                e.dataTransfer.setData('text/plain', String(index));
+                e.dataTransfer.effectAllowed = 'move';
             },
 
             dragOver(e, index) {
                 e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
                 this.draggedOverIndex = index;
             },
 
@@ -47,6 +50,7 @@
                     const newOrder = [...current];
                     const [draggedItem] = newOrder.splice(this.draggedIndex, 1);
                     newOrder.splice(dropIndex, 0, draggedItem);
+                    this.teamOrder = newOrder;
                     $wire.updateTeamOrder(newOrder);
                 }
                 this.draggedIndex = null;
@@ -182,7 +186,7 @@
                         class="p-4 min-h-[44px] cursor-move hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none flex items-center"
                         :data-drop-team="index"
                         draggable="true"
-                        @dragstart="dragStart(index)"
+                        @dragstart="dragStart($event, index)"
                         @dragover="dragOver($event, index)"
                         @dragleave="draggedOverIndex = null"
                         @drop="drop($event, index)"

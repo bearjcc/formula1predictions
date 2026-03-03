@@ -134,6 +134,13 @@ class PredictionForm extends Component
     {
         // Only show drivers for this season (same logic as drivers standings page)
         $seasonDrivers = Drivers::forSeason($this->season, app(F1ApiService::class));
+        // Preseason fallback: if no standings/API data for this season, use drivers assigned to teams (e.g. lineup seeder)
+        if ($this->type === 'preseason' && $seasonDrivers->isEmpty()) {
+            $seasonDrivers = Drivers::whereNotNull('team_id')
+                ->whereHas('team', fn ($q) => $q->where('is_active', true))
+                ->with('team')
+                ->get();
+        }
         $driverArrays = $seasonDrivers->map(function ($driver) {
             return [
                 'id' => $driver->driver_id ?? (string) $driver->id,
@@ -173,40 +180,25 @@ class PredictionForm extends Component
             })
             ->toArray();
 
-        // Preseason: build teammate pairings from season drivers (so lineup seeder or API links are used)
+        // Preseason: build teammate pairings from team->drivers so lineup/DB assignments always show
         if ($this->type === 'preseason') {
-            $byTeam = collect($this->drivers)->groupBy('team.id');
-            $list = [];
-            foreach ($byTeam as $teamId => $driverArray) {
-                if (!$teamId) continue;
-                $team = collect($this->teams)->firstWhere('id', $teamId);
-                if (!$team) continue;
-                
-                $list[] = [
-                    'id' => (int) $teamId,
-                    'team_name' => $team['team_name'],
-                    'display_name' => $team['display_name'],
-                    'drivers' => $driverArray->map(fn($d) => [
-                        'id' => $d['id'],
-                        'name' => $d['name'],
-                        'surname' => $d['surname'],
-                    ])->values()->toArray(),
-                ];
-            }
-            usort($list, fn ($a, $b) => strcasecmp($a['team_name'], $b['team_name']));
-            
-            // Add teams that might not have drivers yet
-            foreach ($this->teams as $team) {
-                if (!collect($list)->contains('id', $team['id'])) {
-                    $list[] = [
-                        'id' => $team['id'],
-                        'team_name' => $team['team_name'],
-                        'display_name' => $team['display_name'],
-                        'drivers' => []
+            $list = Teams::where('is_active', true)
+                ->with('drivers')
+                ->orderBy('team_name')
+                ->get()
+                ->map(function ($team) {
+                    return [
+                        'id' => $team->id,
+                        'team_name' => $team->team_name,
+                        'display_name' => $team->display_name,
+                        'drivers' => $team->drivers->map(fn ($d) => [
+                            'id' => $d->id,
+                            'name' => $d->name,
+                            'surname' => $d->surname,
+                        ])->values()->toArray(),
                     ];
-                }
-            }
-            
+                })
+                ->toArray();
             $this->teamsWithDrivers = $list;
         } else {
             $this->teamsWithDrivers = Teams::where('is_active', true)
