@@ -202,7 +202,13 @@
             x-data="{ saved: false }"
             x-on:prediction-saved.window="saved = true"
         >
-            <x-mary-button label="Cancel" link="{{ route('predictions.index') }}" variant="ghost" wire:loading.attr="disabled" wire:target="save" />
+            <x-mary-button
+                label="Cancel"
+                link="{{ route('predictions.index') }}"
+                variant="ghost"
+                wire:loading.attr="disabled"
+                wire:target="save"
+            />
             @if(!$isLocked)
                 <div class="flex items-center space-x-2">
                     <x-mary-button
@@ -210,7 +216,8 @@
                         label="{{ $editingPrediction ? 'Update Prediction' : 'Submit Prediction' }}"
                         variant="primary"
                         icon="o-paper-airplane"
-                        spinner="save"
+                        wire:loading.attr="disabled"
+                        wire:target="save"
                     />
                     <span
                         x-show="saved"

@@ -180,26 +180,56 @@ class PredictionForm extends Component
             })
             ->toArray();
 
-        // Preseason: build teammate pairings from team->drivers so lineup/DB assignments always show
+        // Preseason: build teammate pairings from season drivers (same source as race predictions)
+        // so that if the 2026 grid is available for races, it also appears here.
         if ($this->type === 'preseason') {
-            $list = Teams::where('is_active', true)
-                ->with('drivers')
-                ->orderBy('team_name')
-                ->get()
-                ->map(function ($team) {
-                    return [
-                        'id' => $team->id,
-                        'team_name' => $team->team_name,
-                        'display_name' => $team->display_name,
-                        'drivers' => $team->drivers->map(fn ($d) => [
-                            'id' => $d->id,
-                            'name' => $d->name,
-                            'surname' => $d->surname,
-                        ])->values()->toArray(),
-                    ];
-                })
-                ->toArray();
-            $this->teamsWithDrivers = $list;
+            if ($seasonDrivers->isNotEmpty()) {
+                $byTeam = $seasonDrivers
+                    ->filter(fn ($driver) => $driver->team_id !== null)
+                    ->groupBy('team_id')
+                    ->map(function ($driversForTeam) {
+                        /** @var \App\Models\Drivers $first */
+                        $first = $driversForTeam->first();
+                        $team = $first->team ?? Teams::find($first->team_id);
+
+                        return [
+                            'id' => $team?->id,
+                            'team_name' => $team?->team_name ?? '',
+                            'display_name' => $team?->display_name ?? Teams::displayNameFor($team?->team_name ?? ''),
+                            'drivers' => $driversForTeam->map(fn ($d) => [
+                                'id' => $d->id,
+                                'name' => $d->name,
+                                'surname' => $d->surname,
+                            ])->values()->toArray(),
+                        ];
+                    })
+                    ->filter(fn (array $team) => $team['id'] !== null && count($team['drivers']) >= 1)
+                    ->values();
+
+                $this->teamsWithDrivers = $byTeam
+                    ->sortBy(fn (array $team) => $team['display_name'] ?? $team['team_name'])
+                    ->values()
+                    ->toArray();
+            } else {
+                // Fallback: use DB team->drivers assignments (e.g. lineup seeders)
+                $this->teamsWithDrivers = Teams::where('is_active', true)
+                    ->with('drivers')
+                    ->orderBy('team_name')
+                    ->get()
+                    ->map(function ($team) {
+                        return [
+                            'id' => $team->id,
+                            'team_name' => $team->team_name,
+                            'display_name' => $team->display_name,
+                            'drivers' => $team->drivers->map(fn ($d) => [
+                                'id' => $d->id,
+                                'name' => $d->name,
+                                'surname' => $d->surname,
+                            ])->values()->toArray(),
+                        ];
+                    })
+                    ->toArray();
+            }
         } else {
             $this->teamsWithDrivers = Teams::where('is_active', true)
                 ->with('drivers')

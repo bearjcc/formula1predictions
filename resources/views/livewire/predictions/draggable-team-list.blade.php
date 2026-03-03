@@ -46,11 +46,15 @@
             drop(e, dropIndex) {
                 e.preventDefault();
                 if (this.draggedIndex !== null && this.draggedIndex !== dropIndex) {
-                    const current = Array.isArray(this.teamOrder) ? this.teamOrder : [];
-                    const newOrder = [...current];
+                    const current = this.teamOrder ?? [];
+                    const newOrder = Array.from(current);
+                    if (this.draggedIndex < 0 || this.draggedIndex >= newOrder.length) {
+                        this.draggedIndex = null;
+                        this.draggedOverIndex = null;
+                        return;
+                    }
                     const [draggedItem] = newOrder.splice(this.draggedIndex, 1);
                     newOrder.splice(dropIndex, 0, draggedItem);
-                    this.teamOrder = newOrder;
                     $wire.updateTeamOrder(newOrder);
                 }
                 this.draggedIndex = null;
@@ -112,8 +116,16 @@
                     if (teamRow) {
                         const dropIndex = parseInt(teamRow.getAttribute('data-drop-team'), 10);
                         if (!isNaN(dropIndex) && dropIndex !== this.pointerTeamIndex) {
-                            const current = Array.isArray(this.teamOrder) ? this.teamOrder : [];
-                            const newOrder = [...current];
+                            const current = this.teamOrder ?? [];
+                            const newOrder = Array.from(current);
+                            if (this.pointerTeamIndex < 0 || this.pointerTeamIndex >= newOrder.length) {
+                                this.removeGhost();
+                                this.pointerDragActive = false;
+                                this.pointerTeamIndex = null;
+                                this.draggedIndex = null;
+                                this.draggedOverIndex = null;
+                                return;
+                            }
                             const [draggedItem] = newOrder.splice(this.pointerTeamIndex, 1);
                             newOrder.splice(dropIndex, 0, draggedItem);
                             $wire.updateTeamOrder(newOrder);
@@ -129,8 +141,8 @@
 
             showGhost(x, y) {
                 this.removeGhost();
-                const current = Array.isArray(this.teamOrder) ? this.teamOrder : [];
-                const teamId = current[this.pointerTeamIndex];
+                const current = this.teamOrder ?? [];
+                const teamId = Array.from(current)[this.pointerTeamIndex];
                 const team = this.getTeamById(teamId);
                 const name = team ? (team.display_name || team.team_name || '') : '';
                 const el = document.createElement('div');
