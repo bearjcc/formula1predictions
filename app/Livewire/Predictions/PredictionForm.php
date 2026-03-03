@@ -180,11 +180,13 @@ class PredictionForm extends Component
             })
             ->toArray();
 
-        // Preseason: build teammate pairings from season drivers (same source as race predictions)
-        // so that if the 2026 grid is available for races, it also appears here.
+        // Preseason: teammate battles should use the same season grid as race predictions.
+        // Prefer season-specific driver->team data; fall back to DB team->drivers assignments.
         if ($this->type === 'preseason') {
+            $teamsWithDrivers = collect();
+
             if ($seasonDrivers->isNotEmpty()) {
-                $byTeam = $seasonDrivers
+                $teamsWithDrivers = $seasonDrivers
                     ->filter(fn ($driver) => $driver->team_id !== null)
                     ->groupBy('team_id')
                     ->map(function ($driversForTeam) {
@@ -205,14 +207,12 @@ class PredictionForm extends Component
                     })
                     ->filter(fn (array $team) => $team['id'] !== null && count($team['drivers']) >= 1)
                     ->values();
+            }
 
-                $this->teamsWithDrivers = $byTeam
-                    ->sortBy(fn (array $team) => $team['display_name'] ?? $team['team_name'])
-                    ->values()
-                    ->toArray();
-            } else {
-                // Fallback: use DB team->drivers assignments (e.g. lineup seeders)
-                $this->teamsWithDrivers = Teams::where('is_active', true)
+            // If we still have no teams, or no team has at least two drivers, fall back to DB assignments.
+            $hasTwoDriverTeams = $teamsWithDrivers->contains(fn (array $team) => count($team['drivers']) >= 2);
+            if ($teamsWithDrivers->isEmpty() || ! $hasTwoDriverTeams) {
+                $teamsWithDrivers = Teams::where('is_active', true)
                     ->with('drivers')
                     ->orderBy('team_name')
                     ->get()
@@ -227,9 +227,13 @@ class PredictionForm extends Component
                                 'surname' => $d->surname,
                             ])->values()->toArray(),
                         ];
-                    })
-                    ->toArray();
+                    });
             }
+
+            $this->teamsWithDrivers = $teamsWithDrivers
+                ->sortBy(fn (array $team) => $team['display_name'] ?? $team['team_name'])
+                ->values()
+                ->toArray();
         } else {
             $this->teamsWithDrivers = Teams::where('is_active', true)
                 ->with('drivers')

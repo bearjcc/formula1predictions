@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Livewire\Predictions\PredictionForm;
 use App\Models\Drivers;
 use App\Models\Prediction;
+use App\Models\Races;
 use App\Models\Teams;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -188,6 +189,41 @@ class LivewirePredictionFormTest extends TestCase
             ->set('raceRound', 1)
             ->call('save')
             ->assertHasErrors('raceRound');
+    }
+
+    public function test_preseason_prediction_can_be_created_via_livewire(): void
+    {
+        $user = User::factory()->create();
+
+        // Ensure there is a first race with a future qualifying start so preseason is unlocked
+        Races::factory()->create([
+            'season' => 2026,
+            'round' => 1,
+            'status' => 'upcoming',
+            'qualifying_start' => now()->addDay(),
+        ]);
+
+        // Create active teams and drivers (two per team) to power constructor order and teammate battles
+        $teams = Teams::factory()->count(3)->create(['is_active' => true]);
+        foreach ($teams as $team) {
+            Drivers::factory()->count(2)->create(['team_id' => $team->id]);
+        }
+
+        $season = 2026;
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class, ['preseason' => true, 'preseasonYear' => $season])
+            ->assertSet('type', 'preseason')
+            ->set('teamOrder', $teams->pluck('id')->toArray())
+            ->call('save')
+            ->assertRedirect(route('predictions.index'));
+
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'type' => 'preseason',
+            'season' => $season,
+            'race_round' => null,
+        ]);
     }
 
     public function test_cannot_edit_locked_prediction_via_livewire(): void

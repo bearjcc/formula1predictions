@@ -2,7 +2,7 @@
     <div
         x-data="{
             teams: @js($teams),
-            teamOrder: $wire.$entangle('teamOrder'),
+            teamOrder: @js($teamOrder),
             constructorColors: @js(config('constructor_colors')),
             draggedIndex: null,
             draggedOverIndex: null,
@@ -46,7 +46,7 @@
             drop(e, dropIndex) {
                 e.preventDefault();
                 if (this.draggedIndex !== null && this.draggedIndex !== dropIndex) {
-                    const current = this.teamOrder ?? [];
+                    const current = Array.isArray(this.teamOrder) ? this.teamOrder : Array.from(this.teamOrder ?? []);
                     const newOrder = Array.from(current);
                     if (this.draggedIndex < 0 || this.draggedIndex >= newOrder.length) {
                         this.draggedIndex = null;
@@ -55,6 +55,7 @@
                     }
                     const [draggedItem] = newOrder.splice(this.draggedIndex, 1);
                     newOrder.splice(dropIndex, 0, draggedItem);
+                    this.teamOrder = newOrder;
                     $wire.updateTeamOrder(newOrder);
                 }
                 this.draggedIndex = null;
@@ -116,7 +117,7 @@
                     if (teamRow) {
                         const dropIndex = parseInt(teamRow.getAttribute('data-drop-team'), 10);
                         if (!isNaN(dropIndex) && dropIndex !== this.pointerTeamIndex) {
-                            const current = this.teamOrder ?? [];
+                            const current = Array.isArray(this.teamOrder) ? this.teamOrder : Array.from(this.teamOrder ?? []);
                             const newOrder = Array.from(current);
                             if (this.pointerTeamIndex < 0 || this.pointerTeamIndex >= newOrder.length) {
                                 this.removeGhost();
@@ -128,6 +129,7 @@
                             }
                             const [draggedItem] = newOrder.splice(this.pointerTeamIndex, 1);
                             newOrder.splice(dropIndex, 0, draggedItem);
+                            this.teamOrder = newOrder;
                             $wire.updateTeamOrder(newOrder);
                         }
                     }

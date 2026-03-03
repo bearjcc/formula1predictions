@@ -19,12 +19,10 @@ class DraggableTeamList extends Component
         $this->teams = $teams;
         $this->title = $title;
 
-        // Initialize team order if not provided
-        if (empty($this->teamOrder)) {
-            $this->teamOrder = collect($this->teams)->pluck('id')->toArray();
-        } else {
-            $this->teamOrder = $teamOrder;
-        }
+        // Initialize team order from parent when provided; otherwise default to current teams order
+        $this->teamOrder = ! empty($teamOrder)
+            ? $teamOrder
+            : collect($this->teams)->pluck('id')->toArray();
     }
 
     public function updateTeamOrder(array $newOrder): void
