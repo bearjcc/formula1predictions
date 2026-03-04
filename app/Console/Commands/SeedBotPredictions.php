@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Database\Seeders\BotPredictionsSeeder;
 use Database\Seeders\ChampionshipOrderBotSeeder;
+use Database\Seeders\ClairvoyantBotSeeder;
 use Database\Seeders\LastYearChampionshipOrderBotSeeder;
 use Database\Seeders\PreviousCircuitBotSeeder;
 use Database\Seeders\PreviousYearChampionshipBotSeeder;
@@ -14,7 +15,7 @@ use Illuminate\Console\Command;
 class SeedBotPredictions extends Command
 {
     protected $signature = 'bots:seed
-                            {--only= : Comma-separated: last, season, random, championship-order, previous-year, last-year-order, circuit, smart}
+                            {--only= : Comma-separated: last, season, random, championship-order, previous-year, last-year-order, circuit, smart, clairvoyant}
                             {--season= : Comma-separated years for last-year-order only (e.g. 2025,2026)}';
 
     protected $description = 'Run all algorithm-based bot seeders to populate predictions.';
@@ -29,6 +30,7 @@ class SeedBotPredictions extends Command
         'last-year-order' => LastYearChampionshipOrderBotSeeder::class,
         'circuit' => PreviousCircuitBotSeeder::class,
         'smart' => SmartWeightedBotSeeder::class,
+        'clairvoyant' => ClairvoyantBotSeeder::class,
     ];
 
     public function handle(): int

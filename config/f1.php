@@ -85,6 +85,7 @@ return [
         'circuitbot@example.com',
         'smartbot@example.com',
         'lastyearorderbot@example.com',
+        'clairvoyantbot@example.com',
     ],
 
 ];
