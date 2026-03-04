@@ -24,21 +24,27 @@
                 return k ? this.constructorColors[k] : null;
             },
 
-            dragStart(e, index) {
+            moveTeam(fromIndex, toIndex) {
+                if (fromIndex === null || fromIndex === undefined) return;
+                if (toIndex < 0 || toIndex >= this.teamOrder.length) return;
+                if (fromIndex === toIndex) return;
+                const newOrder = [...this.teamOrder];
+                const [item] = newOrder.splice(fromIndex, 1);
+                newOrder.splice(toIndex, 0, item);
+                this.teamOrder = newOrder;
+                $wire.updateTeamOrder(newOrder);
+            },
+
+            dragStart(index) {
                 this.draggedIndex = index;
-                this.$el.classList.add('opacity-50');
-                e.dataTransfer.setData('text/plain', String(index));
-                e.dataTransfer.effectAllowed = 'move';
             },
 
             dragOver(e, index) {
                 e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
                 this.draggedOverIndex = index;
             },
 
             dragEnd() {
-                this.$el.classList.remove('opacity-50');
                 this.draggedIndex = null;
                 this.draggedOverIndex = null;
             },
@@ -46,13 +52,7 @@
             drop(e, dropIndex) {
                 e.preventDefault();
                 if (this.draggedIndex !== null && this.draggedIndex !== dropIndex) {
-                    const current = Array.isArray(this.teamOrder) ? this.teamOrder : Array.from(this.teamOrder ?? []);
-                    const newOrder = Array.from(current);
-                    if (this.draggedIndex < 0 || this.draggedIndex >= newOrder.length) {
-                        this.draggedIndex = null;
-                        this.draggedOverIndex = null;
-                        return;
-                    }
+                    const newOrder = [...this.teamOrder];
                     const [draggedItem] = newOrder.splice(this.draggedIndex, 1);
                     newOrder.splice(dropIndex, 0, draggedItem);
                     this.teamOrder = newOrder;
@@ -117,16 +117,7 @@
                     if (teamRow) {
                         const dropIndex = parseInt(teamRow.getAttribute('data-drop-team'), 10);
                         if (!isNaN(dropIndex) && dropIndex !== this.pointerTeamIndex) {
-                            const current = Array.isArray(this.teamOrder) ? this.teamOrder : Array.from(this.teamOrder ?? []);
-                            const newOrder = Array.from(current);
-                            if (this.pointerTeamIndex < 0 || this.pointerTeamIndex >= newOrder.length) {
-                                this.removeGhost();
-                                this.pointerDragActive = false;
-                                this.pointerTeamIndex = null;
-                                this.draggedIndex = null;
-                                this.draggedOverIndex = null;
-                                return;
-                            }
+                            const newOrder = [...this.teamOrder];
                             const [draggedItem] = newOrder.splice(this.pointerTeamIndex, 1);
                             newOrder.splice(dropIndex, 0, draggedItem);
                             this.teamOrder = newOrder;
@@ -197,18 +188,12 @@
                             'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700': draggedOverIndex === index,
                             'opacity-40': draggedIndex !== null && draggedIndex === index && pointerDragActive
                         }"
-                        class="p-4 min-h-[44px] cursor-move hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none flex items-center"
+                        class="p-4 min-h-[44px] hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none flex items-center"
                         :data-drop-team="index"
-                        draggable="true"
-                        @dragstart="dragStart($event, index)"
-                        @dragover="dragOver($event, index)"
-                        @dragleave="draggedOverIndex = null"
-                        @drop="drop($event, index)"
-                        @dragend="dragEnd()"
                         @pointerdown="pointerDown($event, index)"
                     >
-                            <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-4 min-w-0">
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center space-x-4 min-w-0 cursor-move">
                                 <!-- Position Number -->
                                 <div class="flex-shrink-0 w-8 h-8 bg-zinc-100 dark:bg-zinc-600 rounded-full flex items-center justify-center">
                                     <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300" x-text="index + 1"></span>
@@ -222,6 +207,24 @@
                                         <span class="text-xs text-zinc-500 dark:text-zinc-400" x-text="getTeamById(teamId)?.driver_surnames || getTeamById(teamId)?.nationality"></span>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="flex flex-col items-center gap-1 ml-3">
+                                <button
+                                    type="button"
+                                    class="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-xs hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
+                                    @click.stop="moveTeam(index, index - 1)"
+                                    :disabled="index === 0"
+                                >
+                                    &#8593;
+                                </button>
+                                <button
+                                    type="button"
+                                    class="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-xs hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
+                                    @click.stop="moveTeam(index, index + 1)"
+                                    :disabled="index === teamOrder.length - 1"
+                                >
+                                    &#8595;
+                                </button>
                             </div>
                         </div>
                     </div>
