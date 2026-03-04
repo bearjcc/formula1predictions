@@ -76,18 +76,22 @@ class BotPredictionsSeeder extends Seeder
     private function driverIdsFromResults(array $results): array
     {
         return array_values(array_filter(array_map(function ($r) {
-            return Arr::get($r, 'driver.id') ?? Arr::get($r, 'driverId') ?? Arr::get($r, 'driver_id');
+            return Arr::get($r, 'driver.driverId') // canonical F1 API key
+                ?? Arr::get($r, 'driver.id')
+                ?? Arr::get($r, 'driverId')
+                ?? Arr::get($r, 'driver_id');
         }, $results)));
     }
 
     private function storeRacePrediction(int $userId, int $season, int $round, array $driverApiOrder): void
     {
-        // Map API driver IDs to local Drivers ids; create placeholders if missing
-        $localDriverIds = [];
+        // Ensure local driver records exist for each API driver ID so UI and analytics
+        // have something to attach to, but store canonical F1 driverId strings in
+        // prediction_data for scoring consistency.
         foreach ($driverApiOrder as $apiId) {
             $driver = Drivers::where('driver_id', $apiId)->first();
             if (! $driver) {
-                $driver = Drivers::create([
+                Drivers::create([
                     'driver_id' => (string) $apiId,
                     'name' => $apiId,
                     'surname' => $apiId,
@@ -110,7 +114,6 @@ class BotPredictionsSeeder extends Seeder
                     'is_active' => true,
                 ]);
             }
-            $localDriverIds[] = $driver->id;
         }
 
         // Ensure we have a race id if races exist locally
@@ -126,7 +129,7 @@ class BotPredictionsSeeder extends Seeder
             [
                 'race_id' => $race?->id,
                 'prediction_data' => [
-                    'driver_order' => $localDriverIds,
+                    'driver_order' => array_values(array_map('strval', $driverApiOrder)),
                 ],
             ]
         );

@@ -19,6 +19,7 @@ if [ "$IS_LARAVEL" = "true" ]; then
   php artisan app:ensure-admin-user
   php artisan f1:ensure-season-data
   php artisan app:ensure-test-year-bot-predictions
+  php artisan app:reset-bot-legacy-predictions
 
   php artisan optimize:clear
   php artisan optimize

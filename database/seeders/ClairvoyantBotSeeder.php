@@ -61,7 +61,7 @@ class ClairvoyantBotSeeder extends Seeder
     }
 
     /** @param  Collection<int, \App\Models\Standings>  $standings
-     * @return array<int>
+     * @return array<int, string>
      */
     private function standingsToLocalDriverIds(Collection $standings): array
     {
@@ -92,7 +92,7 @@ class ClairvoyantBotSeeder extends Seeder
                     'is_active' => true,
                 ]);
             }
-            $driverOrder[] = $driver->id;
+            $driverOrder[] = (string) $standing->entity_id;
         }
 
         return $driverOrder;

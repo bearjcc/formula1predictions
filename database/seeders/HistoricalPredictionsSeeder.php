@@ -199,7 +199,7 @@ class HistoricalPredictionsSeeder extends Seeder
             'status' => 'completed',
         ]);
 
-        // Convert driver names to IDs
+        // Convert driver names to canonical driver IDs (F1 driver_id when available)
         $driverIds = [];
         foreach ($driverOrder as $driverName) {
             $driver = Drivers::where('name', 'like', "%{$driverName}%")
@@ -207,11 +207,11 @@ class HistoricalPredictionsSeeder extends Seeder
                 ->first();
 
             if ($driver) {
-                $driverIds[] = $driver->id;
+                $driverIds[] = $driver->driver_id ?? (string) $driver->id;
             }
         }
 
-        // Find fastest lap driver ID
+        // Find fastest lap driver canonical ID
         $fastestLapId = null;
         if ($fastestLap) {
             $fastestLapDriver = Drivers::where('name', 'like', "%{$fastestLap}%")
@@ -219,7 +219,7 @@ class HistoricalPredictionsSeeder extends Seeder
                 ->first();
 
             if ($fastestLapDriver) {
-                $fastestLapId = $fastestLapDriver->id;
+                $fastestLapId = $fastestLapDriver->driver_id ?? (string) $fastestLapDriver->id;
             }
         }
 

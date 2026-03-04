@@ -150,13 +150,13 @@ class SmartWeightedBotSeeder extends Seeder
 
     private function storeRacePrediction(int $userId, int $season, int $round, array $driverOrder): void
     {
-        // Map API driver IDs to local Drivers ids; create placeholders if missing
-        $localDriverIds = [];
+        // Ensure local driver records exist for each API driver ID, but keep
+        // canonical driverId strings in prediction_data for scoring.
         foreach ($driverOrder as $apiId) {
             $driver = Drivers::where('driver_id', $apiId)->first();
 
             if (! $driver) {
-                $driver = Drivers::create([
+                Drivers::create([
                     'driver_id' => (string) $apiId,
                     'name' => $apiId,
                     'surname' => $apiId,
@@ -179,7 +179,6 @@ class SmartWeightedBotSeeder extends Seeder
                     'is_active' => true,
                 ]);
             }
-            $localDriverIds[] = $driver->id;
         }
 
         // Ensure we have a race record
@@ -195,7 +194,7 @@ class SmartWeightedBotSeeder extends Seeder
             [
                 'race_id' => $race?->id,
                 'prediction_data' => [
-                    'driver_order' => $localDriverIds,
+                    'driver_order' => array_values(array_map('strval', $driverOrder)),
                 ],
                 'status' => 'submitted',
             ]

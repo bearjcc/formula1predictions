@@ -63,12 +63,13 @@ class PreviousRaceResultBotService
 
         $bot = $this->ensureBotUser();
 
-        $localDriverIds = [];
+        // Ensure local driver records exist so UI can resolve them, but keep
+        // canonical driverId strings in prediction_data.
         foreach ($driverApiIds as $apiId) {
             $driver = Drivers::where('driver_id', $apiId)->first();
 
             if (! $driver) {
-                $driver = Drivers::create([
+                Drivers::create([
                     'driver_id' => (string) $apiId,
                     'name' => $apiId,
                     'surname' => $apiId,
@@ -91,8 +92,6 @@ class PreviousRaceResultBotService
                     'is_active' => true,
                 ]);
             }
-
-            $localDriverIds[] = $driver->id;
         }
 
         $prediction = Prediction::updateOrCreate(
@@ -105,7 +104,7 @@ class PreviousRaceResultBotService
             [
                 'race_id' => $targetRace->id,
                 'prediction_data' => [
-                    'driver_order' => $localDriverIds,
+                    'driver_order' => array_values(array_map('strval', $driverApiIds)),
                 ],
             ]
         );

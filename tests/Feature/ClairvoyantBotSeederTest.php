@@ -33,13 +33,13 @@ test('clairvoyant bot seeder creates ClairvoyantBot user and only seeds 2025', f
     $racePreds = Prediction::where('user_id', $bot->id)->where('type', 'race')->where('season', 2025)->get();
     expect($racePreds->count())->toBe(2);
     foreach ($racePreds as $p) {
-        expect($p->getPredictedDriverOrder())->toEqual([$d1->id, $d2->id]);
+        expect($p->getPredictedDriverOrder())->toEqual([$d1->driver_id, $d2->driver_id]);
     }
 
     $sprintPreds = Prediction::where('user_id', $bot->id)->where('type', 'sprint')->where('season', 2025)->get();
     expect($sprintPreds->count())->toBe(1);
     expect($sprintPreds->first()->race_round)->toBe(2);
-    expect($sprintPreds->first()->getPredictedDriverOrder())->toEqual([$d1->id, $d2->id]);
+    expect($sprintPreds->first()->getPredictedDriverOrder())->toEqual([$d1->driver_id, $d2->driver_id]);
 });
 
 test('clairvoyant bot skips when no 2025 final standings', function () {

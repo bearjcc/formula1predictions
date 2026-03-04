@@ -71,7 +71,10 @@ class PreviousCircuitBotSeeder extends Seeder
         $driverOrder = [];
 
         foreach ($results as $result) {
-            $driverId = Arr::get($result, 'driver.id');
+            $driverId = Arr::get($result, 'driver.driverId')
+                ?? Arr::get($result, 'driver.id')
+                ?? Arr::get($result, 'driverId')
+                ?? Arr::get($result, 'driver_id');
             if ($driverId) {
                 $driverOrder[] = $driverId;
             }
@@ -82,13 +85,13 @@ class PreviousCircuitBotSeeder extends Seeder
 
     private function storeRacePrediction(int $userId, int $season, int $round, array $driverOrder): void
     {
-        // Map API driver IDs to local Drivers ids; create placeholders if missing
-        $localDriverIds = [];
+        // Ensure local driver records exist, but keep canonical driverId strings
+        // in prediction_data for scoring.
         foreach ($driverOrder as $apiId) {
             $driver = Drivers::where('driver_id', $apiId)->first();
 
             if (! $driver) {
-                $driver = Drivers::create([
+                Drivers::create([
                     'driver_id' => (string) $apiId,
                     'name' => $apiId,
                     'surname' => $apiId,
@@ -111,7 +114,6 @@ class PreviousCircuitBotSeeder extends Seeder
                     'is_active' => true,
                 ]);
             }
-            $localDriverIds[] = $driver->id;
         }
 
         // Ensure we have a race record
@@ -127,7 +129,7 @@ class PreviousCircuitBotSeeder extends Seeder
             [
                 'race_id' => $race?->id,
                 'prediction_data' => [
-                    'driver_order' => $localDriverIds,
+                    'driver_order' => array_values(array_map('strval', $driverOrder)),
                 ],
                 'status' => 'submitted',
             ]

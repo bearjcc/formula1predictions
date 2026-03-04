@@ -49,7 +49,6 @@ class PreviousYearChampionshipBotSeeder extends Seeder
 
     private function storeRacePrediction(int $userId, int $season, int $round, $previousStandings): void
     {
-        // Map standings to driver order (championship position determines prediction order)
         $driverOrder = [];
         foreach ($previousStandings as $standing) {
             $driver = Drivers::where('driver_id', $standing->entity_id)->first();
@@ -80,7 +79,7 @@ class PreviousYearChampionshipBotSeeder extends Seeder
                 ]);
             }
 
-            $driverOrder[] = $driver->id;
+            $driverOrder[] = (string) $standing->entity_id;
         }
 
         // Ensure we have a race record
@@ -96,7 +95,7 @@ class PreviousYearChampionshipBotSeeder extends Seeder
             [
                 'race_id' => $race?->id,
                 'prediction_data' => [
-                    'driver_order' => $driverOrder,
+                    'driver_order' => array_values(array_map('strval', $driverOrder)),
                 ],
                 'status' => 'submitted',
             ]

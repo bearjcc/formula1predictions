@@ -73,7 +73,7 @@ class LastYearChampionshipOrderBotSeeder extends Seeder
             if ($driver === null) {
                 continue;
             }
-            $driverOrder[] = $driver->id;
+            $driverOrder[] = (string) $driverId;
             $count++;
         }
 
@@ -101,7 +101,7 @@ class LastYearChampionshipOrderBotSeeder extends Seeder
                 [
                     'race_id' => $race->id,
                     'prediction_data' => [
-                        'driver_order' => $driverOrder,
+                    'driver_order' => array_values(array_map('strval', $driverOrder)),
                     ],
                 ]
             );

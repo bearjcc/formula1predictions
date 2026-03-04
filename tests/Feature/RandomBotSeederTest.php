@@ -44,7 +44,7 @@ test('random bot creates one prediction per race with shuffled order', function 
     $pred = Prediction::where('user_id', $bot->id)->where('season', 2023)->where('race_round', 1)->first();
     expect($pred)->not->toBeNull();
     expect($pred->prediction_data['driver_order'])->toHaveCount(2);
-    expect($pred->prediction_data['driver_order'])->toContain($d1->id, $d2->id);
+    expect($pred->prediction_data['driver_order'])->toContain($d1->driver_id, $d2->driver_id);
 });
 
 test('random bot run is idempotent', function () {

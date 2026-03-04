@@ -94,7 +94,8 @@ class ChampionshipOrderBotSeeder extends Seeder
                     'is_active' => true,
                 ]);
             }
-            $driverOrder[] = $driver->id;
+
+            $driverOrder[] = (string) $standing->entity_id;
         }
 
         $race = Races::where('season', $season)->where('round', $round)->first();
@@ -109,7 +110,7 @@ class ChampionshipOrderBotSeeder extends Seeder
             [
                 'race_id' => $race?->id,
                 'prediction_data' => [
-                    'driver_order' => $driverOrder,
+                    'driver_order' => array_values(array_map('strval', $driverOrder)),
                 ],
                 'status' => 'submitted',
             ]

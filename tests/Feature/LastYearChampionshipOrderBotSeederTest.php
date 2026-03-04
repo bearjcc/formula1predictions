@@ -58,8 +58,8 @@ test('last year order bot seeder seeds multiple seasons when config is set', fun
 
     $pred2025r1 = Prediction::where('user_id', $bot->id)->where('season', 2025)->where('race_round', 1)->first();
     $pred2026r1 = Prediction::where('user_id', $bot->id)->where('season', 2026)->where('race_round', 1)->first();
-    expect($pred2025r1->prediction_data['driver_order'])->toEqual([$d1->id, $d2->id]);
-    expect($pred2026r1->prediction_data['driver_order'])->toEqual([$d1->id, $d2->id]);
+    expect($pred2025r1->prediction_data['driver_order'])->toEqual([$d1->driver_id, $d2->driver_id]);
+    expect($pred2026r1->prediction_data['driver_order'])->toEqual([$d1->driver_id, $d2->driver_id]);
 });
 
 test('last year order bot seeder uses current season when bot_seed_seasons not set', function () {

@@ -54,9 +54,9 @@ class RandomBotSeeder extends Seeder
     }
 
     /**
-     * Get local driver IDs for the season (from standings or all active drivers).
+     * Get canonical driver IDs for the season (from standings or all active drivers).
      *
-     * @return array<int>
+     * @return array<int, string>
      */
     private function getDriverIdsForSeason(int $season): array
     {
@@ -65,22 +65,29 @@ class RandomBotSeeder extends Seeder
             $standings = Standings::getDriverStandings($season - 1, null);
         }
         if ($standings->isEmpty()) {
-            return Drivers::where('is_active', true)->orderBy('id')->limit(22)->pluck('id')->all();
+            return Drivers::where('is_active', true)
+                ->orderBy('id')
+                ->limit(22)
+                ->pluck('driver_id')
+                ->filter()
+                ->map(fn ($id) => (string) $id)
+                ->values()
+                ->all();
         }
 
         $ids = [];
         foreach ($standings as $standing) {
             $driver = Drivers::where('driver_id', $standing->entity_id)->first();
             if ($driver) {
-                $ids[] = $driver->id;
+                $ids[] = (string) $driver->driver_id;
             }
         }
 
         return $ids;
     }
 
-    /** @param  array<int>  $localDriverIds */
-    private function storeRacePrediction(int $userId, int $season, int $round, array $localDriverIds): void
+    /** @param  array<int, string>  $driverIds */
+    private function storeRacePrediction(int $userId, int $season, int $round, array $driverIds): void
     {
         $race = Races::where('season', $season)->where('round', $round)->first();
 
@@ -94,7 +101,7 @@ class RandomBotSeeder extends Seeder
             [
                 'race_id' => $race?->id,
                 'prediction_data' => [
-                    'driver_order' => $localDriverIds,
+                    'driver_order' => array_values(array_map('strval', $driverIds)),
                 ],
                 'status' => 'submitted',
             ]
