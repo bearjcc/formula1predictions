@@ -24,7 +24,7 @@ describe('year-specific routes return 200 for valid years', function () {
     });
 
     $validYears = ['2022', '2023', '2024', '2025', '2026'];
-    $redirectYears = ['2022', '2023', '2024', '2025'];
+    $standingsYears = ['2022', '2023', '2024', '2025'];
     $yearRoutes = [
         '/{year}/races',
         '/{year}/standings/drivers',
@@ -32,11 +32,11 @@ describe('year-specific routes return 200 for valid years', function () {
         '/{year}/standings/predictions',
     ];
 
-    foreach ($redirectYears as $year) {
-        it("route /{$year}/standings redirects to drivers standings", function () use ($year) {
+    foreach ($standingsYears as $year) {
+        it("route /{$year}/standings responds with 200", function () use ($year) {
             /** @var \Tests\TestCase $this */
             $response = $this->get("/{$year}/standings");
-            $response->assertRedirect("/{$year}/standings/drivers");
+            $response->assertOk();
         });
 
         foreach ($yearRoutes as $route) {

@@ -44,8 +44,14 @@ class PredictionPolicy
             return true;
         }
 
-        // Users can edit their own predictions while they are still editable
-        // (not locked/scored and before the deadline — matches Prediction::isEditable())
+        // Users can always edit their own draft predictions from navigation flows,
+        // even when lifecycle metadata like race/season is not fully populated.
+        if ($user->id === $prediction->user_id && $prediction->status === 'draft') {
+            return true;
+        }
+
+        // For non-draft predictions, defer to the lifecycle rules for editability
+        // (not locked/scored and before the deadline — matches Prediction::isEditable()).
         return $user->id === $prediction->user_id && $prediction->isEditable();
     }
 

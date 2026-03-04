@@ -185,7 +185,8 @@ Route::middleware(['validate.year'])->group(function () {
 Route::get('/constructor/{slug}', [StandingsController::class, 'constructorDetail'])
     ->name('constructor');
 
-Route::redirect('/team/{slug}', '/constructor/{slug}', 301);
+Route::get('/team/{slug}', [StandingsController::class, 'teamDetail'])
+    ->name('team');
 
 Route::get('/driver/{slug}', [StandingsController::class, 'driverDetail'])
     ->name('driver');

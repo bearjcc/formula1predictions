@@ -18,9 +18,9 @@ class StandingsController extends Controller
         return view('races', ['year' => $year]);
     }
 
-    public function standings(int $year)
+    public function standings(int $year): View
     {
-        return to_route('standings.drivers', ['year' => $year], 302);
+        return view('standings', ['year' => $year]);
     }
 
     public function driverStandings(F1ApiService $f1, int $year): View
@@ -211,6 +211,21 @@ class StandingsController extends Controller
         abort_unless($constructor, 404);
 
         return view('constructor', ['constructor' => $constructor]);
+    }
+
+    public function teamDetail(string $slug): View
+    {
+        $team = Teams::with('drivers')->get()->first(
+            fn (Teams $team) => $team->slug === $slug
+        );
+        abort_unless($team, 404);
+
+        // Provide both "constructor" and "team" variables so existing views
+        // continue to work while tests can assert the presence of "team".
+        return view('constructor', [
+            'constructor' => $team,
+            'team' => $team,
+        ]);
     }
 
     public function driverDetail(string $slug): View

@@ -95,7 +95,9 @@ class ChampionshipOrderBotSeeder extends Seeder
                 ]);
             }
 
-            $driverOrder[] = (string) $standing->entity_id;
+            // Store the internal driver model IDs in prediction data,
+            // not the external standings entity identifiers.
+            $driverOrder[] = $driver->id;
         }
 
         $race = Races::where('season', $season)->where('round', $round)->first();
@@ -110,7 +112,7 @@ class ChampionshipOrderBotSeeder extends Seeder
             [
                 'race_id' => $race?->id,
                 'prediction_data' => [
-                    'driver_order' => array_values(array_map('strval', $driverOrder)),
+                    'driver_order' => array_values($driverOrder),
                 ],
                 'status' => 'submitted',
             ]
