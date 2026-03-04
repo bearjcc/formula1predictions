@@ -28,27 +28,7 @@
                 </div>
             </div>
 
-            <!-- Badges -->
-            @if($user->is_season_supporter || !empty($user->getBadges()))
-                <div class="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                    <h4 class="text-sm font-semibold mb-2 text-zinc-700 dark:text-zinc-300">Badges</h4>
-                    <div class="flex flex-wrap gap-2">
-                        @if($user->is_season_supporter)
-                            <span class="badge badge-warning gap-2">
-                                ⭐ Season Supporter
-                                <small class="opacity-75">{{ $user->supporter_since ? 'since ' . $user->supporter_since->format('Y') : '' }}</small>
-                            </span>
-                        @endif
-                        @foreach($user->getBadges() as $badge)
-                            @if($badge !== 'season-supporter')
-                                <span class="badge badge-ghost">
-                                    {{ ucfirst(str_replace('-', ' ', $badge)) }}
-                                </span>
-                            @endif
-                        @endforeach
-                    </div>
-                </div>
-            @endif
+            <!-- Badges removed: all users now share the same free feature set -->
         </div>
     </div>
 

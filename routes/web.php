@@ -122,19 +122,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/predictions/{prediction}/override-score', [AdminPredictionsController::class, 'overrideScore'])->name('predictions.override-score');
     });
 
-    // Monetization (Stripe/Season Supporter) — deferred to later release; re-enable with F1-031
-    // Route::prefix('checkout')->name('checkout.')->middleware('throttle:checkout')->group(function () {
-    //     Route::post('/season-supporter', [\App\Http\Controllers\StripeCheckoutController::class, 'createCheckoutSession'])->name('season-supporter');
-    //     Route::get('/success', [\App\Http\Controllers\StripeCheckoutController::class, 'success'])->name('success');
-    //     Route::get('/cancel', [\App\Http\Controllers\StripeCheckoutController::class, 'cancel'])->name('cancel');
-    //     Route::get('/portal', [\App\Http\Controllers\StripeCheckoutController::class, 'portal'])->name('portal');
-    // });
-
 });
-
-// Stripe webhook — deferred to later release (F1-031)
-// Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
-//     ->name('stripe.webhook');
 
 // F1 API Routes
 Route::prefix('api/f1')->middleware(['auth', 'throttle:api'])->group(function () {

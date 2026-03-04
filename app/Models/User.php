@@ -12,12 +12,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Laravel\Cashier\Billable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Billable, HasFactory, MustVerifyEmailTrait, Notifiable;
+    use HasFactory, MustVerifyEmailTrait, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -55,11 +54,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
-            'is_season_supporter' => 'boolean',
-            'supporter_since' => 'datetime',
-            'badges' => 'array',
-            'stats_cache' => 'array',
-            'stats_cache_updated_at' => 'datetime',
         ];
     }
 
@@ -170,57 +164,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get all user badges.
-     */
-    public function getBadges(): array
-    {
-        return $this->badges ?? [];
-    }
-
-    /**
-     * Check if user has a specific badge.
-     */
-    public function hasBadge(string $badge): bool
-    {
-        return in_array($badge, $this->getBadges());
-    }
-
-    /**
-     * Add a badge to the user.
-     */
-    public function addBadge(string $badge): bool
-    {
-        $badges = $this->getBadges();
-
-        if (! in_array($badge, $badges)) {
-            $badges[] = $badge;
-            $this->badges = $badges;
-
-            return $this->save();
-        }
-
-        return false;
-    }
-
-    /**
-     * Remove a badge from the user.
-     */
-    public function removeBadge(string $badge): bool
-    {
-        $badges = $this->getBadges();
-        $key = array_search($badge, $badges);
-
-        if ($key !== false) {
-            unset($badges[$key]);
-            $this->badges = array_values($badges); // Reindex array
-
-            return $this->save();
-        }
-
-        return false;
-    }
-
-    /**
      * Send the email verification notification using our styled mailable.
      * No-op if email is missing (e.g. legacy accounts); avoids 500 when resending.
      */
@@ -247,22 +190,6 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         Mail::to($this->getEmailForPasswordReset())->send(new ResetPasswordMail($this, $token));
-    }
-
-    /**
-     * Make user a season supporter.
-     */
-    public function makeSeasonSupporter(): bool
-    {
-        if (! $this->is_season_supporter) {
-            $this->is_season_supporter = true;
-            $this->supporter_since = now();
-            $this->addBadge('season-supporter');
-
-            return $this->save();
-        }
-
-        return false;
     }
 
     /**

@@ -92,7 +92,7 @@
                         </div>
                         <div class="stat-title">Perfect Predictions</div>
                         <div class="stat-value text-info">{{ $proStats['perfect_predictions'] }}</div>
-                        <div class="stat-desc">{{ $proStats['supporters'] }} supporters</div>
+                        <div class="stat-desc">Across all users</div>
                     </div>
                 </div>
             </div>
@@ -118,7 +118,7 @@
                         </thead>
                         <tbody>
                             @foreach($paginatedLeaderboard as $user)
-                                <tr class="@if($user['is_supporter']) border-l-4 border-yellow-500 @endif">
+                                <tr>
                                     <td>
                                         @if($user['rank'] <= 3)
                                             <div class="flex items-center">
@@ -147,21 +147,8 @@
                                             <div>
                                                 <div class="font-bold flex items-center gap-2">
                                                     {{ $user['name'] }}
-                                                    @if($user['is_supporter'])
-                                                        <span class="badge badge-warning badge-sm">⭐ Supporter</span>
-                                                    @endif
                                                 </div>
                                                 <div class="text-sm text-zinc-600 dark:text-zinc-400">{{ $user['predictions_count'] }} predictions</div>
-                                                @if(!empty($user['badges']))
-                                                    <div class="flex gap-1 mt-1">
-                                                        @foreach(array_slice($user['badges'], 0, 3) as $badge)
-                                                            <span class="badge badge-ghost badge-xs">{{ $badge }}</span>
-                                                        @endforeach
-                                                        @if(count($user['badges']) > 3)
-                                                            <span class="badge badge-ghost badge-xs">+{{ count($user['badges']) - 3 }}</span>
-                                                        @endif
-                                                    </div>
-                                                @endif
                                             </div>
                                         </div>
                                     </td>

@@ -87,8 +87,6 @@ class GlobalLeaderboard extends Component
                 'avg_accuracy' => round($user->avg_accuracy ?? 0, 2),
                 'predictions_count' => $user->predictions_count,
                 'perfect_predictions' => $user->perfect_predictions_count ?? 0,
-                'is_supporter' => $user->is_season_supporter,
-                'badges' => $user->getBadges(),
                 'rank' => $user->rank,
             ];
         })->toArray();
@@ -129,7 +127,6 @@ class GlobalLeaderboard extends Component
             'median_score' => $this->calculateMedian($totalScores),
             'avg_accuracy' => round(array_sum($accuracies) / $totalUsers, 2),
             'perfect_predictions' => array_sum(array_column($this->leaderboard, 'perfect_predictions')),
-            'supporters' => array_sum(array_map(fn ($u) => $u['is_supporter'] ? 1 : 0, $this->leaderboard)),
         ];
     }
 

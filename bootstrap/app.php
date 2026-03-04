@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_AWS_ELB,
         );
 
-        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
+        $middleware->validateCsrfTokens();
     })
     ->withSchedule(function (Schedule $schedule) {
         // Weekly sync of current F1 season data (races, drivers, teams) so the app
