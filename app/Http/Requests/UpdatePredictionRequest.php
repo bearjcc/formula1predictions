@@ -60,7 +60,7 @@ class UpdatePredictionRequest extends FormRequest
             if (in_array($type, ['race', 'sprint'], true)) {
                 $driverOrder = $this->input('prediction_data.driver_order', []);
                 if (is_array($driverOrder)) {
-                    foreach ($driverOrder as $value) {
+                    foreach ($driverOrder as $index => $value) {
                         if ($value === null || $value === '') {
                             continue;
                         }
@@ -69,7 +69,7 @@ class UpdatePredictionRequest extends FormRequest
                             : Drivers::where('driver_id', (string) $value)->exists();
                         if (! $exists) {
                             $validator->errors()->add(
-                                'prediction_data.driver_order',
+                                'prediction_data.driver_order.'.$index,
                                 'The selected driver is invalid.'
                             );
 

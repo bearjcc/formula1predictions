@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Races;
 use App\Models\User;
+use App\Services\LeaderboardService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly LeaderboardService $leaderboardService,
+    ) {}
+
     /**
      * Show the user's personalized dashboard.
      */
@@ -20,9 +25,9 @@ class DashboardController extends Controller
 
         $stats = $this->getUserStats($user, $season);
         $upcomingRaces = $this->getUpcomingRaces($season);
-        $leaderboard = $this->getLeaderboardTop($season, 5);
+        $leaderboard = $this->leaderboardService->topForSeason($season, 5);
         $recentPredictions = $this->getRecentPredictions($user, 5);
-        $userRank = $this->getUserRank($user, $season);
+        $userRank = $this->leaderboardService->userRankForSeason($user, $season);
         $preseasonDeadline = Races::getPreseasonDeadlineForSeason($season);
         $firstRace = Races::getFirstRaceOfSeason($season);
         $hasPreseasonPrediction = $user->predictions()
@@ -75,21 +80,6 @@ class DashboardController extends Controller
             ->get();
     }
 
-    private function getLeaderboardTop(int $season, int $limit = 5): \Illuminate\Database\Eloquent\Collection
-    {
-        return User::withSum(['predictions as total_score' => function ($q) use ($season) {
-            $q->where('season', $season)->where('status', 'scored');
-        }], 'score')
-            ->whereHas('predictions', fn ($q) => $q->where('season', $season))
-            ->orderByDesc('total_score')
-            ->take($limit)
-            ->get(['id', 'name'])
-            ->each(function ($u, $i) {
-                $u->rank = $i + 1;
-                $u->total_score = (int) ($u->total_score ?? 0);
-            });
-    }
-
     private function getRecentPredictions(User $user, int $limit = 5): \Illuminate\Database\Eloquent\Collection
     {
         return $user->predictions()
@@ -97,19 +87,5 @@ class DashboardController extends Controller
             ->orderByDesc('created_at')
             ->take($limit)
             ->get();
-    }
-
-    private function getUserRank(User $user, int $season): ?int
-    {
-        $ranked = User::withSum(['predictions as total_score' => function ($q) use ($season) {
-            $q->where('season', $season)->where('status', 'scored');
-        }], 'score')
-            ->whereHas('predictions', fn ($q) => $q->where('season', $season))
-            ->orderByDesc('total_score')
-            ->get(['id']);
-
-        $pos = $ranked->search(fn ($u) => (int) $u->id === (int) $user->id);
-
-        return $pos !== false ? $pos + 1 : null;
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Standings;
 use App\Models\User;
 use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use function Pest\Laravel\artisan;
 
 uses(RefreshDatabase::class)->group('slow');
@@ -18,6 +19,12 @@ test('bots:seed runs all bot seeders', function () {
         'entity_id' => 'x', 'entity_name' => 'X', 'position' => 1,
     ]);
     Drivers::factory()->create(['driver_id' => 'x']);
+
+    $mockF1 = Mockery::mock(F1ApiService::class);
+    $mockF1->shouldReceive('getRacesForYear')->andReturn([]);
+    $mockF1->shouldReceive('fetchDriversChampionship')->andReturn(['drivers_championship' => []]);
+    $mockF1->shouldReceive('syncDriversForSeason')->andReturn(0);
+    app()->instance(F1ApiService::class, $mockF1);
 
     artisan('bots:seed')
         ->assertSuccessful();

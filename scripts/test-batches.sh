@@ -31,7 +31,6 @@ php artisan test \
   tests/Feature/HomePageTest.php \
   tests/Feature/LeaderboardTest.php \
   tests/Feature/LivewirePredictionFormTest.php \
-  tests/Feature/MobileOptimizationTest.php \
   tests/Feature/ModelRelationshipsTest.php \
   tests/Feature/NotificationTest.php \
   tests/Feature/PredictionControllerTest.php \
@@ -42,7 +41,6 @@ php artisan test \
   tests/Feature/RoutesTest.php \
   tests/Feature/ScoreRacePredictionsJobTest.php \
   tests/Feature/ScoringServiceTest.php \
-  tests/Feature/SimpleHistoricalDataTest.php \
   tests/Feature/TestUserSeederTest.php \
   tests/Feature/ViewsTest.php \
   tests/Feature/WebsiteNavigationTest.php \

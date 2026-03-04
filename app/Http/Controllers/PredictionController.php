@@ -8,6 +8,7 @@ use App\Models\Prediction;
 use App\Models\Races;
 use App\Services\ScoringService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -27,6 +28,52 @@ class PredictionController extends Controller
         $nextRace = Races::nextAvailableForPredictions();
 
         return view('predictions.index', compact('predictions', 'nextRace'));
+    }
+
+    /**
+     * Show the Livewire form for creating a race/sprint prediction (with optional race_id).
+     */
+    public function createForm(Request $request): View|RedirectResponse
+    {
+        $race = null;
+
+        if ($request->filled('race_id')) {
+            $raceId = (int) $request->input('race_id');
+            $race = Races::find($raceId);
+        } else {
+            $nextRace = Races::nextAvailableForPredictions();
+            if ($nextRace !== null) {
+                return to_route('predict.create', ['race_id' => $nextRace->id]);
+            }
+        }
+
+        if ($race !== null) {
+            $existing = $request->user()->predictions()
+                ->where('season', $race->season)
+                ->where('race_round', $race->round)
+                ->whereIn('type', ['race', 'sprint'])
+                ->first();
+            if ($existing !== null) {
+                return to_route('predictions.edit', $existing)
+                    ->with('info', 'You already have a prediction for this race.');
+            }
+        }
+
+        return view('predictions.create-livewire', compact('race'));
+    }
+
+    /**
+     * Show the Livewire form for creating a preseason prediction.
+     */
+    public function preseasonForm(Request $request): View
+    {
+        $year = (int) $request->input('year', config('f1.current_season'));
+
+        return view('predictions.create-livewire', [
+            'race' => null,
+            'preseason' => true,
+            'year' => $year,
+        ]);
     }
 
     /**

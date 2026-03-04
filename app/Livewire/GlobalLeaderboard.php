@@ -2,8 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\Prediction;
-use App\Models\User;
+use App\Services\LeaderboardService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -64,12 +63,7 @@ class GlobalLeaderboard extends Component
 
     private function loadAvailableSeasons(): void
     {
-        $fromDb = Prediction::distinct()
-            ->pluck('season')
-            ->sort()
-            ->reverse()
-            ->values()
-            ->toArray();
+        $fromDb = app(LeaderboardService::class)->availableSeasons();
         $extra = array_filter([
             $this->season,
             config('f1.current_season'),
@@ -80,50 +74,10 @@ class GlobalLeaderboard extends Component
 
     private function loadLeaderboard(): void
     {
-        $query = User::withCount(['predictions' => function ($query) {
-            $query->where('season', $this->season);
-            if ($this->type !== 'all') {
-                $query->where('type', $this->type);
-            }
-        }])
-            ->withSum(['predictions as total_score' => function ($query) {
-                $query->where('season', $this->season)
-                    ->where('status', 'scored');
-                if ($this->type !== 'all') {
-                    $query->where('type', $this->type);
-                }
-            }], 'score')
-            ->withAvg(['predictions as avg_score' => function ($query) {
-                $query->where('season', $this->season)
-                    ->where('status', 'scored');
-                if ($this->type !== 'all') {
-                    $query->where('type', $this->type);
-                }
-            }], 'score')
-            ->withAvg(['predictions as avg_accuracy' => function ($query) {
-                $query->where('season', $this->season)
-                    ->where('status', 'scored');
-                if ($this->type !== 'all') {
-                    $query->where('type', $this->type);
-                }
-            }], 'accuracy')
-            ->withCount(['predictions as perfect_predictions_count' => function ($query) {
-                $query->where('season', $this->season)
-                    ->where('status', 'scored')
-                    ->where('score', '>=', 25);
-                if ($this->type !== 'all') {
-                    $query->where('type', $this->type);
-                }
-            }])
-            ->whereHas('predictions', function ($query) {
-                $query->where('season', $this->season);
-                if ($this->type !== 'all') {
-                    $query->where('type', $this->type);
-                }
-            })
-            ->get();
+        $service = app(LeaderboardService::class);
+        $collection = $service->seasonLeaderboard($this->season, $this->type);
 
-        $this->leaderboard = $query->map(function ($user, $index) {
+        $this->leaderboard = $collection->map(function ($user) {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -135,6 +89,7 @@ class GlobalLeaderboard extends Component
                 'perfect_predictions' => $user->perfect_predictions_count ?? 0,
                 'is_supporter' => $user->is_season_supporter,
                 'badges' => $user->getBadges(),
+                'rank' => $user->rank,
             ];
         })->toArray();
 
@@ -151,10 +106,6 @@ class GlobalLeaderboard extends Component
             return $fieldB <=> $fieldA; // Descending
         });
 
-        // Add ranks
-        foreach ($this->leaderboard as $index => &$user) {
-            $user['rank'] = $index + 1;
-        }
     }
 
     private function loadProStats(): void

@@ -76,6 +76,8 @@ class PredictionTest extends TestCase
     {
         $prediction = Prediction::factory()->create([
             'status' => 'draft',
+            'type' => 'midseason',
+            'season' => 2025,
         ]);
 
         $result = $prediction->submit();
@@ -108,4 +110,3 @@ class PredictionTest extends TestCase
         $this->assertNotNull($prediction->locked_at);
     }
 }
-

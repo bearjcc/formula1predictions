@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
 use App\Services\ChartDataService;
+use App\Services\LeaderboardService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 class LeaderboardController extends Controller
 {
+    public function __construct(
+        private readonly LeaderboardService $leaderboardService,
+    ) {}
+
     /**
      * Show the main leaderboard.
      */
@@ -23,10 +27,10 @@ class LeaderboardController extends Controller
         $perPage = (int) $request->get('per_page', 20);
         $perPage = in_array($perPage, [10, 20, 50], true) ? $perPage : 20;
 
-        $fullLeaderboard = $this->getLeaderboard($season, $type);
+        $fullLeaderboard = $this->leaderboardService->seasonLeaderboard($season, $type);
         $total = $fullLeaderboard->count();
 
-        $seasons = $this->getAvailableSeasons();
+        $seasons = $this->leaderboardService->availableSeasons();
         $types = ['all' => 'All Predictions', 'race' => 'Race Predictions', 'preseason' => 'Preseason Predictions'];
 
         $showFocusView = false;
@@ -35,8 +39,10 @@ class LeaderboardController extends Controller
 
         $viewMode = $request->get('view', 'auto');
 
-        if (auth()->user() && $total > 0 && $viewMode !== 'full') {
-            $currentUserId = auth()->user()->id;
+        $currentUser = $request->user();
+
+        if ($currentUser !== null && $total > 0 && $viewMode !== 'full') {
+            $currentUserId = (int) $currentUser->id;
             $userIndex = $fullLeaderboard->search(function ($user) use ($currentUserId) {
                 return (int) $user->id === (int) $currentUserId;
             });
@@ -105,8 +111,8 @@ class LeaderboardController extends Controller
      */
     public function season(int $season): View
     {
-        $leaderboard = $this->getLeaderboard($season, 'all');
-        $seasons = $this->getAvailableSeasons();
+        $leaderboard = $this->leaderboardService->seasonLeaderboard($season, 'all');
+        $seasons = $this->leaderboardService->availableSeasons();
 
         return view('leaderboard.season', compact('leaderboard', 'seasons', 'season'));
     }
@@ -116,7 +122,7 @@ class LeaderboardController extends Controller
      */
     public function race(int $season, int $raceRound): View
     {
-        $leaderboard = $this->getRaceLeaderboard($season, $raceRound);
+        $leaderboard = $this->leaderboardService->raceLeaderboard($season, $raceRound);
         $race = Races::where('season', $season)
             ->where('round', $raceRound)
             ->firstOrFail();
@@ -136,7 +142,7 @@ class LeaderboardController extends Controller
             ? array_map('intval', array_filter($usersParam))
             : array_map('intval', array_filter(explode(',', (string) $usersParam)));
 
-        $availableUsers = $this->getUsersWithPredictions($season);
+        $availableUsers = $this->leaderboardService->usersWithPredictions($season);
         $comparisonData = [];
         $progressionData = [];
 
@@ -147,7 +153,7 @@ class LeaderboardController extends Controller
             $progressionData = $chartService->getHeadToHeadScoreProgression($userIds, $season);
         }
 
-        $seasons = $this->getAvailableSeasons();
+        $seasons = $this->leaderboardService->availableSeasons();
 
         return view('leaderboard.compare', compact(
             'season',
@@ -164,7 +170,7 @@ class LeaderboardController extends Controller
      */
     public function userStats(User $user): View
     {
-        $stats = $this->getUserStats($user);
+        $stats = $this->leaderboardService->userStats($user);
         $recentPredictions = $user->predictions()
             ->with('race')
             ->orderBy('created_at', 'desc')
@@ -172,140 +178,5 @@ class LeaderboardController extends Controller
             ->get();
 
         return view('leaderboard.user-stats', compact('user', 'stats', 'recentPredictions'));
-    }
-
-    /**
-     * Get leaderboard data.
-     */
-    private function getLeaderboard(int $season, string $type): \Illuminate\Support\Collection
-    {
-        $query = User::withCount(['predictions' => function ($query) use ($season, $type) {
-            $query->where('season', $season);
-            if ($type !== 'all') {
-                $query->where('type', $type);
-            }
-        }])
-            ->withSum(['predictions as total_score' => function ($query) use ($season, $type) {
-                $query->where('season', $season)
-                    ->where('status', 'scored');
-                if ($type !== 'all') {
-                    $query->where('type', $type);
-                }
-            }], 'score')
-            ->withAvg(['predictions as avg_score' => function ($query) use ($season, $type) {
-                $query->where('season', $season)
-                    ->where('status', 'scored');
-                if ($type !== 'all') {
-                    $query->where('type', $type);
-                }
-            }], 'score')
-            ->whereHas('predictions', function ($query) use ($season, $type) {
-                $query->where('season', $season);
-                if ($type !== 'all') {
-                    $query->where('type', $type);
-                }
-            })
-            ->orderBy('total_score', 'desc')
-            ->orderBy('avg_score', 'desc')
-            ->get();
-
-        // Add ranking
-        $query->each(function ($user, $index) {
-            $user->rank = $index + 1;
-        });
-
-        return $query;
-    }
-
-    /**
-     * Get race-specific leaderboard.
-     */
-    private function getRaceLeaderboard(int $season, int $raceRound): \Illuminate\Database\Eloquent\Collection
-    {
-        $query = User::with(['predictions' => function ($query) use ($season, $raceRound) {
-            $query->where('season', $season)
-                ->where('race_round', $raceRound)
-                ->where('type', 'race');
-        }])
-            ->whereHas('predictions', function ($query) use ($season, $raceRound) {
-                $query->where('season', $season)
-                    ->where('race_round', $raceRound)
-                    ->where('type', 'race');
-            })
-            ->get()
-            ->map(function ($user) {
-                $prediction = $user->predictions->first();
-                $user->prediction = $prediction;
-                $user->score = $prediction->score ?? 0;
-
-                return $user;
-            })
-            ->sortByDesc('score')
-            ->values();
-
-        // Add ranking
-        $query->each(function ($user, $index) {
-            $user->rank = $index + 1;
-        });
-
-        return $query;
-    }
-
-    /**
-     * Get user statistics.
-     */
-    private function getUserStats(User $user): array
-    {
-        $totalPredictions = $user->predictions()->count();
-        $scoredPredictions = $user->predictions()->where('status', 'scored')->count();
-        $totalScore = $user->predictions()->where('status', 'scored')->sum('score');
-        $avgScore = $user->predictions()->where('status', 'scored')->avg('score') ?? 0;
-        $bestScore = $user->predictions()->where('status', 'scored')->max('score') ?? 0;
-
-        // Calculate accuracy (assuming 25 points is perfect)
-        $accuracy = $scoredPredictions > 0 ? ($totalScore / ($scoredPredictions * 25)) * 100 : 0;
-
-        // Season breakdown
-        $seasonStats = $user->predictions()
-            ->where('status', 'scored')
-            ->selectRaw('season, COUNT(*) as predictions, SUM(score) as total_score, AVG(score) as avg_score')
-            ->groupBy('season')
-            ->orderBy('season', 'desc')
-            ->get();
-
-        return [
-            'total_predictions' => $totalPredictions,
-            'scored_predictions' => $scoredPredictions,
-            'total_score' => $totalScore,
-            'avg_score' => round($avgScore, 2),
-            'best_score' => $bestScore,
-            'accuracy' => round($accuracy, 2),
-            'season_stats' => $seasonStats,
-        ];
-    }
-
-    /**
-     * Get users who have predictions for a season (for comparison selector).
-     */
-    private function getUsersWithPredictions(int $season): \Illuminate\Database\Eloquent\Collection
-    {
-        return User::whereHas('predictions', function ($query) use ($season) {
-            $query->where('season', $season)->where('status', 'scored');
-        })
-            ->orderBy('name')
-            ->get(['id', 'name']);
-    }
-
-    /**
-     * Get available seasons.
-     */
-    private function getAvailableSeasons(): array
-    {
-        return Prediction::distinct()
-            ->pluck('season')
-            ->sort()
-            ->reverse()
-            ->values()
-            ->toArray();
     }
 }

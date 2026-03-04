@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PredictionLifecycle;
 use App\Services\ScoringService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -69,25 +70,10 @@ class Prediction extends Model
      */
     public function isEditable(): bool
     {
-        if ($this->status === 'locked' || $this->status === 'scored') {
-            return false;
-        }
+        /** @var PredictionLifecycle $lifecycle */
+        $lifecycle = app(PredictionLifecycle::class);
 
-        if (in_array($this->type, ['race', 'sprint'], true) && $this->race) {
-            if ($this->type === 'sprint') {
-                return $this->race->allowsSprintPredictions();
-            }
-
-            return $this->race->allowsPredictions();
-        }
-
-        if ($this->type === 'preseason') {
-            $deadline = Races::getPreseasonDeadlineForSeason($this->season);
-
-            return $deadline !== null && now()->lt($deadline);
-        }
-
-        return true;
+        return $lifecycle->canEdit($this);
     }
 
     /**
@@ -95,14 +81,10 @@ class Prediction extends Model
      */
     public function submit(): bool
     {
-        if (! $this->isEditable()) {
-            return false;
-        }
+        /** @var PredictionLifecycle $lifecycle */
+        $lifecycle = app(PredictionLifecycle::class);
 
-        $this->status = 'submitted';
-        $this->submitted_at = now();
-
-        return $this->save();
+        return $lifecycle->submit($this);
     }
 
     /**

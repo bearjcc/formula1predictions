@@ -9,6 +9,7 @@ use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\Teams;
 use App\Services\F1ApiService;
+use App\Services\PredictionLifecycle;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule as ValidationRule;
 use Livewire\Attributes\On;
@@ -62,22 +63,34 @@ class PredictionForm extends Component
 
     public bool $isLocked = false;
 
+    /**
+     * When true, initialise the form in preseason mode for the given year.
+     * Populated via Livewire public property binding (Blade attributes or test params).
+     */
+    public bool $preseason = false;
+
+    public ?int $preseasonYear = null;
+
     public function mount(
         ?Races $race = null,
         ?Prediction $existingPrediction = null,
         bool $preseason = false,
-        ?int $preseasonYear = null
+        ?int $preseasonYear = null,
     ): void {
         $this->season = config('f1.current_season');
         $this->editingPrediction = null;
         $this->race = $race;
         $this->isLocked = false;
 
-        if ($preseason) {
+        /** @var PredictionLifecycle $lifecycle */
+        $lifecycle = app(PredictionLifecycle::class);
+
+        $preseasonFlag = $preseason || $this->preseason;
+        $preseasonYearValue = $this->preseasonYear ?? $preseasonYear;
+
+        if ($preseasonFlag || $preseasonYearValue !== null) {
             $this->type = 'preseason';
-            $this->season = $preseasonYear ?? config('f1.current_season');
-            $deadline = Races::getPreseasonDeadlineForSeason($this->season);
-            $this->isLocked = $deadline === null || ! $deadline->isFuture();
+            $this->season = $preseasonYearValue ?? config('f1.current_season');
         }
 
         $this->loadData();
@@ -86,7 +99,7 @@ class PredictionForm extends Component
             /** @var \App\Models\User|null $user */
             $user = Auth::user();
 
-            if ($user === null || $existingPrediction->user_id !== $user->id || ! $existingPrediction->isEditable()) {
+            if ($user === null || $existingPrediction->user_id !== $user->id || ! $lifecycle->canEdit($existingPrediction)) {
                 $this->isLocked = true;
             }
 
@@ -120,13 +133,14 @@ class PredictionForm extends Component
             }
 
             if ($user !== null && $existingPrediction->user_id === $user->id) {
-                $this->isLocked = ! $existingPrediction->isEditable();
+                $this->isLocked = ! $lifecycle->canEdit($existingPrediction);
             }
         } elseif ($race !== null) {
             $this->season = $race->season ?? config('f1.current_season');
             $this->raceRound = $race->round;
             $this->type = 'race';
-            $this->isLocked = ! $race->allowsPredictions();
+            $deadline = $lifecycle->predictionDeadline('race', $this->season, $race);
+            $this->isLocked = $deadline === null || ! $deadline->isFuture();
         }
     }
 
@@ -158,6 +172,7 @@ class PredictionForm extends Component
         $this->drivers = collect($driverArrays)->sortBy(function ($d) {
             $s = trim($d['surname'] ?? $d['name'] ?? '');
             $words = array_filter(preg_split('/\s+/', $s));
+
             return $words ? end($words) : $s;
         })->values()->toArray();
 
@@ -387,40 +402,18 @@ class PredictionForm extends Component
      */
     public function getPredictionDeadlineProperty(): ?\Carbon\Carbon
     {
-        if ($this->type === 'preseason') {
-            return Races::getPreseasonDeadlineForSeason($this->season);
-        }
+        /** @var PredictionLifecycle $lifecycle */
+        $lifecycle = app(PredictionLifecycle::class);
 
-        if ($this->race === null || ! in_array($this->type, ['race', 'sprint'], true)) {
-            return null;
-        }
-
-        return $this->type === 'sprint'
-            ? $this->race->getSprintPredictionDeadline()
-            : $this->race->getRacePredictionDeadline();
+        return $lifecycle->predictionDeadline($this->type, $this->season, $this->race);
     }
 
     public function save(): void
     {
-        if ($this->isLocked) {
-            $this->addError('base', 'This prediction can no longer be edited.');
-
-            return;
-        }
-
-        // Server-side deadline enforcement — the frontend also checks this, but we
-        // verify it here so a user cannot bypass the check by manipulating the request.
-        $deadline = $this->predictionDeadline;
-        if ($deadline !== null && now()->greaterThanOrEqualTo($deadline)) {
-            $this->addError('base', 'The prediction deadline has passed. Predictions are now closed.');
-
-            return;
-        }
-
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if ($this->editingPrediction !== null && ($user === null || $this->editingPrediction->user_id !== $user->id || ! $this->editingPrediction->isEditable())) {
+        if ($this->editingPrediction !== null && ($user === null || $this->editingPrediction->user_id !== $user->id || ! app(PredictionLifecycle::class)->canEdit($this->editingPrediction))) {
             $this->addError('base', 'This prediction can no longer be edited.');
 
             return;
@@ -538,18 +531,21 @@ class PredictionForm extends Component
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
-            // Guard against duplicate submissions: if a prediction already exists for
-            // this user/type/season/race_round combination, redirect to edit it.
-            if (in_array($this->type, ['race', 'sprint'], true) && $this->raceRound !== null) {
-                $duplicate = $user->predictions()
-                    ->where('type', $this->type)
-                    ->where('season', $this->season)
-                    ->where('race_round', $this->raceRound)
-                    ->first();
-                if ($duplicate !== null) {
-                    $this->redirect(route('predictions.edit', $duplicate));
+            /** @var PredictionLifecycle $lifecycle */
+            $lifecycle = app(PredictionLifecycle::class);
 
-                    return;
+            if (! $lifecycle->canCreate($user, $this->type, $this->season, $this->raceRound, $this->race)) {
+                if (in_array($this->type, ['race', 'sprint'], true) && $this->raceRound !== null) {
+                    $duplicate = $user->predictions()
+                        ->where('type', $this->type)
+                        ->where('season', $this->season)
+                        ->where('race_round', $this->raceRound)
+                        ->first();
+                    if ($duplicate !== null) {
+                        $this->redirect(route('predictions.edit', $duplicate));
+
+                        return;
+                    }
                 }
             }
 

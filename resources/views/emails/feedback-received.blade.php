@@ -1,20 +1,24 @@
-<x-mail::message>
-# Feedback received
+@extends('emails.layout')
 
-**From:** {{ $feedback->user->name }} ({{ $feedback->user->email }})
+@section('content')
+<p style="margin: 0 0 16px 0;"><strong>From:</strong> {{ $feedback->user->name }} ({{ $feedback->user->email }})</p>
 
 @if($feedback->subject)
-**Subject:** {{ $feedback->subject }}
+<p style="margin: 0 0 16px 0;"><strong>Subject:</strong> {{ $feedback->subject }}</p>
 @endif
 
-**Message:**
+<p style="margin: 0 0 16px 0;"><strong>Message:</strong></p>
+<p style="margin: 0 0 24px 0;">{{ $feedback->message }}</p>
 
-{{ $feedback->message }}
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 24px 0;">
+    <tr>
+        <td style="border-radius: 6px; background-color: #dc2626;">
+            <a href="{{ config('app.url') }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 12px 24px; font-size: 16px; font-weight: 500; color: #ffffff; text-decoration: none;">
+                View site
+            </a>
+        </td>
+    </tr>
+</table>
 
-<x-mail::button :url="config('app.url')">
-View site
-</x-mail::button>
-
-Thanks,<br>
-{{ config('app.name') }}
-</x-mail::message>
+<p style="margin: 0; font-size: 14px; color: #71717a;">Thanks,<br>{{ config('app.name') }}</p>
+@endsection
