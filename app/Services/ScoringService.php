@@ -91,7 +91,11 @@ class ScoringService
                 $results['scored_predictions']++;
                 $results['total_score'] += $score;
 
-                $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+                try {
+                    $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+                } catch (\Exception $e) {
+                    Log::warning("Could not notify user {$prediction->user_id} for sprint prediction {$prediction->id}");
+                }
             } catch (\Exception $e) {
                 $results['failed_predictions']++;
                 $results['errors'][] = "Sprint prediction {$prediction->id}: ".$e->getMessage();
@@ -256,12 +260,14 @@ class ScoringService
         $driverScore = $this->scoreChampionshipOrder(
             $prediction->getDriverChampionshipOrder(),
             $driverStandings,
+            $season,
             fn (int $localId) => $driverLookup[$localId] ?? null
         );
 
         $teamScore = $this->scoreChampionshipOrder(
             $prediction->getConstructorOrder(),
             $constructorStandings,
+            $season,
             fn (int $localId) => $teamLookup[$localId] ?? null
         );
 
@@ -414,6 +420,7 @@ class ScoringService
     private function scoreChampionshipOrder(
         array $predictedLocalIds,
         \Illuminate\Database\Eloquent\Collection $actualStandings,
+        int $season,
         callable $resolveToEntityId
     ): array {
         $entityToPosition = $actualStandings->keyBy('entity_id')->map(fn ($s) => $s->position - 1)->all();
@@ -432,7 +439,7 @@ class ScoringService
             }
 
             $diff = abs($position - $actualPosition);
-            $score += $this->getPositionScore($diff, (int) date('Y'));
+            $score += $this->getPositionScore($diff, $season);
             if ($diff === 0) {
                 $correct++;
             }
