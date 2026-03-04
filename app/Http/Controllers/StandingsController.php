@@ -29,40 +29,18 @@ class StandingsController extends Controller
         $driverStandings = Standings::getDriverStandings($season, null);
         $standingsByEntityId = $driverStandings->keyBy('entity_id');
 
-        // Only show drivers who are in this season: from standings (entity_id) or from API championship list
-        $entityIds = $driverStandings->pluck('entity_id')->unique()->filter()->values();
-        $allDrivers = collect();
-        if ($entityIds->isNotEmpty()) {
-            $byDriverId = Drivers::whereIn('driver_id', $entityIds)->with('team')->get();
-            $numericIds = $entityIds->filter(fn ($id) => ctype_digit((string) $id))->values();
-            $byId = $numericIds->isNotEmpty()
-                ? Drivers::whereIn('id', $numericIds->map(fn ($id) => (int) $id))->with('team')->get()
-                : collect();
-            $allDrivers = $byDriverId->merge($byId)->unique('id')->values();
-        }
+        // Canonical season grid: drivers competing in this season, with team relationship attached.
+        // This matches the prediction forms and other pages that need a consistent driver->team link.
+        $allDrivers = Drivers::forSeason($season, $f1);
 
-        $driverIdToTeamName = [];
         $apiDriverStats = [];
 
         try {
             $data = $f1->fetchDriversChampionship($season);
             $entries = $data['drivers_championship'] ?? [];
 
-            if ($allDrivers->isEmpty() && $entries !== []) {
-                $apiDriverIds = collect($entries)->pluck('driverId')->filter()->unique()->values()->all();
-                $allDrivers = Drivers::whereIn('driver_id', $apiDriverIds)->with('team')->get();
-            }
-
-            $teamIds = collect($entries)->pluck('teamId')->filter()->unique()->all();
-            $teams = Teams::whereIn('team_id', $teamIds)->pluck('team_name', 'team_id');
-
             foreach ($entries as $entry) {
                 $driverId = $entry['driverId'] ?? null;
-                $teamId = $entry['teamId'] ?? null;
-
-                if ($driverId !== null && $teamId !== null && isset($teams[$teamId])) {
-                    $driverIdToTeamName[$driverId] = $teams[$teamId];
-                }
 
                 if ($driverId !== null) {
                     $apiDriverStats[$driverId] = [
@@ -78,7 +56,7 @@ class StandingsController extends Controller
 
         $countriesByName = Countries::all()->keyBy('name');
 
-        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId, $driverIdToTeamName, $countriesByName, $apiDriverStats) {
+        $rows = $allDrivers->map(function ($driver) use ($standingsByEntityId, $countriesByName, $apiDriverStats) {
             $standing = $standingsByEntityId->get((string) $driver->id) ?? $standingsByEntityId->get($driver->driver_id ?? '');
             $apiStats = $driver->driver_id ? ($apiDriverStats[$driver->driver_id] ?? null) : null;
 
@@ -88,8 +66,7 @@ class StandingsController extends Controller
 
             $driverName = trim($driver->name.' '.$driver->surname);
 
-            $teamName = $driver->team?->team_name
-                ?? ($driver->driver_id ? ($driverIdToTeamName[$driver->driver_id] ?? null) : null);
+            $teamName = $driver->team?->team_name;
 
             $country = $driver->nationality ? $countriesByName->get($driver->nationality) : null;
 
