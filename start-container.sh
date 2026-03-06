@@ -26,6 +26,9 @@ if [ "$IS_LARAVEL" = "true" ]; then
   php artisan optimize:clear
   php artisan optimize
 
+  echo "Starting Laravel scheduler in background ..."
+  php artisan schedule:work &
+
   echo "Starting Laravel server ..."
 fi
 
