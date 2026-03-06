@@ -386,6 +386,39 @@ test('merge RB Racing Bulls once skips when job already recorded', function () {
         ->assertExitCode(0);
 });
 
+test('ensure driver lineup once skips when job already recorded', function () {
+    \Illuminate\Support\Facades\DB::table('one_time_jobs')->insert([
+        'name' => 'driver_lineup_2026',
+        'run_at' => now(),
+    ]);
+
+    $this->artisan('app:ensure-driver-lineup-once')
+        ->expectsOutputToContain('already applied. Skipping.')
+        ->assertExitCode(0);
+});
+
+test('ensure driver lineup once runs seeder once then sets flag', function () {
+    $team = Teams::factory()->create(['team_name' => 'Red Bull Racing']);
+    $driver = Drivers::factory()->create([
+        'name' => 'Max',
+        'surname' => 'Verstappen',
+        'team_id' => null,
+    ]);
+
+    $this->artisan('app:ensure-driver-lineup-once')
+        ->expectsOutputToContain('Applying 2026 driver lineup')
+        ->expectsOutputToContain('Flag set so this will not run again')
+        ->assertExitCode(0);
+
+    expect(\Illuminate\Support\Facades\DB::table('one_time_jobs')->where('name', 'driver_lineup_2026')->exists())->toBeTrue();
+    $driver->refresh();
+    expect((int) $driver->team_id)->toBe((int) $team->id);
+
+    $this->artisan('app:ensure-driver-lineup-once')
+        ->expectsOutputToContain('already applied. Skipping.')
+        ->assertExitCode(0);
+});
+
 test('reminders send deadline command runs and queues reminders when in 72h window', function () {
     Notification::fake();
 

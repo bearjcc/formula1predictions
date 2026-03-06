@@ -1,7 +1,7 @@
 #!/bin/bash
 # Custom Railpack start script. Replaces the default PHP provider script so we run
 # config:cache at runtime (for ADMIN_* etc.), app:ensure-admin-user, f1:ensure-season-data, one-time jobs
-# (app:ensure-test-year-bot-predictions, app:merge-rb-racing-bulls-once, app:reset-bot-legacy-predictions)
+# (app:ensure-driver-lineup-once, app:ensure-test-year-bot-predictions, app:merge-rb-racing-bulls-once, app:reset-bot-legacy-predictions)
 # before starting FrankenPHP. See: https://railpack.com/languages/php
 
 set -e
@@ -19,6 +19,7 @@ if [ "$IS_LARAVEL" = "true" ]; then
 
   php artisan app:ensure-admin-user
   php artisan f1:ensure-season-data
+  php artisan app:ensure-driver-lineup-once
   php artisan app:ensure-test-year-bot-predictions
   php artisan app:merge-rb-racing-bulls-once
   php artisan app:reset-bot-legacy-predictions
