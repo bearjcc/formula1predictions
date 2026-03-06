@@ -12,19 +12,19 @@ use Illuminate\Database\Seeder;
  */
 class DriverLineup2026Seeder extends Seeder
 {
-    /** @var array<string, list<string>> team_name => [driver full name, ...] */
+    /** @var array<string, list<string>> team_name => [driver full name, ...] (names as stored in DB: e.g. Alex not Alexander, Andrea Kimi Antonelli, Arvin Lindblad, Sergio Pérez) */
     private const LINEUP_2026 = [
         'Red Bull Racing' => ['Max Verstappen', 'Isack Hadjar'],
         'Ferrari' => ['Charles Leclerc', 'Lewis Hamilton'],
         'McLaren' => ['Lando Norris', 'Oscar Piastri'],
-        'Mercedes' => ['George Russell', 'Kimi Antonelli'],
+        'Mercedes' => ['George Russell', 'Andrea Kimi Antonelli'],
         'Aston Martin' => ['Fernando Alonso', 'Lance Stroll'],
         'Audi' => ['Nico Hulkenberg', 'Gabriel Bortoleto'],
-        'Cadillac' => ['Sergio Perez', 'Valtteri Bottas'],
-        'Williams' => ['Alexander Albon', 'Carlos Sainz'],
+        'Cadillac' => ['Sergio Pérez', 'Valtteri Bottas'],
+        'Williams' => ['Alex Albon', 'Carlos Sainz'],
         'Alpine' => ['Pierre Gasly', 'Franco Colapinto'],
         'Haas F1 Team' => ['Esteban Ocon', 'Oliver Bearman'],
-        'Racing Bulls' => ['Liam Lawson', 'Arvid Lindblad'],
+        'RB' => ['Liam Lawson', 'Arvin Lindblad'],
     ];
 
     public function run(): void
@@ -77,7 +77,7 @@ class DriverLineup2026Seeder extends Seeder
     }
 
     /**
-     * Create team if missing (e.g. Audi, Cadillac, Racing Bulls before API sync).
+     * Create team if missing (e.g. Audi, Cadillac, RB before API sync).
      */
     private function ensureTeamExists(string $canonicalTeamName): ?Teams
     {
@@ -95,18 +95,30 @@ class DriverLineup2026Seeder extends Seeder
 
     private function resolveDriver(string $fullName): ?Drivers
     {
-        $parts = preg_split('/\s+/', trim($fullName), 2);
+        $fullName = trim($fullName);
+        $parts = preg_split('/\s+/', $fullName, 2);
         if (count($parts) < 2) {
             return Drivers::where('surname', $fullName)->orWhere('name', $fullName)->first();
         }
         [$first, $last] = $parts;
         $normalized = strtolower($fullName);
+        $normalizedNoAccents = $this->normalizeAccents($normalized);
 
         $driver = Drivers::where('name', $first)->where('surname', $last)->first();
         if ($driver) {
             return $driver;
         }
-        return Drivers::all()->first(fn (Drivers $d) => strtolower(trim($d->name.' '.$d->surname)) === $normalized);
+        $driver = Drivers::all()->first(fn (Drivers $d) => strtolower(trim($d->name.' '.$d->surname)) === $normalized);
+        if ($driver) {
+            return $driver;
+        }
+        return Drivers::all()->first(fn (Drivers $d) => $this->normalizeAccents(strtolower(trim($d->name.' '.$d->surname))) === $normalizedNoAccents);
+    }
+
+    private function normalizeAccents(string $s): string
+    {
+        $map = ['é' => 'e', 'è' => 'e', 'ê' => 'e', 'á' => 'a', 'à' => 'a', 'ä' => 'a', 'ö' => 'o', 'ü' => 'u', 'ñ' => 'n', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ç' => 'c'];
+        return strtr($s, $map);
     }
 
     /**
@@ -117,7 +129,7 @@ class DriverLineup2026Seeder extends Seeder
     private function teamNameVariants(): array
     {
         return [
-            'Racing Bulls' => ['RB', 'Visa Cash App RB'],
+            'RB' => ['Racing Bulls', 'Visa Cash App RB', 'VCARB'],
             'Audi' => ['Sauber', 'Kick Sauber', 'Stake F1 Team Kick Sauber'],
             'Haas F1 Team' => ['Haas', 'MoneyGram Haas F1 Team'],
         ];

@@ -40,6 +40,7 @@ class Drivers extends Model
         'fastest_laps',
         'points',
         'is_active',
+        'team_id',
     ];
 
     /**
