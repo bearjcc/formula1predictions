@@ -1,7 +1,12 @@
 // Real-time notification handling
 document.addEventListener('DOMContentLoaded', function() {
     // Check if user is authenticated
-    if (typeof window.userId === 'undefined') {
+    if (
+        typeof window.userId === 'undefined' ||
+        typeof window.Echo === 'undefined' ||
+        typeof window.Echo.private !== 'function' ||
+        typeof window.Livewire === 'undefined'
+    ) {
         return;
     }
 

@@ -16,7 +16,7 @@
         </div>
     @enderror
 
-    <form wire:submit="save" class="space-y-8">
+    <form wire:submit.prevent="save" class="space-y-8">
         @if($race)
         <div class="mb-6">
             <h2 class="text-xl font-bold text-zinc-900 dark:text-white uppercase tracking-tight">

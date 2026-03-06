@@ -431,7 +431,7 @@ test('reminders send deadline command runs and queues reminders when in 72h wind
     ]);
 
     $this->artisan('reminders:send-deadline')
-        ->expectsOutputToContain('Queued race deadline reminders')
+        ->expectsOutputToContain('Sent race deadline reminders')
         ->assertExitCode(0);
 });
 

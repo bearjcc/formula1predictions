@@ -159,7 +159,9 @@ class LivewirePredictionFormTest extends TestCase
     {
         $user = User::factory()->create();
         $raceWithoutSprint = \App\Models\Races::factory()->create([
+            'status' => 'upcoming',
             'has_sprint' => false,
+            'qualifying_start' => now()->addDays(2),
         ]);
         $team = Teams::factory()->create();
         $drivers = Drivers::factory()->count(20)->create(['team_id' => $team->id]);
@@ -212,11 +214,20 @@ class LivewirePredictionFormTest extends TestCase
         $season = 2026;
 
         Livewire::actingAs($user)
-            ->test(PredictionForm::class, ['preseason' => true, 'preseasonYear' => $season])
+            ->test(PredictionForm::class)
             ->set('type', 'preseason')
+            ->set('season', $season)
             ->set('teamOrder', $teams->pluck('id')->toArray())
-            ->call('save');
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect(route('predictions.index'));
 
+        $this->assertDatabaseHas('predictions', [
+            'user_id' => $user->id,
+            'type' => 'preseason',
+            'season' => $season,
+            'status' => 'submitted',
+        ]);
     }
 
     public function test_cannot_edit_locked_prediction_via_livewire(): void
@@ -239,7 +250,7 @@ class LivewirePredictionFormTest extends TestCase
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('canEdit', false)
             ->call('save')
-            ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
+            ->assertHasErrors(['base' => 'The prediction deadline has passed.']);
     }
 
     public function test_cannot_edit_scored_prediction_via_livewire(): void
@@ -262,7 +273,7 @@ class LivewirePredictionFormTest extends TestCase
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('canEdit', false)
             ->call('save')
-            ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
+            ->assertHasErrors(['base' => 'The prediction deadline has passed.']);
     }
 
     public function test_cannot_edit_other_users_prediction_via_livewire(): void
@@ -287,6 +298,6 @@ class LivewirePredictionFormTest extends TestCase
             ->test(PredictionForm::class, ['existingPrediction' => $prediction])
             ->assertSet('canEdit', false)
             ->call('save')
-            ->assertHasErrors(['base' => 'This prediction can no longer be edited.']);
+            ->assertHasErrors(['base' => 'The prediction deadline has passed.']);
     }
 }

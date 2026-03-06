@@ -415,6 +415,12 @@ class PredictionForm extends Component
         /** @var PredictionLifecycle $lifecycle */
         $lifecycle = app(PredictionLifecycle::class);
 
+        if ($this->type === 'sprint' && ($this->race === null || ! $this->race->hasSprint())) {
+            $this->addError('type', 'Sprint predictions are only available for races that have a sprint session.');
+
+            return;
+        }
+
         if ($this->editingPrediction !== null) {
             if ($user === null || $this->editingPrediction->user_id !== $user->id || ! $lifecycle->canEdit($this->editingPrediction)) {
                 $this->addError('base', 'The prediction deadline has passed.');
@@ -441,17 +447,71 @@ class PredictionForm extends Component
             }
         }
 
-        $this->validate([
+        $this->validate($this->rules());
+
+        if ($this->type === 'preseason' && ! empty($this->teammateBattles)) {
+            foreach ($this->teammateBattles as $teamId => $driverId) {
+                $driver = Drivers::find($driverId);
+                if ($driver && (int) $driver->team_id !== (int) $teamId) {
+                    $this->addError('teammateBattles', __('The selected driver must belong to that team.'));
+
+                    return;
+                }
+            }
+        }
+
+        $predictionData = $this->buildPredictionData();
+
+        if ($this->editingPrediction !== null) {
+            $this->editingPrediction->update([
+                'type' => $this->type,
+                'season' => $this->season,
+                'race_round' => $this->raceRound,
+                'race_id' => $this->race?->id ?? $this->editingPrediction->race_id,
+                'prediction_data' => $predictionData,
+            ]);
+            $this->editingPrediction->submit();
+
+            session()->flash('success', 'Prediction updated successfully.');
+        } else {
+            $prediction = $user->predictions()->create([
+                'type' => $this->type,
+                'season' => $this->season,
+                'race_round' => $this->raceRound,
+                'race_id' => $this->race?->id,
+                'prediction_data' => $predictionData,
+            ]);
+            $prediction->submit();
+
+            session()->flash('success', 'Prediction created successfully.');
+        }
+
+        $this->dispatch('prediction-saved');
+
+        $this->redirect(route('predictions.index'));
+    }
+
+    protected function rules(): array
+    {
+        $isRacePrediction = in_array($this->type, ['race', 'sprint'], true);
+        $isSeasonPrediction = in_array($this->type, ['preseason', 'midseason'], true);
+
+        return [
             'type' => 'required|string|in:race,sprint,preseason,midseason',
             'season' => 'required|integer|min:2020|max:2030',
-            'raceRound' => 'required_if:type,race,sprint|prohibited_if:type,preseason,midseason|integer|min:1|max:25',
+            'raceRound' => $isRacePrediction
+                ? 'required|integer|min:1|max:25'
+                : 'nullable',
             'driverOrder' => [
-                'required_if:type,race,sprint',
+                $isRacePrediction ? 'required' : 'nullable',
                 'array',
-                'min:1',
-                'max:'.config('f1.max_drivers', 22),
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    if (! in_array($this->type, ['race', 'sprint'], true)) {
+                ValidationRule::when(
+                    $isRacePrediction,
+                    'min:1|max:'.config('f1.max_drivers', 22),
+                    'max:0'
+                ),
+                function (string $attribute, mixed $value, \Closure $fail) use ($isRacePrediction): void {
+                    if (! $isRacePrediction) {
                         return;
                     }
                     if (empty(array_filter($value ?? []))) {
@@ -489,9 +549,13 @@ class PredictionForm extends Component
                 },
             ],
             'teamOrder' => [
-                'required_if:type,preseason,midseason',
+                $isSeasonPrediction ? 'required' : 'nullable',
                 'array',
-                ValidationRule::when(in_array($this->type, ['preseason', 'midseason'], true), 'min:1|max:'.config('f1.max_constructors', 11), 'min:0|max:'.config('f1.max_constructors', 11)),
+                ValidationRule::when(
+                    $isSeasonPrediction,
+                    'min:1|max:'.config('f1.max_constructors', 11),
+                    'max:0'
+                ),
             ],
             'teamOrder.*' => 'integer|exists:teams,id',
             'driverChampionship' => [
@@ -517,54 +581,7 @@ class PredictionForm extends Component
             'teammateBattles.*' => ['required', 'integer', 'exists:drivers,id'],
             'redFlags' => ['nullable', 'integer', 'min:0'],
             'safetyCars' => ['nullable', 'integer', 'min:0'],
-        ]);
-
-        if ($this->type === 'preseason' && ! empty($this->teammateBattles)) {
-            foreach ($this->teammateBattles as $teamId => $driverId) {
-                $driver = Drivers::find($driverId);
-                if ($driver && (int) $driver->team_id !== (int) $teamId) {
-                    $this->addError('teammateBattles', __('The selected driver must belong to that team.'));
-
-                    return;
-                }
-            }
-        }
-
-        if ($this->type === 'sprint' && ($this->race === null || ! $this->race->hasSprint())) {
-            $this->addError('type', 'Sprint predictions are only available for races that have a sprint session.');
-
-            return;
-        }
-
-        $predictionData = $this->buildPredictionData();
-
-        if ($this->editingPrediction !== null) {
-            $this->editingPrediction->update([
-                'type' => $this->type,
-                'season' => $this->season,
-                'race_round' => $this->raceRound,
-                'race_id' => $this->race?->id ?? $this->editingPrediction->race_id,
-                'prediction_data' => $predictionData,
-            ]);
-            $this->editingPrediction->submit();
-
-            session()->flash('success', 'Prediction updated successfully.');
-        } else {
-            $prediction = $user->predictions()->create([
-                'type' => $this->type,
-                'season' => $this->season,
-                'race_round' => $this->raceRound,
-                'race_id' => $this->race?->id,
-                'prediction_data' => $predictionData,
-            ]);
-            $prediction->submit();
-
-            session()->flash('success', 'Prediction created successfully.');
-        }
-
-        $this->dispatch('prediction-saved');
-
-        $this->redirect(route('predictions.index'));
+        ];
     }
 
     private function buildPredictionData(): array
