@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\Prediction;
+use App\Models\Races;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -215,7 +217,7 @@ test('user can edit a submitted prediction before deadline', function () {
 
 test('predict create redirects to edit when prediction already exists for race', function () {
     $user = testUser();
-    $race = \App\Models\Races::factory()->create(['season' => 2025, 'round' => 1, 'status' => 'upcoming']);
+    $race = Races::factory()->create(['season' => 2025, 'round' => 1, 'status' => 'upcoming']);
     $prediction = Prediction::factory()->create([
         'user_id' => $user->id,
         'type' => 'race',
@@ -229,6 +231,46 @@ test('predict create redirects to edit when prediction already exists for race',
         ->get(route('predict.create', ['race_id' => $race->id]));
 
     $response->assertRedirect(route('predictions.edit', $prediction));
+});
+
+test('predict create redirects to index with error when race deadline has passed', function () {
+    $user = testUser();
+    $qualifyingStart = Carbon::now()->addMinutes(20);
+    $race = Races::factory()->create([
+        'season' => 2025,
+        'round' => 1,
+        'status' => 'upcoming',
+        'qualifying_start' => $qualifyingStart,
+        'has_sprint' => false,
+    ]);
+
+    $response = actingAs($user)
+        ->get(route('predict.create', ['race_id' => $race->id]));
+
+    $response->assertRedirect(route('predictions.index'));
+    $response->assertSessionHas('error', 'The prediction deadline for this race has passed.');
+});
+
+test('preseason form redirects to index with error when preseason deadline has passed', function () {
+    $user = testUser();
+    $deadline = Carbon::now()->subHour();
+    Races::factory()->create([
+        'season' => 2025,
+        'round' => 1,
+        'status' => 'upcoming',
+        'qualifying_start' => $deadline->copy()->addHour(),
+    ]);
+    Carbon::setTestNow($deadline->copy()->addMinute());
+
+    try {
+        $response = actingAs($user)
+            ->get(route('predict.preseason', ['year' => 2025]));
+
+        $response->assertRedirect(route('predictions.index'));
+        $response->assertSessionHas('error', 'The prediction deadline for preseason has passed.');
+    } finally {
+        Carbon::setTestNow();
+    }
 });
 
 test('mass-assigning score or status via create is rejected', function () {

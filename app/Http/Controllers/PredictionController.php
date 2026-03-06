@@ -48,6 +48,13 @@ class PredictionController extends Controller
         }
 
         if ($race !== null) {
+            $raceOpen = $race->allowsPredictions();
+            $sprintOpen = $race->hasSprint() && $race->allowsSprintPredictions();
+            if (! $raceOpen && ! $sprintOpen) {
+                return to_route('predictions.index')
+                    ->with('error', 'The prediction deadline for this race has passed.');
+            }
+
             $existing = $request->user()->predictions()
                 ->where('season', $race->season)
                 ->where('race_round', $race->round)
@@ -65,9 +72,14 @@ class PredictionController extends Controller
     /**
      * Show the Livewire form for creating a preseason prediction.
      */
-    public function preseasonForm(Request $request): View
+    public function preseasonForm(Request $request): View|RedirectResponse
     {
         $year = (int) $request->input('year', config('f1.current_season'));
+        $deadline = Races::getPreseasonDeadlineForSeason($year);
+        if ($deadline === null || ! $deadline->isFuture()) {
+            return to_route('predictions.index')
+                ->with('error', 'The prediction deadline for preseason has passed.');
+        }
 
         return view('predictions.create-livewire', [
             'race' => null,

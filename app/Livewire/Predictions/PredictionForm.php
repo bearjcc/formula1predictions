@@ -412,11 +412,33 @@ class PredictionForm extends Component
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
+        /** @var PredictionLifecycle $lifecycle */
+        $lifecycle = app(PredictionLifecycle::class);
 
-        if ($this->editingPrediction !== null && ($user === null || $this->editingPrediction->user_id !== $user->id || ! app(PredictionLifecycle::class)->canEdit($this->editingPrediction))) {
-            $this->addError('base', 'This prediction can no longer be edited.');
+        if ($this->editingPrediction !== null) {
+            if ($user === null || $this->editingPrediction->user_id !== $user->id || ! $lifecycle->canEdit($this->editingPrediction)) {
+                $this->addError('base', 'The prediction deadline has passed.');
 
-            return;
+                return;
+            }
+        } else {
+            if (! $lifecycle->canCreate($user, $this->type, $this->season, $this->raceRound, $this->race)) {
+                if (in_array($this->type, ['race', 'sprint'], true) && $this->raceRound !== null) {
+                    $duplicate = $user->predictions()
+                        ->where('type', $this->type)
+                        ->where('season', $this->season)
+                        ->where('race_round', $this->raceRound)
+                        ->first();
+                    if ($duplicate !== null) {
+                        $this->redirect(route('predictions.edit', $duplicate));
+
+                        return;
+                    }
+                }
+                $this->addError('base', 'The prediction deadline has passed.');
+
+                return;
+            }
         }
 
         $this->validate([
@@ -528,27 +550,6 @@ class PredictionForm extends Component
 
             session()->flash('success', 'Prediction updated successfully.');
         } else {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-
-            /** @var PredictionLifecycle $lifecycle */
-            $lifecycle = app(PredictionLifecycle::class);
-
-            if (! $lifecycle->canCreate($user, $this->type, $this->season, $this->raceRound, $this->race)) {
-                if (in_array($this->type, ['race', 'sprint'], true) && $this->raceRound !== null) {
-                    $duplicate = $user->predictions()
-                        ->where('type', $this->type)
-                        ->where('season', $this->season)
-                        ->where('race_round', $this->raceRound)
-                        ->first();
-                    if ($duplicate !== null) {
-                        $this->redirect(route('predictions.edit', $duplicate));
-
-                        return;
-                    }
-                }
-            }
-
             $prediction = $user->predictions()->create([
                 'type' => $this->type,
                 'season' => $this->season,
