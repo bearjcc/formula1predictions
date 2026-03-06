@@ -9,7 +9,8 @@ use Illuminate\Console\Command;
 
 class SendPredictionDeadlineReminders extends Command
 {
-    protected $signature = 'reminders:send-deadline';
+    protected $signature = 'reminders:send-deadline
+                            {--force : Skip time-window check and send all currently open deadlines immediately}';
 
     protected $description = 'Send prediction deadline reminders (~72h before deadline) to non-predictors only. Includes catch-up for past 72h window (e.g. race 1).';
 
@@ -23,17 +24,22 @@ class SendPredictionDeadlineReminders extends Command
     {
         $season = config('f1.current_season');
         $now = Carbon::now();
+        $force = (bool) $this->option('force');
 
         $sent = 0;
 
         #region Preseason
         $preseasonDeadline = Races::getPreseasonDeadlineForSeason($season);
         if ($preseasonDeadline !== null) {
-            $windowStart = $preseasonDeadline->copy()->subHours(72);
-            $windowEnd = $preseasonDeadline->copy()->addHours(24);
-            if ($now->between($windowStart, $windowEnd)) {
+            $inWindow = $now->between(
+                $preseasonDeadline->copy()->subHours(72),
+                $preseasonDeadline->copy()->addHours(24)
+            );
+            // --force: send if deadline hasn't passed yet (predictions still open)
+            $shouldSend = $force ? $now->lt($preseasonDeadline) : $inWindow;
+            if ($shouldSend) {
                 $this->notificationService->sendPreseasonDeadlineReminderToNonPredictors($season);
-                $this->line('Queued preseason deadline reminders for season ' . $season);
+                $this->line('Sent preseason deadline reminders for season ' . $season);
                 $sent++;
             }
         }
@@ -50,22 +56,28 @@ class SendPredictionDeadlineReminders extends Command
             if ($deadline === null) {
                 continue;
             }
-            $windowStart = $deadline->copy()->subHours(72);
-            $windowEnd = $deadline->copy()->addHours(24);
-            if ($now->between($windowStart, $windowEnd)) {
+            $inWindow = $now->between(
+                $deadline->copy()->subHours(72),
+                $deadline->copy()->addHours(24)
+            );
+            $shouldSend = $force ? $now->lt($deadline) : $inWindow;
+            if ($shouldSend) {
                 $this->notificationService->sendPredictionDeadlineReminderToNonPredictors($race, 'qualifying');
-                $this->line("Queued race deadline reminders for {$race->display_name}");
+                $this->line("Sent race deadline reminders for {$race->display_name}");
                 $sent++;
             }
 
             if ($race->hasSprint() && $race->sprint_qualifying_start !== null) {
                 $sprintDeadline = $race->getSprintPredictionDeadline();
                 if ($sprintDeadline !== null) {
-                    $sprintWindowStart = $sprintDeadline->copy()->subHours(72);
-                    $sprintWindowEnd = $sprintDeadline->copy()->addHours(24);
-                    if ($now->between($sprintWindowStart, $sprintWindowEnd)) {
+                    $sprintInWindow = $now->between(
+                        $sprintDeadline->copy()->subHours(72),
+                        $sprintDeadline->copy()->addHours(24)
+                    );
+                    $shouldSendSprint = $force ? $now->lt($sprintDeadline) : $sprintInWindow;
+                    if ($shouldSendSprint) {
                         $this->notificationService->sendSprintDeadlineReminderToNonPredictors($race);
-                        $this->line("Queued sprint deadline reminders for {$race->display_name}");
+                        $this->line("Sent sprint deadline reminders for {$race->display_name}");
                         $sent++;
                     }
                 }
@@ -76,7 +88,7 @@ class SendPredictionDeadlineReminders extends Command
         if ($sent === 0) {
             $this->info('No reminder windows active.');
         } else {
-            $this->info("Scheduled {$sent} reminder batch(es). Emails will be sent via the queue.");
+            $this->info("Done. Sent {$sent} reminder batch(es).");
         }
 
         return Command::SUCCESS;
