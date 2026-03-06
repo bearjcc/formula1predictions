@@ -21,3 +21,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('predictions:lock-past-deadline')->everyFifteenMinutes();
 Schedule::command('reminders:send-deadline')->hourly();
+Schedule::command('predictions:score --all')->hourly();

@@ -103,18 +103,38 @@ class ScoreRacePredictions extends Command
 
     private function scoreUnscoredRaces(int $season, bool $dryRun): int
     {
-        $races = Races::where('season', $season)
+        // Races already marked complete with unscored predictions
+        $completedRaces = Races::where('season', $season)
             ->where('status', 'completed')
+            ->get()
+            ->filter(fn (Races $r) => $r->predictions()
+                ->whereIn('status', ['submitted', 'locked'])
+                ->exists()
+            );
+
+        // Races not yet marked complete but started 6+ hours ago — attempt to fetch results
+        $potentiallyDone = Races::where('season', $season)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->where(function ($q): void {
+                $q->where('time', '<=', now()->subHours(6))
+                    ->orWhere(function ($q2): void {
+                        // Fallback: no time stored, use race date (treat end-of-day as done)
+                        $q2->whereNull('time')
+                            ->where('date', '<', now()->subHours(6)->toDateString());
+                    });
+            })
             ->get();
 
-        foreach ($races as $race) {
-            $unscoredCount = $race->predictions()
-                ->whereIn('status', ['submitted', 'locked'])
-                ->count();
+        $races = $completedRaces->merge($potentiallyDone)->unique('id');
 
-            if ($unscoredCount > 0) {
-                $this->processRace($race, $dryRun);
-            }
+        if ($races->isEmpty()) {
+            $this->info('No races to score.');
+
+            return 0;
+        }
+
+        foreach ($races as $race) {
+            $this->processRace($race, $dryRun);
         }
 
         return 0;
