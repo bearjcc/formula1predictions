@@ -69,6 +69,30 @@ php artisan bots:seed --only=last,season,random
 
 To run all bot seeders (including circuit-, previous-year-, and smart-weighted bots): `php artisan bots:seed`.
 
+### Mail preview and Windows SSL (cURL 60)
+
+To preview the prediction-deadline reminder email without sending to real users:
+
+```bash
+# Export HTML only (no mail sent; open the file in a browser)
+php artisan reminders:preview --export=storage/app/deadline-preview.html
+
+# Send a preview to your inbox (requires Resend/MAIL_* configured)
+php artisan reminders:preview --to=you@example.com
+```
+
+On **Windows**, if sending fails with `cURL error 60: SSL certificate problem: unable to get local issuer certificate`, PHP’s cURL has no CA bundle. Fix it once:
+
+1. Download [cacert.pem](https://curl.se/ca/cacert.pem) and save to a stable path (e.g. `C:\Users\<You>\cacert.pem`).
+2. In your **PHP ini** (Herd: Herd → PHP → Open php.ini, or `php --ini` to find it), set:
+   ```ini
+   curl.cainfo = "C:\Users\<You>\cacert.pem"
+   openssl.cafile = "C:\Users\<You>\cacert.pem"
+   ```
+3. Restart Herd (or your PHP process). Then `reminders:preview --to=...` should work.
+
+Until then, use `--export=...` to preview the email as HTML.
+
 ---
 
 ## Scoring

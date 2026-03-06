@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Mail\ResetPasswordMail;
 use App\Mail\VerifyEmailMail;
+use App\Models\Races;
+use App\Notifications\PredictionDeadlineReminder;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -83,6 +85,29 @@ class User extends Authenticatable implements MustVerifyEmail
     public function feedback(): HasMany
     {
         return $this->hasMany(Feedback::class);
+    }
+
+    /**
+     * Scope: exclude users who have already received a deadline reminder for this race/type.
+     * For race/sprint/qualifying/preseason we match by race_id + deadline_type.
+     * For midseason (dummy race with no id) we match by season + deadline_type.
+     */
+    public function scopeWhereNotReceivedDeadlineReminder(
+        \Illuminate\Database\Eloquent\Builder $query,
+        ?Races $race,
+        string $deadlineType
+    ): \Illuminate\Database\Eloquent\Builder {
+        return $query->whereDoesntHave('notifications', function ($q) use ($race, $deadlineType) {
+            $q->where('type', PredictionDeadlineReminder::class);
+            if ($race !== null && $race->id !== null) {
+                $q->where('data->race_id', $race->id)
+                    ->where('data->deadline_type', $deadlineType);
+            } else {
+                $season = $race !== null ? $race->season : config('f1.current_season');
+                $q->where('data->season', $season)
+                    ->where('data->deadline_type', $deadlineType);
+            }
+        });
     }
 
     /**

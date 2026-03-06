@@ -20,3 +20,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('predictions:lock-past-deadline')->everyFifteenMinutes();
+Schedule::command('reminders:send-deadline')->hourly();

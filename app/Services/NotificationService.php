@@ -79,16 +79,35 @@ class NotificationService
     }
 
     /**
-     * Send prediction deadline reminder to users who haven't submitted predictions yet.
+     * Send prediction deadline reminder to users who haven't submitted race predictions yet
+     * and who haven't already received this reminder for this race.
      */
     public function sendPredictionDeadlineReminderToNonPredictors(Races $race, string $deadlineType = 'qualifying'): void
     {
         User::whereDoesntHave('predictions', function ($query) use ($race) {
             $query->where('race_id', $race->id)
                 ->where('type', 'race');
-        })->chunkById(500, function ($users) use ($race, $deadlineType) {
-            Notification::send($users, new PredictionDeadlineReminder($race, $deadlineType));
-        });
+        })
+            ->whereNotReceivedDeadlineReminder($race, $deadlineType)
+            ->chunkById(500, function ($users) use ($race, $deadlineType) {
+                Notification::send($users, new PredictionDeadlineReminder($race, $deadlineType));
+            });
+    }
+
+    /**
+     * Send sprint deadline reminder to users who haven't submitted sprint predictions for this race
+     * and who haven't already received this reminder.
+     */
+    public function sendSprintDeadlineReminderToNonPredictors(Races $race): void
+    {
+        User::whereDoesntHave('predictions', function ($query) use ($race) {
+            $query->where('race_id', $race->id)
+                ->where('type', 'sprint');
+        })
+            ->whereNotReceivedDeadlineReminder($race, 'sprint')
+            ->chunkById(500, function ($users) use ($race) {
+                Notification::send($users, new PredictionDeadlineReminder($race, 'sprint'));
+            });
     }
 
     /**
@@ -112,11 +131,34 @@ class NotificationService
     }
 
     /**
+     * Send preseason deadline reminder only to users who haven't submitted a preseason prediction
+     * and who haven't already received this reminder for this season.
+     */
+    public function sendPreseasonDeadlineReminderToNonPredictors(int $season): void
+    {
+        $race = Races::getFirstRaceOfSeason($season);
+        if ($race === null) {
+            $race = new Races([
+                'season' => $season,
+                'race_name' => "{$season} Season",
+                'round' => 0,
+            ]);
+        }
+
+        User::whereDoesntHave('predictions', function ($query) use ($season) {
+            $query->where('season', $season)->where('type', 'preseason');
+        })
+            ->whereNotReceivedDeadlineReminder($race, 'preseason')
+            ->chunkById(500, function ($users) use ($race) {
+                Notification::send($users, new PredictionDeadlineReminder($race, 'preseason'));
+            });
+    }
+
+    /**
      * Send midseason prediction deadline reminder to all users.
      */
     public function sendMidseasonDeadlineReminder(int $season): void
     {
-        // Create a dummy race object for the notification
         $race = new Races([
             'season' => $season,
             'race_name' => "{$season} Midseason",
@@ -126,5 +168,26 @@ class NotificationService
         User::chunkById(500, function ($users) use ($race) {
             Notification::send($users, new PredictionDeadlineReminder($race, 'midseason'));
         });
+    }
+
+    /**
+     * Send midseason deadline reminder only to users who haven't submitted a midseason prediction
+     * and who haven't already received this reminder for this season.
+     */
+    public function sendMidseasonDeadlineReminderToNonPredictors(int $season): void
+    {
+        $race = new Races([
+            'season' => $season,
+            'race_name' => "{$season} Midseason",
+            'round' => 0,
+        ]);
+
+        User::whereDoesntHave('predictions', function ($query) use ($season) {
+            $query->where('season', $season)->where('type', 'midseason');
+        })
+            ->whereNotReceivedDeadlineReminder($race, 'midseason')
+            ->chunkById(500, function ($users) use ($race) {
+                Notification::send($users, new PredictionDeadlineReminder($race, 'midseason'));
+            });
     }
 }

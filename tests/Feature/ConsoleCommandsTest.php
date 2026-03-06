@@ -7,7 +7,9 @@ use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\Teams;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
@@ -370,6 +372,47 @@ test('ensure previous-race bot initial prediction skips when job already recorde
 
     $this->artisan('app:ensure-previous-race-bot-initial-prediction')
         ->expectsOutputToContain('already seeded. Skipping.')
+        ->assertExitCode(0);
+});
+
+test('merge RB Racing Bulls once skips when job already recorded', function () {
+    \Illuminate\Support\Facades\DB::table('one_time_jobs')->insert([
+        'name' => 'merge_rb_racing_bulls_duplicate_teams',
+        'run_at' => now(),
+    ]);
+
+    $this->artisan('app:merge-rb-racing-bulls-once')
+        ->expectsOutputToContain('already run. Skipping.')
+        ->assertExitCode(0);
+});
+
+test('reminders send deadline command runs and queues reminders when in 72h window', function () {
+    Notification::fake();
+
+    config(['f1.current_season' => 2026]);
+    $qualifyingStart = Carbon::now()->addHours(50); // deadline = Q-1h = in 49h; 72h window started 23h ago
+    $race = Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'qualifying_start' => $qualifyingStart,
+    ]);
+
+    $this->artisan('reminders:send-deadline')
+        ->expectsOutputToContain('Queued race deadline reminders')
+        ->assertExitCode(0);
+});
+
+test('reminders send deadline command reports no window when outside 72h', function () {
+    config(['f1.current_season' => 2026]);
+    $qualifyingStart = Carbon::now()->addDays(10); // deadline in 10 days, way outside 72h window
+    Races::factory()->create([
+        'season' => 2026,
+        'round' => 1,
+        'qualifying_start' => $qualifyingStart,
+    ]);
+
+    $this->artisan('reminders:send-deadline')
+        ->expectsOutputToContain('No reminder windows active')
         ->assertExitCode(0);
 });
 

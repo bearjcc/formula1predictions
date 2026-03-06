@@ -7,6 +7,7 @@ use App\Notifications\PredictionDeadlineReminder;
 use App\Notifications\PredictionScored;
 use App\Notifications\RaceResultsAvailable;
 use App\Services\NotificationService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
@@ -199,19 +200,52 @@ test('prediction scored notification stores detailed data for dropdown', functio
 
 test('prediction deadline reminder has correct email content', function () {
     $user = User::factory()->create(['name' => 'Bob Wilson']);
+    $qualifyingStart = Carbon::now()->addDays(1)->setHour(14)->setMinute(0);
     $race = Races::factory()->create([
         'race_name' => 'British Grand Prix',
         'season' => 2024,
         'round' => 12,
+        'qualifying_start' => $qualifyingStart,
     ]);
 
     $notification = new PredictionDeadlineReminder($race, 'qualifying');
-    $mailMessage = $notification->toMail($user);
+    $mailable = $notification->toMail($user);
 
-    expect($mailMessage->subject)->toBe('Prediction Deadline Reminder: British Grand Prix')
-        ->and($mailMessage->greeting)->toBe('Hello Bob Wilson!')
-        ->and($mailMessage->introLines)->toContain("Don't forget to submit your predictions for British Grand Prix!")
-        ->and($mailMessage->introLines)->toContain('The deadline is before the qualifying session.');
+    expect($mailable->displayName)->toBe('British Grand Prix')
+        ->and($mailable->recipientName)->toBe('Bob Wilson')
+        ->and($mailable->deadlineText)->toBe('qualifying session');
+
+    $deadline = $qualifyingStart->copy()->subHour();
+    $nzt = $deadline->copy()->timezone('Pacific/Auckland')->format('M j, Y g:i A T');
+    $est = $deadline->copy()->timezone('America/New_York')->format('M j, Y g:i A T');
+    expect($mailable->deadlineNzt)->toBe($nzt)
+        ->and($mailable->deadlineEst)->toBe($est);
+});
+
+test('prediction deadline reminder has correct action url for race', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create(['season' => 2026, 'round' => 1]);
+
+    $notification = new PredictionDeadlineReminder($race, 'qualifying');
+    $mailable = $notification->toMail($user);
+    $array = $notification->toArray($user);
+
+    expect($mailable->actionUrl)->toContain('predict/create')
+        ->and($mailable->actionUrl)->toContain('race_id=' . $race->id)
+        ->and($array['action_url'])->toBe('/predict/create?race_id=' . $race->id);
+});
+
+test('prediction deadline reminder has correct action url for preseason', function () {
+    $user = User::factory()->create();
+    $race = Races::getFirstRaceOfSeason(2026) ?? new Races(['season' => 2026, 'race_name' => '2026 Season', 'round' => 0]);
+
+    $notification = new PredictionDeadlineReminder($race, 'preseason');
+    $mailable = $notification->toMail($user);
+    $array = $notification->toArray($user);
+
+    expect($mailable->actionUrl)->toContain('predict/preseason')
+        ->and($mailable->actionUrl)->toContain('year=2026')
+        ->and($array['action_url'])->toBe('/predict/preseason?year=2026');
 });
 
 test('notifications are stored in database', function () {
@@ -254,4 +288,65 @@ test('race results notification is only sent to users who predicted the race', f
 
     Notification::assertSentTo($predictor, RaceResultsAvailable::class);
     Notification::assertNotSentTo($nonPredictor, RaceResultsAvailable::class);
+});
+
+test('preseason deadline reminder can be sent to non-predictors only', function () {
+    Notification::fake();
+
+    Races::factory()->create(['season' => 2024, 'round' => 1]);
+    $withPreseason = User::factory()->create();
+    $withoutPreseason = User::factory()->create();
+
+    Prediction::factory()->create([
+        'user_id' => $withPreseason->id,
+        'season' => 2024,
+        'type' => 'preseason',
+        'race_id' => null,
+        'race_round' => 0,
+        'prediction_data' => ['team_order' => [1, 2, 3]],
+    ]);
+
+    $notificationService = new NotificationService;
+    $notificationService->sendPreseasonDeadlineReminderToNonPredictors(2024);
+
+    Notification::assertNotSentTo($withPreseason, PredictionDeadlineReminder::class);
+    Notification::assertSentTo($withoutPreseason, PredictionDeadlineReminder::class, function ($n) {
+        return $n->deadlineType === 'preseason';
+    });
+});
+
+test('sprint deadline reminder can be sent to non-predictors only', function () {
+    Notification::fake();
+
+    $race = Races::factory()->create(['has_sprint' => true]);
+    $withSprint = User::factory()->create();
+    $withoutSprint = User::factory()->create();
+
+    Prediction::factory()->create([
+        'user_id' => $withSprint->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+    ]);
+
+    $notificationService = new NotificationService;
+    $notificationService->sendSprintDeadlineReminderToNonPredictors($race);
+
+    Notification::assertNotSentTo($withSprint, PredictionDeadlineReminder::class);
+    Notification::assertSentTo($withoutSprint, PredictionDeadlineReminder::class, function ($n) use ($race) {
+        return $n->deadlineType === 'sprint' && $n->race->id === $race->id;
+    });
+});
+
+test('deadline reminder is not sent again to users who already received it', function () {
+    $race = Races::factory()->create();
+    $user = User::factory()->create();
+
+    $user->notify(new PredictionDeadlineReminder($race, 'qualifying'));
+    expect($user->notifications()->count())->toBe(1);
+
+    Notification::fake();
+    $notificationService = new NotificationService;
+    $notificationService->sendPredictionDeadlineReminderToNonPredictors($race, 'qualifying');
+
+    Notification::assertNotSentTo($user, PredictionDeadlineReminder::class);
 });
