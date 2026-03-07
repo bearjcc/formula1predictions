@@ -13,7 +13,7 @@ Both are customized in `AppServiceProvider::boot()` so copy and links use app na
 
 To send these (and other app mail) via [Resend](https://resend.com):
 
-1. Set `MAIL_MAILER=resend` and `RESEND_KEY=re_...` (from Resend dashboard).
+1. Set `MAIL_MAILER=resend` and `RESEND_API_KEY=re_...` (or `RESEND_KEY`) from Resend dashboard.
 2. Set `MAIL_FROM_ADDRESS` and `MAIL_FROM_NAME`. The **from** address must be a domain you have verified in Resend (e.g. `noreply@yourdomain.com`). Until the domain is verified, Resend may block or limit sending; forgot-password will not deliver until the sender is verified.
 3. Ensure `APP_URL` matches your app (e.g. `https://yourapp.up.railway.app`). Links in the emails are built from this.
 
@@ -21,7 +21,7 @@ Example:
 
 ```env
 MAIL_MAILER=resend
-RESEND_KEY=re_xxxxxxxxxxxx
+RESEND_API_KEY=re_xxxxxxxxxxxx
 MAIL_FROM_ADDRESS="noreply@yourdomain.com"
 MAIL_FROM_NAME="${APP_NAME}"
 APP_URL=https://yourapp.up.railway.app
