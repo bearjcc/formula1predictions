@@ -45,6 +45,9 @@ jobs:
       - name: Readiness check
         run: php artisan app:check-ready
 
+      - name: Run critical user-journey tests
+        run: php artisan test --group=critical
+
       - name: Run tests (two batches)
         run: ./scripts/test-batches.sh
 
