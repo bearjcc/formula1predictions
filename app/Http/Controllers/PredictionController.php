@@ -36,6 +36,11 @@ class PredictionController extends Controller
     public function createForm(Request $request): View|RedirectResponse
     {
         $race = null;
+        $type = $request->string('type')->lower()->value() ?: 'race';
+
+        if (! in_array($type, ['race', 'sprint'], true)) {
+            $type = 'race';
+        }
 
         if ($request->filled('race_id')) {
             $raceId = (int) $request->input('race_id');
@@ -43,14 +48,21 @@ class PredictionController extends Controller
         } else {
             $nextRace = Races::nextAvailableForPredictions();
             if ($nextRace !== null) {
-                return to_route('predict.create', ['race_id' => $nextRace->id]);
+                return to_route('predict.create', ['race_id' => $nextRace->id, 'type' => $type]);
             }
         }
 
         if ($race !== null) {
             $raceOpen = $race->allowsPredictions();
             $sprintOpen = $race->hasSprint() && $race->allowsSprintPredictions();
-            if (! $raceOpen && ! $sprintOpen) {
+            $requestedTypeOpen = $type === 'sprint' ? $sprintOpen : $raceOpen;
+
+            if ($type === 'sprint' && ! $race->hasSprint()) {
+                return to_route('predictions.index')
+                    ->with('error', 'Sprint predictions are not available for this race.');
+            }
+
+            if (! $requestedTypeOpen) {
                 return to_route('predictions.index')
                     ->with('error', 'The prediction deadline for this race has passed.');
             }
@@ -58,7 +70,7 @@ class PredictionController extends Controller
             $existing = $request->user()->predictions()
                 ->where('season', $race->season)
                 ->where('race_round', $race->round)
-                ->whereIn('type', ['race', 'sprint'])
+                ->where('type', $type)
                 ->first();
             if ($existing !== null) {
                 return to_route('predictions.edit', $existing)
@@ -66,7 +78,7 @@ class PredictionController extends Controller
             }
         }
 
-        return view('predictions.create-livewire', compact('race'));
+        return view('predictions.create-livewire', compact('race', 'type'));
     }
 
     /**
@@ -128,7 +140,7 @@ class PredictionController extends Controller
      */
     public function edit(Prediction $prediction): View
     {
-        Gate::authorize('update', $prediction);
+        Gate::authorize('view', $prediction);
 
         return view('predictions.edit-livewire', compact('prediction'));
     }

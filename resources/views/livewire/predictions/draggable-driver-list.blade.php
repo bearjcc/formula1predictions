@@ -16,10 +16,29 @@
             draggedFromIndex: null,
             dragOverIndex: null,
 
-            getConstructorColor(teamName) {
-                if (!teamName || !this.constructorColors) return null;
-                const k = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === String(teamName).trim().toLowerCase());
-                return k ? this.constructorColors[k] : null;
+            getConstructorColor(team) {
+                if (!team) return null;
+
+                const explicitColor = typeof team === 'object' ? team.color : null;
+                if (explicitColor) return explicitColor;
+
+                if (!this.constructorColors) return null;
+
+                const teamName = typeof team === 'object' ? (team.team_name || team.display_name || '') : String(team);
+                const normalized = teamName.trim().toLowerCase();
+                if (!normalized) return null;
+
+                const exactKey = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === normalized);
+                if (exactKey) return this.constructorColors[exactKey];
+
+                const bestKey = Object.keys(this.constructorColors)
+                    .filter(key => {
+                        const candidate = key.trim().toLowerCase();
+                        return normalized.includes(candidate) || candidate.includes(normalized);
+                    })
+                    .sort((a, b) => b.trim().length - a.trim().length)[0];
+
+                return bestKey ? this.constructorColors[bestKey] : null;
             },
 
             init() {
@@ -73,6 +92,7 @@
                 this.draggedDriverId = driverId;
                 this.draggedFromIndex = from === 'slot' ? fromIndex : null;
                 e.dataTransfer.setData('application/json', JSON.stringify({ driverId, from, fromIndex: fromIndex ?? null }));
+                e.dataTransfer.setData('text/plain', String(driverId));
                 e.dataTransfer.effectAllowed = 'move';
             },
 
@@ -95,6 +115,10 @@
                     const data = JSON.parse(e.dataTransfer.getData('application/json') || '{}');
                     if (data.driverId != null) driverId = data.driverId;
                 } catch (_) {}
+                if (driverId == null) {
+                    const textDriverId = e.dataTransfer.getData('text/plain');
+                    if (textDriverId) driverId = textDriverId;
+                }
                 if (driverId == null) driverId = this.draggedDriverId;
                 if (driverId == null) return;
                 this.insertDriverAt(driverId, dropIndex);
@@ -144,6 +168,7 @@
 
             pointerDownRace(e, driverId, from, fromIndex) {
                 if (e.button !== undefined && e.button !== 0) return;
+                if (e.pointerType === 'mouse') return;
                 this.justDragged = false;
                 this.pointerDriverId = driverId;
                 this.pointerFrom = from;
@@ -277,7 +302,7 @@
                                     @pointerdown="pointerDownRace($event, slotDriverId(index), 'slot', index)"
                                     :title="getDriverById(slotDriverId(index)) ? (getDriverById(slotDriverId(index)).name + ' ' + getDriverById(slotDriverId(index)).surname) : ''"
                                 >
-                                    <span x-show="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) ? 'background-color: ' + getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) : ''" aria-hidden="true"></span>
+                                    <span x-show="getConstructorColor(getDriverById(slotDriverId(index))?.team)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getDriverById(slotDriverId(index))?.team) ? 'background-color: ' + getConstructorColor(getDriverById(slotDriverId(index))?.team) : ''" aria-hidden="true"></span>
                                     <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 w-3.5" aria-hidden="true">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                                     </span>
@@ -321,7 +346,7 @@
                             @click.prevent="if (!justDragged) fillFirstEmpty(driver.id); justDragged = false"
                             :title="driver.name + ' ' + driver.surname"
                         >
-                            <span x-show="getConstructorColor(driver.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[0.875rem]" :style="getConstructorColor(driver.team?.team_name) ? 'background-color: ' + getConstructorColor(driver.team?.team_name) : ''" aria-hidden="true"></span>
+                            <span x-show="getConstructorColor(driver.team)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[0.875rem]" :style="getConstructorColor(driver.team) ? 'background-color: ' + getConstructorColor(driver.team) : ''" aria-hidden="true"></span>
                             <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 w-3.5" aria-hidden="true">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                             </span>
@@ -376,7 +401,7 @@
                                     @dragend="dragEndRace()"
                                     @pointerdown="pointerDownRace($event, slotDriverId(index), 'slot', index)"
                                 >
-                                    <span x-show="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) ? 'background-color: ' + getConstructorColor(getDriverById(slotDriverId(index))?.team?.team_name) : ''" aria-hidden="true"></span>
+                                    <span x-show="getConstructorColor(getDriverById(slotDriverId(index))?.team)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getDriverById(slotDriverId(index))?.team) ? 'background-color: ' + getConstructorColor(getDriverById(slotDriverId(index))?.team) : ''" aria-hidden="true"></span>
                                     <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600" aria-hidden="true" title="Drag to reorder">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                                     </span>
@@ -424,7 +449,7 @@
                             @dragend="dragEndRace()"
                             @pointerdown="pointerDownRace($event, driver.id, 'pool', null)"
                         >
-                            <span x-show="getConstructorColor(driver.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(driver.team?.team_name) ? 'background-color: ' + getConstructorColor(driver.team?.team_name) : ''" aria-hidden="true"></span>
+                            <span x-show="getConstructorColor(driver.team)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(driver.team) ? 'background-color: ' + getConstructorColor(driver.team) : ''" aria-hidden="true"></span>
                             <span class="flex-shrink-0 text-zinc-400 dark:text-zinc-500" title="Drag into prediction list">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg>
                             </span>
@@ -474,10 +499,29 @@
             _pointerUpBound: null,
             // #endregion
 
-            getConstructorColor(teamName) {
-                if (!teamName || !this.constructorColors) return null;
-                const k = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === String(teamName).trim().toLowerCase());
-                return k ? this.constructorColors[k] : null;
+            getConstructorColor(team) {
+                if (!team) return null;
+
+                const explicitColor = typeof team === 'object' ? team.color : null;
+                if (explicitColor) return explicitColor;
+
+                if (!this.constructorColors) return null;
+
+                const teamName = typeof team === 'object' ? (team.team_name || team.display_name || '') : String(team);
+                const normalized = teamName.trim().toLowerCase();
+                if (!normalized) return null;
+
+                const exactKey = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === normalized);
+                if (exactKey) return this.constructorColors[exactKey];
+
+                const bestKey = Object.keys(this.constructorColors)
+                    .filter(key => {
+                        const candidate = key.trim().toLowerCase();
+                        return normalized.includes(candidate) || candidate.includes(normalized);
+                    })
+                    .sort((a, b) => b.trim().length - a.trim().length)[0];
+
+                return bestKey ? this.constructorColors[bestKey] : null;
             },
 
             dragStart(index) {
@@ -519,6 +563,7 @@
             // #region pointer/touch drag methods
             pointerDown(e, index) {
                 if (e.button !== undefined && e.button !== 0) return;
+                if (e.pointerType === 'mouse') return;
                 this.pointerDriverIndex = index;
                 this.pointerStartX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
                 this.pointerStartY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
@@ -651,7 +696,7 @@
                                  :class="index === 0 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400' : (index === 1 ? 'bg-slate-200 text-slate-700 dark:bg-slate-700/60 dark:text-slate-300' : (index === 2 ? 'bg-amber-100 text-amber-700 dark:bg-amber-800/20 dark:text-amber-500' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500'))">
                                 <span x-text="index + 1"></span>
                             </div>
-                            <span x-show="getConstructorColor(getDriverById(driverId)?.team?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getDriverById(driverId)?.team?.team_name) ? 'background-color: ' + getConstructorColor(getDriverById(driverId)?.team?.team_name) : ''" aria-hidden="true"></span>
+                            <span x-show="getConstructorColor(getDriverById(driverId)?.team)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getDriverById(driverId)?.team) ? 'background-color: ' + getConstructorColor(getDriverById(driverId)?.team) : ''" aria-hidden="true"></span>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center space-x-2">
                                     <span class="font-bold text-zinc-900 dark:text-zinc-100 truncate" x-text="getDriverById(driverId)?.name + ' ' + getDriverById(driverId)?.surname"></span>

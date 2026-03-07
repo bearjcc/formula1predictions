@@ -10,6 +10,7 @@ use App\Models\Races;
 use App\Models\Teams;
 use App\Services\F1ApiService;
 use App\Services\PredictionLifecycle;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule as ValidationRule;
 use Livewire\Attributes\On;
@@ -71,9 +72,12 @@ class PredictionForm extends Component
 
     public ?int $preseasonYear = null;
 
+    public string $initialType = 'race';
+
     public function mount(
         ?Races $race = null,
         ?Prediction $existingPrediction = null,
+        string $initialType = 'race',
         bool $preseason = false,
         ?int $preseasonYear = null,
     ): void {
@@ -81,6 +85,8 @@ class PredictionForm extends Component
         $this->editingPrediction = null;
         $this->race = $race;
         $this->isLocked = false;
+        $this->initialType = in_array($initialType, ['race', 'sprint', 'preseason', 'midseason'], true) ? $initialType : 'race';
+        $this->type = $this->initialType;
 
         /** @var PredictionLifecycle $lifecycle */
         $lifecycle = app(PredictionLifecycle::class);
@@ -92,8 +98,6 @@ class PredictionForm extends Component
             $this->type = 'preseason';
             $this->season = $preseasonYearValue ?? config('f1.current_season');
         }
-
-        $this->loadData();
 
         if ($existingPrediction !== null && $existingPrediction->exists) {
             /** @var \App\Models\User|null $user */
@@ -138,36 +142,39 @@ class PredictionForm extends Component
         } elseif ($race !== null) {
             $this->season = $race->season ?? config('f1.current_season');
             $this->raceRound = $race->round;
-            $this->type = 'race';
+            $this->type = $this->initialType;
             $deadline = $lifecycle->predictionDeadline('race', $this->season, $race);
+            if ($this->type === 'sprint') {
+                $deadline = $lifecycle->predictionDeadline('sprint', $this->season, $race);
+            }
             $this->isLocked = $deadline === null || ! $deadline->isFuture();
         }
+
+        $this->loadData();
     }
 
     public function loadData(): void
     {
         // Only show drivers for this season (same logic as drivers standings page)
         $seasonDrivers = Drivers::forSeason($this->season, app(F1ApiService::class));
-        // Preseason fallback: if no standings/API data for this season, use drivers assigned to teams (e.g. lineup seeder)
+        $activeTeamDrivers = Drivers::whereNotNull('team_id')
+            ->whereHas('team', fn ($q) => $q->where('is_active', true))
+            ->with('team')
+            ->get();
+
+        $isCurrentOrFutureSeason = $this->season >= (int) config('f1.current_season');
+
         if ($this->type === 'preseason' && $seasonDrivers->isEmpty()) {
-            $seasonDrivers = Drivers::whereNotNull('team_id')
-                ->whereHas('team', fn ($q) => $q->where('is_active', true))
-                ->with('team')
-                ->get();
+            $seasonDrivers = $activeTeamDrivers;
+        } elseif (
+            $isCurrentOrFutureSeason
+            && in_array($this->type, ['race', 'sprint'], true)
+            && ($seasonDrivers->isEmpty() || $seasonDrivers->count() < (int) config('f1.max_drivers', 22))
+        ) {
+            $seasonDrivers = $this->mergeSeasonDrivers($seasonDrivers, $activeTeamDrivers);
         }
-        $driverArrays = $seasonDrivers->map(function ($driver) {
-            return [
-                'id' => $driver->driver_id ?? (string) $driver->id,
-                'name' => $driver->name,
-                'surname' => $driver->surname,
-                'nationality' => $driver->nationality,
-                'team' => [
-                    'id' => $driver->team?->id,
-                    'team_name' => $driver->team?->team_name,
-                    'display_name' => $driver->team?->display_name,
-                ],
-            ];
-        });
+
+        $driverArrays = $seasonDrivers->map(fn (Drivers $driver) => $this->mapDriverForPredictionForm($driver));
         // Sort by family name (last word of surname so "Kimi Antonelli" is under A)
         $this->drivers = collect($driverArrays)->sortBy(function ($d) {
             $s = trim($d['surname'] ?? $d['name'] ?? '');
@@ -277,6 +284,76 @@ class PredictionForm extends Component
         if (empty($this->driverChampionship) && $this->type === 'midseason' && ! empty($this->drivers)) {
             $this->driverChampionship = collect($this->drivers)->pluck('id')->toArray();
         }
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Drivers>  $seasonDrivers
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Drivers>  $activeTeamDrivers
+     * @return \Illuminate\Database\Eloquent\Collection<int, Drivers>
+     */
+    private function mergeSeasonDrivers(EloquentCollection $seasonDrivers, EloquentCollection $activeTeamDrivers): EloquentCollection
+    {
+        if ($seasonDrivers->isEmpty()) {
+            return new EloquentCollection($activeTeamDrivers->all());
+        }
+
+        $byKey = [];
+
+        foreach ($seasonDrivers as $driver) {
+            $byKey[$this->driverKey($driver)] = $driver;
+        }
+
+        foreach ($activeTeamDrivers as $driver) {
+            $key = $this->driverKey($driver);
+
+            if (! array_key_exists($key, $byKey) || $this->shouldPreferDriver($driver, $byKey[$key])) {
+                $byKey[$key] = $driver;
+            }
+        }
+
+        return new EloquentCollection(array_values($byKey));
+    }
+
+    private function mapDriverForPredictionForm(Drivers $driver): array
+    {
+        return [
+            'id' => $driver->driver_id ?? (string) $driver->id,
+            'name' => $driver->name,
+            'surname' => $driver->surname,
+            'nationality' => $driver->nationality,
+            'team' => [
+                'id' => $driver->team?->id,
+                'team_name' => $driver->team?->team_name,
+                'display_name' => $driver->team?->display_name,
+                'color' => Teams::constructorColor($driver->team?->team_name),
+            ],
+        ];
+    }
+
+    private function driverKey(Drivers $driver): string
+    {
+        if ($driver->driver_id !== null && $driver->driver_id !== '') {
+            return 'driver_id:'.strtolower($driver->driver_id);
+        }
+
+        return 'id:'.$driver->id;
+    }
+
+    private function shouldPreferDriver(Drivers $candidate, Drivers $current): bool
+    {
+        return $this->driverPreferenceScore($candidate) > $this->driverPreferenceScore($current);
+    }
+
+    /**
+     * @return array{int, int, int}
+     */
+    private function driverPreferenceScore(Drivers $driver): array
+    {
+        return [
+            $driver->team_id !== null ? 1 : 0,
+            $driver->is_active ? 1 : 0,
+            (int) $driver->id,
+        ];
     }
 
     public function updatedType(): void

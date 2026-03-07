@@ -6,6 +6,7 @@
 @section('content')
     <livewire:predictions.prediction-form
         :race="$race ?? null"
+        :initial-type="$type ?? 'race'"
         :preseason="$preseason ?? false"
         :preseason-year="$year ?? null"
     />

@@ -18,10 +18,29 @@
             _pointerUpBound: null,
             // #endregion
 
-            getConstructorColor(teamName) {
-                if (!teamName || !this.constructorColors) return null;
-                const k = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === String(teamName).trim().toLowerCase());
-                return k ? this.constructorColors[k] : null;
+            getConstructorColor(team) {
+                if (!team) return null;
+
+                const explicitColor = typeof team === 'object' ? team.color : null;
+                if (explicitColor) return explicitColor;
+
+                if (!this.constructorColors) return null;
+
+                const teamName = typeof team === 'object' ? (team.team_name || team.display_name || '') : String(team);
+                const normalized = teamName.trim().toLowerCase();
+                if (!normalized) return null;
+
+                const exactKey = Object.keys(this.constructorColors).find(key => key.trim().toLowerCase() === normalized);
+                if (exactKey) return this.constructorColors[exactKey];
+
+                const bestKey = Object.keys(this.constructorColors)
+                    .filter(key => {
+                        const candidate = key.trim().toLowerCase();
+                        return normalized.includes(candidate) || candidate.includes(normalized);
+                    })
+                    .sort((a, b) => b.trim().length - a.trim().length)[0];
+
+                return bestKey ? this.constructorColors[bestKey] : null;
             },
 
             moveTeam(fromIndex, toIndex) {
@@ -69,6 +88,7 @@
             // #region pointer/touch drag methods
             pointerDown(e, index) {
                 if (e.button !== undefined && e.button !== 0) return;
+                if (e.pointerType === 'mouse') return;
                 this.pointerTeamIndex = index;
                 this.pointerStartX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
                 this.pointerStartY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
@@ -199,7 +219,7 @@
                                     <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300" x-text="index + 1"></span>
                                 </div>
                                 <!-- Constructor color bar -->
-                                <span x-show="getConstructorColor(getTeamById(teamId)?.team_name)" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getTeamById(teamId)?.team_name) ? 'background-color: ' + getConstructorColor(getTeamById(teamId)?.team_name) : ''" aria-hidden="true"></span>
+                                <span x-show="getConstructorColor(getTeamById(teamId))" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getTeamById(teamId)) ? 'background-color: ' + getConstructorColor(getTeamById(teamId)) : ''" aria-hidden="true"></span>
                                 <!-- Team Info -->
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center space-x-2">

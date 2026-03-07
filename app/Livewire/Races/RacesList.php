@@ -99,6 +99,19 @@ class RacesList extends Component
         $this->redirect(route('predict.create', ['race_id' => $race->id]));
     }
 
+    public function makeSprintPrediction(int $round): void
+    {
+        $race = Races::where('season', $this->year)->where('round', $round)->first();
+
+        if (! $race) {
+            $this->error = 'Race details not found in database. Please sync races first.';
+
+            return;
+        }
+
+        $this->redirect(route('predict.create', ['race_id' => $race->id, 'type' => 'sprint']));
+    }
+
     /**
      * Redirect to the edit page for an existing prediction.
      */

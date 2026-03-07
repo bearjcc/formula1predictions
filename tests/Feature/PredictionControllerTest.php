@@ -7,6 +7,7 @@ use App\Models\Races;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
@@ -231,6 +232,48 @@ test('predict create redirects to edit when prediction already exists for race',
         ->get(route('predict.create', ['race_id' => $race->id]));
 
     $response->assertRedirect(route('predictions.edit', $prediction));
+});
+
+test('predict create keeps race and sprint predictions separate for the same round', function () {
+    $user = testUser();
+    $race = Races::factory()->create([
+        'season' => 2025,
+        'round' => 2,
+        'status' => 'upcoming',
+        'has_sprint' => true,
+        'qualifying_start' => Carbon::now()->addDays(2),
+        'sprint_qualifying_start' => Carbon::now()->addDay(),
+    ]);
+    $sprintPrediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'sprint',
+        'season' => 2025,
+        'race_round' => 2,
+        'race_id' => $race->id,
+        'status' => 'submitted',
+    ]);
+
+    actingAs($user)
+        ->get(route('predict.create', ['race_id' => $race->id, 'type' => 'race']))
+        ->assertOk();
+
+    actingAs($user)
+        ->get(route('predict.create', ['race_id' => $race->id, 'type' => 'sprint']))
+        ->assertRedirect(route('predictions.edit', $sprintPrediction));
+});
+
+test('user can view own locked prediction in read-only edit screen', function () {
+    $user = testUser();
+    $prediction = Prediction::factory()->locked()->create([
+        'user_id' => $user->id,
+        'type' => 'race',
+        'season' => 2025,
+    ]);
+
+    actingAs($user)
+        ->get(route('predictions.edit', $prediction))
+        ->assertOk()
+        ->assertSee('This prediction is locked.');
 });
 
 test('predict create redirects to index with error when race deadline has passed', function () {

@@ -192,7 +192,7 @@
                         variant="outline"
                         size="sm"
                         icon="o-plus"
-                        wire:click="makePrediction({{ (int) ($race['round'] ?? 0) }})"
+                        wire:click="makeSprintPrediction({{ (int) ($race['round'] ?? 0) }})"
                     >
                         Make Sprint Prediction
                     </x-mary-button>

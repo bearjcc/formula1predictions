@@ -8,6 +8,7 @@ use App\Livewire\Predictions\PredictionForm;
 use App\Models\Drivers;
 use App\Models\Prediction;
 use App\Models\Races;
+use App\Models\Standings;
 use App\Models\Teams;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,6 +40,98 @@ class LivewirePredictionFormTest extends TestCase
             ->test(PredictionForm::class)
             ->assertSet('season', (int) config('f1.current_season'))
             ->assertSet('type', 'race');
+    }
+
+    public function test_prediction_form_uses_selected_race_season_before_loading_drivers(): void
+    {
+        $user = User::factory()->create();
+        $team2024 = Teams::factory()->create(['team_name' => 'Williams Racing']);
+        $team2026 = Teams::factory()->create(['team_name' => 'McLaren']);
+
+        $driver2024 = Drivers::factory()->create([
+            'driver_id' => 'alex_albon',
+            'name' => 'Alex',
+            'surname' => 'Albon',
+            'team_id' => $team2024->id,
+        ]);
+        $driver2026 = Drivers::factory()->create([
+            'driver_id' => 'oscar_piastri',
+            'name' => 'Oscar',
+            'surname' => 'Piastri',
+            'team_id' => $team2026->id,
+        ]);
+
+        Standings::factory()->create([
+            'season' => 2024,
+            'type' => 'drivers',
+            'round' => null,
+            'entity_id' => 'alex_albon',
+            'entity_name' => 'Alex Albon',
+            'position' => 1,
+        ]);
+        Standings::factory()->create([
+            'season' => 2026,
+            'type' => 'drivers',
+            'round' => null,
+            'entity_id' => 'oscar_piastri',
+            'entity_name' => 'Oscar Piastri',
+            'position' => 1,
+        ]);
+
+        $race = Races::factory()->create([
+            'season' => 2024,
+            'round' => 1,
+            'status' => 'upcoming',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class, ['race' => $race])
+            ->assertSet('season', 2024)
+            ->assertSet('drivers', function (array $drivers) use ($driver2024, $driver2026) {
+                $ids = collect($drivers)->pluck('id')->all();
+
+                return in_array($driver2024->driver_id, $ids, true)
+                    && ! in_array($driver2026->driver_id, $ids, true);
+            });
+    }
+
+    public function test_prediction_form_falls_back_to_team_assigned_drivers_when_standings_are_missing(): void
+    {
+        $user = User::factory()->create();
+        $race = Races::factory()->create([
+            'season' => 2026,
+            'round' => 1,
+            'status' => 'upcoming',
+        ]);
+        $team = Teams::factory()->create([
+            'team_name' => 'Atlassian Williams Racing',
+            'is_active' => true,
+        ]);
+        $drivers = collect([
+            Drivers::factory()->create([
+                'driver_id' => 'fallback_driver_one',
+                'name' => 'Fallback',
+                'surname' => 'One',
+                'team_id' => $team->id,
+            ]),
+            Drivers::factory()->create([
+                'driver_id' => 'fallback_driver_two',
+                'name' => 'Fallback',
+                'surname' => 'Two',
+                'team_id' => $team->id,
+            ]),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(PredictionForm::class, ['race' => $race])
+            ->assertSet('drivers', function (array $driverRows) use ($drivers) {
+                $ids = collect($driverRows)->pluck('id')->all();
+                $teamColors = collect($driverRows)->pluck('team.color')->filter()->all();
+
+                return count($driverRows) === 2
+                    && collect($drivers)->pluck('driver_id')->every(fn ($id) => in_array($id, $ids, true))
+                    && in_array('#1868DB', $teamColors, true);
+            });
     }
 
     public function test_prediction_form_can_save_race_prediction(): void
