@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Mail\BuildSuccessNotification;
 use App\Models\Drivers;
 use App\Models\Prediction;
 use App\Models\Races;
@@ -9,6 +10,7 @@ use App\Models\Teams;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
@@ -223,6 +225,31 @@ test('promote admin command is idempotent when user already admin', function () 
 
     $user->refresh();
     expect($user->is_admin)->toBeTrue();
+});
+
+test('notify build success command skips when ADMIN_EMAIL not set', function () {
+    config(['admin.promotable_admin_email' => null]);
+    $prev = getenv('ADMIN_EMAIL');
+    putenv('ADMIN_EMAIL=');
+
+    try {
+        $this->artisan('app:notify-build-success')
+            ->assertExitCode(0);
+    } finally {
+        putenv($prev !== false ? 'ADMIN_EMAIL='.$prev : 'ADMIN_EMAIL');
+    }
+});
+
+test('notify build success command sends email to admin when ADMIN_EMAIL set', function () {
+    Mail::fake();
+    config(['admin.promotable_admin_email' => 'admin@example.com']);
+
+    $this->artisan('app:notify-build-success')
+        ->assertExitCode(0);
+
+    Mail::assertSent(BuildSuccessNotification::class, function (BuildSuccessNotification $mail) {
+        return $mail->hasTo('admin@example.com');
+    });
 });
 
 test('ensure admin user command skips when ADMIN_EMAIL not set', function () {

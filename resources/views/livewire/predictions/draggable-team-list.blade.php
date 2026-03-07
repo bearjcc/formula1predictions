@@ -183,15 +183,13 @@
             }
             // #endregion
         }"
-        class="space-y-2"
+        class="space-y-1"
     >
-        <!-- Team List -->
+        <!-- Team List: compact so 11 constructors fit on laptop/phone viewport -->
         <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700">
-            <div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
-                <div class="flex items-center justify-between">
-                    <h4 class="font-medium text-zinc-900 dark:text-zinc-100">{{ $title }}</h4>
-                </div>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Constructor order — drag or touch to reorder your predictions.</p>
+            <div class="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700">
+                <h4 class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ $title }}</h4>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Drag or touch to reorder.</p>
             </div>
 
             <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -208,30 +206,30 @@
                             'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700': draggedOverIndex === index,
                             'opacity-40': draggedIndex !== null && draggedIndex === index && pointerDragActive
                         }"
-                        class="p-4 min-h-[44px] hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none flex items-center"
+                        class="py-1.5 px-3 min-h-0 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none flex items-center"
                         :data-drop-team="index"
                         @pointerdown="pointerDown($event, index)"
                     >
-                        <div class="flex items-center justify-between w-full">
-                            <div class="flex items-center space-x-4 min-w-0 cursor-move">
+                        <div class="flex items-center justify-between w-full gap-2">
+                            <div class="flex items-center gap-2 min-w-0 cursor-move flex-1">
                                 <!-- Position Number -->
-                                <div class="flex-shrink-0 w-8 h-8 bg-zinc-100 dark:bg-zinc-600 rounded-full flex items-center justify-center">
-                                    <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300" x-text="index + 1"></span>
+                                <div class="flex-shrink-0 w-6 h-6 bg-zinc-100 dark:bg-zinc-600 rounded-full flex items-center justify-center">
+                                    <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300" x-text="index + 1"></span>
                                 </div>
                                 <!-- Constructor color bar -->
-                                <span x-show="getConstructorColor(getTeamById(teamId))" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1.25rem]" :style="getConstructorColor(getTeamById(teamId)) ? 'background-color: ' + getConstructorColor(getTeamById(teamId)) : ''" aria-hidden="true"></span>
+                                <span x-show="getConstructorColor(getTeamById(teamId))" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getTeamById(teamId)) ? 'background-color: ' + getConstructorColor(getTeamById(teamId)) : ''" aria-hidden="true"></span>
                                 <!-- Team Info -->
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
-                                        <span class="text-xs text-zinc-500 dark:text-zinc-400" x-text="getTeamById(teamId)?.driver_surnames || getTeamById(teamId)?.nationality"></span>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
+                                        <span class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate shrink-0" x-text="getTeamById(teamId)?.driver_surnames || getTeamById(teamId)?.nationality"></span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex flex-col items-center gap-1 ml-3">
+                            <div class="flex flex-col items-center gap-0.5 shrink-0">
                                 <button
                                     type="button"
-                                    class="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-xs hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
+                                    class="w-5 h-5 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-[10px] hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-40"
                                     @click.stop="moveTeam(index, index - 1)"
                                     :disabled="index === 0"
                                 >
@@ -239,7 +237,7 @@
                                 </button>
                                 <button
                                     type="button"
-                                    class="w-6 h-6 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-xs hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
+                                    class="w-5 h-5 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-[10px] hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-40"
                                     @click.stop="moveTeam(index, index + 1)"
                                     :disabled="index === teamOrder.length - 1"
                                 >

@@ -55,6 +55,19 @@ ADMIN_NAME=Your Name
 
 The custom `start-container.sh` (used by Railpack on deploy) runs `app:ensure-admin-user` at startup, which creates or updates the admin user from these variables. **Important:** Change your password after first login.
 
+### Local data from production (preseason / testing)
+
+To make the local DB match production reference data (teams, drivers, races, circuits, countries) so the preseason form and standings match live:
+
+1. Set `PRODUCTION_DATABASE_URL` in `.env` (e.g. `mysql://user:pass@host:port/database`, or use Railway’s MySQL URL).
+2. Run (requires PHP with `pdo_mysql`; use Herd’s PHP or an environment that has it):
+
+   ```bash
+   php artisan db:sync-from-production
+   ```
+
+This clears and repopulates only reference tables; users and predictions are left unchanged. Use `--dry-run` to see row counts without writing.
+
 ### Demo bots (testing / demonstration)
 
 To seed the site with algorithm bots that submit predictions for every race:

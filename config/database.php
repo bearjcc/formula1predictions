@@ -110,6 +110,23 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'production' => [
+            'driver' => 'mysql',
+            'url' => env('PRODUCTION_DATABASE_URL'),
+            'host' => env('DB_PRODUCTION_HOST', '127.0.0.1'),
+            'port' => env('DB_PRODUCTION_PORT', '3306'),
+            'database' => env('DB_PRODUCTION_DATABASE', 'railway'),
+            'username' => env('DB_PRODUCTION_USERNAME', 'root'),
+            'password' => env('DB_PRODUCTION_PASSWORD', ''),
+            'unix_socket' => env('DB_PRODUCTION_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

@@ -27,6 +27,11 @@ if [ "$IS_LARAVEL" = "true" ]; then
   php artisan optimize:clear
   php artisan optimize
 
+  if [ -n "${ADMIN_EMAIL:-}" ]; then
+    echo "Sending build success notification to admin ..."
+    php artisan app:notify-build-success || true
+  fi
+
   echo "Starting Laravel scheduler in background ..."
   php artisan schedule:work &
 
