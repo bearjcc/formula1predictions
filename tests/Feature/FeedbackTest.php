@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use Livewire\Volt\Volt as LivewireVolt;
 use Tests\TestCase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class)->group('critical');
 
 test('guest cannot access feedback page', function () {
     /** @var TestCase $this */

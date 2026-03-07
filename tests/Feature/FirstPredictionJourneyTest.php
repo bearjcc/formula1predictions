@@ -14,7 +14,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\get;
 use function Pest\Laravel\mock;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class)->group('critical');
 
 test('home page guides new users to sign up or log in', function () {
     $response = get(route('home'));

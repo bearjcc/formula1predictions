@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Volt\Volt;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class)->group('critical');
 
 test('registration screen can be rendered', function () {
     /** @var \Tests\TestCase $this */

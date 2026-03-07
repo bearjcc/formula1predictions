@@ -3,7 +3,7 @@
 use App\Models\User;
 use Livewire\Volt\Volt as LivewireVolt;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class)->group('critical');
 
 test('login screen can be rendered', function () {
     /** @var \Tests\TestCase $this */
