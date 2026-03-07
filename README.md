@@ -55,18 +55,15 @@ ADMIN_NAME=Your Name
 
 The custom `start-container.sh` (used by Railpack on deploy) runs `app:ensure-admin-user` at startup, which creates or updates the admin user from these variables. **Important:** Change your password after first login.
 
-### Local data from production (preseason / testing)
+### Local data from F1 API (same as production)
 
-To make the local DB match production reference data (teams, drivers, races, circuits, countries) so the preseason form and standings match live:
+Production gets teams, drivers, and races from the [F1 API](https://f1api.dev). To seed local the same way:
 
-1. Set `PRODUCTION_DATABASE_URL` in `.env` (e.g. `mysql://user:pass@host:port/database`, or use Railway’s MySQL URL).
-2. Run (requires PHP with `pdo_mysql`; use Herd’s PHP or an environment that has it):
+```bash
+php artisan db:seed-from-api
+```
 
-   ```bash
-   php artisan db:sync-from-production
-   ```
-
-This clears and repopulates only reference tables; users and predictions are left unchanged. Use `--dry-run` to see row counts without writing.
+This runs `f1:ensure-season-data` and `app:ensure-driver-lineup-once` (same as production). Optional: `php artisan db:seed-from-api 2026` or `--force`. To sync only parts: `f1:sync-season 2026 --races-only` etc. **Alternative:** Set `PRODUCTION_DATABASE_URL` and run `db:sync-from-production` to copy from production MySQL.
 
 ### Demo bots (testing / demonstration)
 

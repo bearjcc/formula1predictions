@@ -12,7 +12,7 @@ use Illuminate\Database\Seeder;
  */
 class DriverLineup2026Seeder extends Seeder
 {
-    /** @var array<string, list<string>> team_name => [driver full name, ...] (names as stored in DB: e.g. Alex not Alexander, Andrea Kimi Antonelli, Arvin Lindblad, Sergio Pérez) */
+    /** @var array<string, list<string>> team_name => [driver full name, ...] (names as stored in DB: e.g. Alex not Alexander, Andrea Kimi Antonelli, Arvid Lindblad, Sergio Pérez) */
     private const LINEUP_2026 = [
         'Red Bull Racing' => ['Max Verstappen', 'Isack Hadjar'],
         'Ferrari' => ['Charles Leclerc', 'Lewis Hamilton'],
@@ -24,12 +24,13 @@ class DriverLineup2026Seeder extends Seeder
         'Williams' => ['Alex Albon', 'Carlos Sainz'],
         'Alpine' => ['Pierre Gasly', 'Franco Colapinto'],
         'Haas F1 Team' => ['Esteban Ocon', 'Oliver Bearman'],
-        'RB' => ['Liam Lawson', 'Arvin Lindblad'],
+        'RB' => ['Liam Lawson', 'Arvid Lindblad'],
     ];
 
     public function run(): void
     {
         $teamNameVariants = $this->teamNameVariants();
+        $assignedDriverIds = [];
 
         foreach (self::LINEUP_2026 as $canonicalTeamName => $driverFullNames) {
             $team = $this->resolveTeam($canonicalTeamName, $teamNameVariants);
@@ -49,29 +50,48 @@ class DriverLineup2026Seeder extends Seeder
 
                     continue;
                 }
+                $assignedDriverIds[] = $driver->id;
                 if ((int) $driver->team_id !== (int) $team->id) {
                     $driver->update(['team_id' => $team->id]);
                     $this->command?->info("  {$driver->name} {$driver->surname} -> {$team->team_name}");
                 }
             }
         }
+
+        // Clear team_id for any driver not in the 2026 lineup (e.g. Doohan, Tsunoda from 2025)
+        // so they do not appear under a constructor and we keep exactly 2 drivers per team.
+        if ($assignedDriverIds !== []) {
+            $cleared = Drivers::whereNotNull('team_id')
+                ->whereNotIn('id', array_unique($assignedDriverIds))
+                ->update(['team_id' => null]);
+            if ($cleared > 0) {
+                $this->command?->info("Cleared team assignment for {$cleared} driver(s) not in 2026 lineup.");
+            }
+        }
     }
 
     /**
      * Resolve team by canonical name or known API/variant names.
+     * Prefer API-synced teams (team_id not starting with lineup_2026) over seeder-created duplicates.
      *
      * @param  array<string, list<string>>  $variants
      */
     private function resolveTeam(string $canonicalTeamName, array $variants): ?Teams
     {
-        $namesToTry = array_merge([$canonicalTeamName], $variants[$canonicalTeamName] ?? []);
+        $variantNames = $variants[$canonicalTeamName] ?? [];
+        $namesToTry = array_merge($variantNames, [$canonicalTeamName]);
         foreach ($namesToTry as $name) {
-            $team = Teams::where('team_name', $name)->first();
+            $team = Teams::where('team_name', $name)
+                ->orderByRaw("CASE WHEN team_id LIKE 'lineup_2026%' THEN 1 ELSE 0 END")
+                ->first();
             if ($team) {
                 return $team;
             }
         }
-        $team = Teams::where('team_name', 'like', '%'.trim($canonicalTeamName).'%')->first();
+        // Prefer API team over lineup_2026_* duplicate when like-matching
+        $team = Teams::where('team_name', 'like', '%'.trim($canonicalTeamName).'%')
+            ->orderByRaw("CASE WHEN team_id LIKE 'lineup_2026%' THEN 1 ELSE 0 END")
+            ->first();
 
         return $team ?: null;
     }
@@ -123,15 +143,24 @@ class DriverLineup2026Seeder extends Seeder
 
     /**
      * Known API or display variants for team names (canonical => [variant1, ...]).
+     * API names first so we resolve to API-synced teams, not lineup_2026_* duplicates.
      *
      * @return array<string, list<string>>
      */
     private function teamNameVariants(): array
     {
         return [
-            'RB' => ['Racing Bulls', 'Visa Cash App RB', 'VCARB'],
-            'Audi' => ['Sauber', 'Kick Sauber', 'Stake F1 Team Kick Sauber'],
-            'Haas F1 Team' => ['Haas', 'MoneyGram Haas F1 Team'],
+            'Red Bull Racing' => ['Red Bull Racing'],
+            'Ferrari' => ['Scuderia Ferrari'],
+            'McLaren' => ['McLaren Formula 1 Team'],
+            'Mercedes' => ['Mercedes Formula 1 Team'],
+            'Aston Martin' => ['Aston Martin F1 Team'],
+            'Audi' => ['Audi Revolut F1 Team', 'Sauber', 'Kick Sauber', 'Stake F1 Team Kick Sauber'],
+            'Cadillac' => ['Cadillac Formula 1 Team'],
+            'Williams' => ['Williams Racing'],
+            'Alpine' => ['Alpine F1 Team'],
+            'Haas F1 Team' => ['Haas F1 Team', 'Haas', 'MoneyGram Haas F1 Team'],
+            'RB' => ['RB F1 Team', 'Racing Bulls', 'Visa Cash App RB', 'VCARB'],
         ];
     }
 }

@@ -492,6 +492,66 @@ class F1ApiService
     }
 
     /**
+     * Team IDs (teamId) returned by the API for a season. Used to deactivate teams not in this set.
+     *
+     * @return array<int, string>
+     */
+    public function getTeamIdsInSeason(int $year): array
+    {
+        try {
+            $data = $this->fetchConstructorsChampionship($year);
+        } catch (F1ApiException $e) {
+            return [];
+        }
+
+        $entries = $data['constructors_championship'] ?? [];
+        $ids = [];
+        foreach ($entries as $entry) {
+            $teamId = $entry['teamId'] ?? null;
+            if ($teamId !== null) {
+                $ids[] = $teamId;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Driver IDs (driverId) returned by the API for a season. Tries championship then /{year}/drivers.
+     * Used to deactivate drivers not in this set.
+     *
+     * @return array<int, string>
+     */
+    public function getDriverIdsInSeason(int $year): array
+    {
+        try {
+            $data = $this->fetchDriversChampionship($year);
+            $entries = $data['drivers_championship'] ?? [];
+            if ($entries !== []) {
+                return array_values(array_filter(array_unique(array_map(fn ($e) => $e['driverId'] ?? null, $entries))));
+            }
+        } catch (F1ApiException $e) {
+            // fall through to year/drivers
+        }
+
+        try {
+            $data = $this->fetchDriversForYear($year);
+            $drivers = $data['drivers'] ?? [];
+            $ids = [];
+            foreach ($drivers as $d) {
+                $id = $d['driverId'] ?? null;
+                if ($id !== null) {
+                    $ids[] = $id;
+                }
+            }
+
+            return $ids;
+        } catch (F1ApiException $e) {
+            return [];
+        }
+    }
+
+    /**
      * Sync teams (constructors) for a season from constructors championship. Upserts by team_id.
      *
      * @return int Number of teams created or updated
