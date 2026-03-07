@@ -88,7 +88,6 @@
             // #region pointer/touch drag methods
             pointerDown(e, index) {
                 if (e.button !== undefined && e.button !== 0) return;
-                if (e.pointerType === 'mouse') return;
                 this.pointerTeamIndex = index;
                 this.pointerStartX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
                 this.pointerStartY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
@@ -98,6 +97,7 @@
                 document.addEventListener('pointermove', this._pointerMoveBound, { passive: false });
                 document.addEventListener('pointerup', this._pointerUpBound);
                 document.addEventListener('pointercancel', this._pointerUpBound);
+                if (e.pointerType !== 'mouse') e.preventDefault();
             },
 
             pointerMove(e) {
@@ -206,30 +206,29 @@
                             'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700': draggedOverIndex === index,
                             'opacity-40': draggedIndex !== null && draggedIndex === index && pointerDragActive
                         }"
-                        class="py-1.5 px-3 min-h-0 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 touch-none select-none flex items-center"
+                        class="py-1.5 px-3 min-h-0 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-150 select-none flex items-center"
                         :data-drop-team="index"
-                        @pointerdown="pointerDown($event, index)"
                     >
                         <div class="flex items-center justify-between w-full gap-2">
-                            <div class="flex items-center gap-2 min-w-0 cursor-move flex-1">
+                            <div class="flex items-center gap-2 min-w-0 flex-1">
                                 <!-- Position Number -->
                                 <div class="flex-shrink-0 w-6 h-6 bg-zinc-100 dark:bg-zinc-600 rounded-full flex items-center justify-center">
                                     <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300" x-text="index + 1"></span>
                                 </div>
                                 <!-- Constructor color bar -->
                                 <span x-show="getConstructorColor(getTeamById(teamId))" class="flex-shrink-0 w-1 rounded-full self-stretch min-h-[1rem]" :style="getConstructorColor(getTeamById(teamId)) ? 'background-color: ' + getConstructorColor(getTeamById(teamId)) : ''" aria-hidden="true"></span>
-                                <!-- Team Info -->
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
-                                        <span class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate shrink-0" x-text="getTeamById(teamId)?.driver_surnames || getTeamById(teamId)?.nationality"></span>
+                                <!-- Team Info: single line, truncate so 11 rows fit viewport -->
+                                <div class="flex-1 min-w-0 overflow-hidden">
+                                    <div class="flex items-center gap-2 flex-nowrap min-w-0">
+                                        <span class="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0" x-text="getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name"></span>
+                                        <span class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate min-w-0 max-w-[7rem]" x-text="getTeamById(teamId)?.driver_surnames || getTeamById(teamId)?.nationality"></span>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex flex-col items-center gap-0.5 shrink-0">
                                 <button
                                     type="button"
-                                    class="w-5 h-5 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-[10px] hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-40"
+                                    class="compact-action w-5 h-5 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-[10px] hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-40"
                                     @click.stop="moveTeam(index, index - 1)"
                                     :disabled="index === 0"
                                 >
@@ -237,11 +236,20 @@
                                 </button>
                                 <button
                                     type="button"
-                                    class="w-5 h-5 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-[10px] hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-40"
+                                    class="compact-action w-5 h-5 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-100 text-[10px] hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-40"
                                     @click.stop="moveTeam(index, index + 1)"
                                     :disabled="index === teamOrder.length - 1"
                                 >
                                     &#8595;
+                                </button>
+                                <button
+                                    type="button"
+                                    class="drag-handle mt-1 rounded-md border border-zinc-200 dark:border-zinc-600 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-500 touch-none"
+                                    @pointerdown.stop="pointerDown($event, index)"
+                                    :aria-label="'Drag ' + (getTeamById(teamId)?.display_name || getTeamById(teamId)?.team_name || 'team')"
+                                    title="Drag to reorder"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h.01M9 12h.01M9 19h.01M15 5h.01M15 12h.01M15 19h.01"/></svg>
                                 </button>
                             </div>
                         </div>

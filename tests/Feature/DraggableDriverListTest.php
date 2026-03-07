@@ -39,7 +39,7 @@ test('draggable driver list component can be rendered', function () {
         'raceRound' => 8,
     ])
         ->assertSee('Your prediction')
-        ->assertSee('Drivers (drag into list)');
+        ->assertSee('All drivers start prefilled in surname order');
 });
 
 test('draggable driver list initializes with correct driver order', function () {
@@ -65,7 +65,7 @@ test('draggable driver list initializes with correct driver order', function () 
     expect($component->get('driverOrder'))->toBe([1, 2, 3]);
 });
 
-test('draggable driver list race mode keeps empty driver order when not passed', function () {
+test('draggable driver list race mode auto-fills driver order when not passed', function () {
     /** @var User $user */
     $user = User::factory()->create();
     actingAs($user);
@@ -82,7 +82,7 @@ test('draggable driver list race mode keeps empty driver order when not passed',
         'raceRound' => 1,
     ]);
 
-    expect($component->get('driverOrder'))->toBe([]);
+    expect($component->get('driverOrder'))->toBe([1, 2]);
 });
 
 test('draggable driver list championship mode auto-fills driver order when empty', function () {

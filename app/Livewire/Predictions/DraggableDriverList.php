@@ -40,8 +40,8 @@ class DraggableDriverList extends Component
         $this->type = $type;
         $this->dnfPredictions = $dnfPredictions;
 
-        // Only auto-fill for championship (single-list) mode; race/sprint start with empty slots
-        if (empty($this->driverOrder) && $this->raceRound <= 0) {
+        // Single-list UIs should always start with a full driver order.
+        if (empty($this->driverOrder)) {
             $this->driverOrder = collect($this->drivers)->pluck('id')->toArray();
         }
     }
@@ -54,7 +54,7 @@ class DraggableDriverList extends Component
         return (int) ($bySeason[$this->season] ?? 10);
     }
 
-    /** True when showing two-column layout (slots + driver pool) for race/sprint. */
+    /** True when showing the race/sprint prediction layout. */
     public function getIsRaceOrderLayoutProperty(): bool
     {
         return $this->raceRound > 0;
