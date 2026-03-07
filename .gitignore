@@ -8,6 +8,12 @@
 /storage/pail
 /vendor
 .env
+
+# Local SQLite (dev/testing)
+/database/database.sqlite
+
+# Compiled Blade views (generated at runtime)
+/storage/framework/views
 .env.backup
 .env.production
 .phpactor.json
