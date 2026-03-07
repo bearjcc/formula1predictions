@@ -58,7 +58,7 @@ class RacesController extends Controller
         $this->authorize('manageResults', $race);
 
         try {
-            $results = $this->scoringService->scoreRacePredictions($race);
+            $results = $this->scoringService->scoreRaceWeekendPredictions($race);
 
             $message = "Successfully scored {$results['scored_predictions']} predictions for {$results['total_score']} total points.";
 
@@ -175,7 +175,7 @@ class RacesController extends Controller
         foreach ($request->input('race_ids') as $raceId) {
             try {
                 $race = Races::find($raceId);
-                $this->scoringService->scoreRacePredictions($race);
+                $this->scoringService->scoreRaceWeekendPredictions($race);
                 $successCount++;
             } catch (\Throwable $e) {
                 $failureCount++;

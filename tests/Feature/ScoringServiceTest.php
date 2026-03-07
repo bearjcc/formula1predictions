@@ -902,6 +902,54 @@ test('can score sprint predictions for a race', function () {
     expect($prediction->score)->toBeGreaterThan(0);
 });
 
+test('can score race weekend predictions for a race with sprint entries', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'has_sprint' => true,
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished', 'fastestLap' => true],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
+        ],
+    ]);
+
+    $racePrediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+            'fastest_lap' => 'max_verstappen',
+        ],
+        'status' => 'submitted',
+    ]);
+    $sprintPrediction = Prediction::factory()->create([
+        'user_id' => User::factory()->create()->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'season' => $race->season,
+        'race_round' => $race->round,
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+            'fastest_lap' => 'max_verstappen',
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $results = $service->scoreRaceWeekendPredictions($race);
+
+    $racePrediction->refresh();
+    $sprintPrediction->refresh();
+
+    expect($results['total_predictions'])->toBe(2);
+    expect($results['scored_predictions'])->toBe(2);
+    expect($racePrediction->status)->toBe('scored');
+    expect($sprintPrediction->status)->toBe('scored');
+});
+
 test('backtest harness computes production scores matching ScoringService', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create([

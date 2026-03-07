@@ -46,6 +46,38 @@ test('job scores predictions when race is completed', function () {
         ->and($prediction->score)->not->toBeNull();
 });
 
+test('job scores sprint predictions when race weekend has a sprint', function () {
+    $race = Races::factory()->create([
+        'season' => 2024,
+        'round' => 1,
+        'status' => 'completed',
+        'has_sprint' => true,
+        'race_name' => 'Shanghai GP',
+        'results' => [
+            ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+            ['driver' => ['driverId' => 'lewis_hamilton'], 'status' => 'finished'],
+        ],
+    ]);
+    $user = User::factory()->create();
+    Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'sprint',
+        'status' => 'submitted',
+        'prediction_data' => [
+            'driver_order' => ['max_verstappen', 'lewis_hamilton'],
+            'fastest_lap' => 'max_verstappen',
+        ],
+    ]);
+
+    $job = new ScoreRacePredictionsJob($race->id, false);
+    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+
+    $prediction = Prediction::where('race_id', $race->id)->where('type', 'sprint')->first();
+    expect($prediction->status)->toBe('scored')
+        ->and($prediction->score)->not->toBeNull();
+});
+
 test('job logs error when race not found', function () {
     Log::shouldReceive('error')
         ->once()

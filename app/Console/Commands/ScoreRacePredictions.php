@@ -84,14 +84,21 @@ class ScoreRacePredictions extends Command
             return 1;
         }
 
+        if ($race->getResultsArray() === []) {
+            $this->error("Race {$race->id} has no stored results. Cannot score.");
+
+            return 1;
+        }
+
         if ($dryRun) {
-            $count = $race->predictions()->whereIn('status', ['submitted', 'locked'])->count();
+            $count = $race->predictions()->whereIn('status', ['submitted', 'locked'])->count()
+                + $race->sprintPredictions()->whereIn('status', ['submitted', 'locked'])->count();
             $this->info("[DRY RUN] Would score $count predictions.");
 
             return 0;
         }
 
-        $results = $this->scoringService->scoreRacePredictions($race);
+        $results = $this->scoringService->scoreRaceWeekendPredictions($race);
 
         $this->info('Scoring complete:');
         $this->line(" - Total: {$results['total_predictions']}");
@@ -110,6 +117,9 @@ class ScoreRacePredictions extends Command
             ->filter(fn (Races $r) => $r->predictions()
                 ->whereIn('status', ['submitted', 'locked'])
                 ->exists()
+                || $r->sprintPredictions()
+                    ->whereIn('status', ['submitted', 'locked'])
+                    ->exists()
             );
 
         // Races not yet marked complete but started 6+ hours ago — attempt to fetch results

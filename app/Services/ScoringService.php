@@ -63,6 +63,41 @@ class ScoringService
     }
 
     /**
+     * Score all race-weekend predictions for a race, including sprint predictions when applicable.
+     *
+     * @return array{total_predictions: int, scored_predictions: int, failed_predictions: int, total_score: int, errors: list<string>}
+     */
+    public function scoreRaceWeekendPredictions(Races $race): array
+    {
+        if (! $race->isCompleted()) {
+            throw new \InvalidArgumentException("Race {$race->id} is not completed");
+        }
+
+        if ($race->getResultsArray() === []) {
+            throw new \InvalidArgumentException("Race {$race->id} has no results to score against");
+        }
+
+        $raceResults = $this->scoreRacePredictions($race);
+        $sprintResults = $race->hasSprint()
+            ? $this->scoreSprintPredictions($race)
+            : [
+                'total_predictions' => 0,
+                'scored_predictions' => 0,
+                'failed_predictions' => 0,
+                'total_score' => 0,
+                'errors' => [],
+            ];
+
+        return [
+            'total_predictions' => $raceResults['total_predictions'] + $sprintResults['total_predictions'],
+            'scored_predictions' => $raceResults['scored_predictions'] + $sprintResults['scored_predictions'],
+            'failed_predictions' => $raceResults['failed_predictions'] + $sprintResults['failed_predictions'],
+            'total_score' => $raceResults['total_score'] + $sprintResults['total_score'],
+            'errors' => array_values(array_merge($raceResults['errors'], $sprintResults['errors'])),
+        ];
+    }
+
+    /**
      * Automatically score all sprint predictions for a completed sprint race.
      */
     public function scoreSprintPredictions(Races $race): array

@@ -30,7 +30,7 @@ class F1ApiService
     public function getRaceResults(int $year, int $round): array
     {
         $race = Races::where('season', $year)->where('round', $round)->first();
-        if ($race !== null) {
+        if ($race !== null && $race->getResultsArray() !== []) {
             return ['races' => $this->raceModelToApiShape($race)];
         }
 
@@ -52,8 +52,14 @@ class F1ApiService
 
             return $data;
         } catch (F1ApiException $e) {
+            if ($race !== null) {
+                return ['races' => $this->raceModelToApiShape($race)];
+            }
             throw $e;
         } catch (Throwable $e) {
+            if ($race !== null) {
+                return ['races' => $this->raceModelToApiShape($race)];
+            }
             throw new F1ApiException(
                 'F1 API connection failed: '.$e->getMessage(),
                 null,

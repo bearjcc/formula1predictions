@@ -56,8 +56,8 @@ class ScoreRacePredictionsJob implements ShouldQueue
             }
 
             // Score predictions
-            if ($race->isCompleted()) {
-                $results = $scoringService->scoreRacePredictions($race);
+            if ($race->isCompleted() && $race->getResultsArray() !== []) {
+                $results = $scoringService->scoreRaceWeekendPredictions($race);
 
                 Log::info('Background scoring completed', [
                     'race_id' => $race->id,
@@ -89,6 +89,7 @@ class ScoreRacePredictionsJob implements ShouldQueue
                 Log::warning('Race not completed, skipping scoring', [
                     'race_id' => $race->id,
                     'status' => $race->status,
+                    'results_count' => count($race->getResultsArray()),
                 ]);
             }
 
