@@ -36,6 +36,52 @@ test('user can view own prediction', function () {
     $response->assertSee($prediction->type);
 });
 
+test('scored prediction page shows the score breakdown without the redundant top order card', function () {
+    $user = testUser();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            [
+                'driver' => 'George Russell',
+                'driver_id' => 'russell',
+                'status' => 'FINISHED',
+                'fastest_lap' => false,
+            ],
+            [
+                'driver' => 'Max Verstappen',
+                'driver_id' => 'max_verstappen',
+                'status' => 'DNF',
+                'fastest_lap' => true,
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'status' => 'submitted',
+        'prediction_data' => [
+            'driver_order' => ['russell', 'max_verstappen'],
+            'fastest_lap' => 'max_verstappen',
+            'dnf_predictions' => ['max_verstappen'],
+        ],
+    ]);
+
+    $scoring = app(\App\Services\ScoringService::class);
+    $score = $scoring->calculatePredictionScore($prediction, $race);
+    $scoring->savePredictionScore($prediction, $score);
+    $prediction->refresh();
+
+    actingAs($user)
+        ->get(route('predictions.show', $prediction))
+        ->assertOk()
+        ->assertSee('Score Breakdown')
+        ->assertSee('Fastest lap')
+        ->assertSee('DNF wager')
+        ->assertDontSee('Predicted Finishing Order');
+});
+
 test('user cannot view another users prediction', function () {
     $owner = testUser();
     $other = testUser();

@@ -112,8 +112,14 @@
                                 @elseif($index === 2) P3
                                 @endif
                             </h3>
+                            @php
+                                $driverName = data_get($result, 'driver.name')
+                                    ?? (is_string($result['driver'] ?? null) ? $result['driver'] : null)
+                                    ?? $result['name']
+                                    ?? 'N/A';
+                            @endphp
                             <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                                {{ $result['driver'] ?? $result['name'] ?? 'N/A' }}
+                                {{ $driverName }}
                                 @if(!empty($result['team'])) - {{ $result['team'] }}@endif
                             </p>
                         </div>
@@ -159,6 +165,12 @@
                     </thead>
                     <tbody class="bg-white dark:bg-zinc-800 divide-y divide-zinc-200 dark:divide-zinc-700">
                         @foreach($results as $index => $result)
+                            @php
+                                $driverName = data_get($result, 'driver.name')
+                                    ?? (is_string($result['driver'] ?? null) ? $result['driver'] : null)
+                                    ?? $result['name']
+                                    ?? 'N/A';
+                            @endphp
                             <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($index < 3)
@@ -170,7 +182,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <h3 class="font-semibold">{{ $result['driver'] ?? $result['name'] ?? 'N/A' }}</h3>
+                                    <h3 class="font-semibold">{{ $driverName }}</h3>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <p>{{ $result['team'] ?? '' }}</p>

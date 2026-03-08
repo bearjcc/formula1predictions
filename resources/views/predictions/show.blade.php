@@ -11,46 +11,6 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Prediction View -->
         <div class="lg:col-span-2 space-y-8">
-            <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm overflow-hidden">
-                <div class="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50">
-                    <h3 class="font-bold">Predicted Finishing Order</h3>
-                </div>
-                <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
-                    @php
-                        $order = $prediction->getPredictedDriverOrder();
-                        $order = array_filter($order, fn ($id) => $id !== null && $id !== '');
-                        $fastestLap = $prediction->getPredictedFastestLap();
-                    @endphp
-                    
-                    @foreach($order as $index => $driverId)
-                        @php
-                            $driver = is_numeric($driverId)
-                                ? \App\Models\Drivers::find($driverId)
-                                : \App\Models\Drivers::where('driver_id', $driverId)->first();
-                        @endphp
-                        <div class="p-4 flex items-center justify-between">
-                            <div class="flex items-center space-x-4">
-                                <span class="w-8 h-8 rounded bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center font-bold text-sm">
-                                    {{ $index + 1 }}
-                                </span>
-                                <div>
-                                    <div class="font-bold text-zinc-900 dark:text-zinc-100">
-                                        {{ $driver ? "{$driver->name} {$driver->surname}" : $driverId }}
-                                    </div>
-                                    <div class="text-xs text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                                        {{ $driver?->team?->display_name ?? 'Individual' }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            @if($fastestLap === $driverId)
-                                <x-mary-badge value="Fastest Lap" class="bg-red-600 text-white border-none text-[10px]" />
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
             @if($breakdown !== null)
                 <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-sm overflow-hidden">
                     <div class="p-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50">

@@ -151,7 +151,7 @@ class RaceScoringService
 
         $driverIdToRawStatus = [];
         foreach ($rawResults as $result) {
-            $driver = $result['driver'] ?? null;
+            $driver = $this->extractDriverData($result);
             if ($driver && isset($driver['driverId'])) {
                 $status = $result['status'] ?? '';
                 $driverIdToRawStatus[(string) $driver['driverId']] = strtoupper((string) $status) ?: 'N/A';
@@ -254,11 +254,11 @@ class RaceScoringService
 
         foreach ($results as $result) {
             $status = $result['status'] ?? 'finished';
+            $driver = $this->extractDriverData($result);
 
             switch (strtoupper($status)) {
                 case 'FINISHED':
                 case 'DNF':
-                    $driver = $result['driver'] ?? null;
                     if (! $driver) {
                         break;
                     }
@@ -267,7 +267,7 @@ class RaceScoringService
                         'position' => $position,
                         'status' => $status,
                         'points' => $result['points'] ?? 0,
-                        'fastestLap' => $result['fastestLap'] ?? false,
+                        'fastestLap' => $this->extractFastestLapFlag($result),
                     ];
                     $position++;
                     break;
@@ -278,7 +278,6 @@ class RaceScoringService
                     break;
 
                 default:
-                    $driver = $result['driver'] ?? null;
                     if (! $driver) {
                         break;
                     }
@@ -287,7 +286,7 @@ class RaceScoringService
                         'position' => $position,
                         'status' => $status,
                         'points' => $result['points'] ?? 0,
-                        'fastestLap' => $result['fastestLap'] ?? false,
+                        'fastestLap' => $this->extractFastestLapFlag($result),
                     ];
                     $position++;
                     break;
@@ -416,12 +415,56 @@ class RaceScoringService
                 continue;
             }
 
-            $driver = $result['driver'] ?? null;
+            $driver = $this->extractDriverData($result);
             if ($driver && isset($driver['driverId'])) {
                 $ids[] = (string) $driver['driverId'];
             }
         }
 
         return $ids;
+    }
+
+    /**
+     * Normalize either nested-driver or flat-driver result rows.
+     *
+     * @return array{driverId: string, name?: string}|null
+     */
+    private function extractDriverData(array $result): ?array
+    {
+        $driver = $result['driver'] ?? null;
+        if (is_array($driver) && isset($driver['driverId'])) {
+            return $driver;
+        }
+
+        $driverId = $result['driverId'] ?? $result['driver_id'] ?? null;
+        if (! is_string($driverId) || $driverId === '') {
+            if (is_array($driver)) {
+                $nestedDriverId = $driver['driverId'] ?? $driver['driver_id'] ?? null;
+                if (is_string($nestedDriverId) && $nestedDriverId !== '') {
+                    $driverId = $nestedDriverId;
+                }
+            }
+        }
+
+        if (! is_string($driverId) || $driverId === '') {
+            return null;
+        }
+
+        $name = null;
+        if (is_string($driver)) {
+            $name = $driver;
+        } elseif (isset($result['name']) && is_string($result['name'])) {
+            $name = $result['name'];
+        }
+
+        return array_filter([
+            'driverId' => $driverId,
+            'name' => $name,
+        ], fn ($value) => $value !== null && $value !== '');
+    }
+
+    private function extractFastestLapFlag(array $result): bool
+    {
+        return (bool) ($result['fastestLap'] ?? $result['fastest_lap'] ?? false);
     }
 }

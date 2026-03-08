@@ -355,6 +355,98 @@ test('handles fastest lap bonus', function () {
     expect($score)->toBe(110);
 });
 
+test('scoring and breakdown support flat manual result rows with driverId fields', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            [
+                'driver' => 'George Russell',
+                'driverId' => 'russell',
+                'status' => 'FINISHED',
+                'fastestLap' => false,
+            ],
+            [
+                'driver' => 'Max Verstappen',
+                'driverId' => 'max_verstappen',
+                'status' => 'DNF',
+                'fastestLap' => true,
+            ],
+            [
+                'driver' => 'Oscar Piastri',
+                'driverId' => 'piastri',
+                'status' => 'DNS',
+                'fastestLap' => false,
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['russell', 'max_verstappen', 'piastri'],
+            'fastest_lap' => 'max_verstappen',
+            'dnf_predictions' => ['max_verstappen'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+    $breakdown = $service->getPredictionBreakdown($prediction, $race);
+
+    expect($score)->toBe(70)
+        ->and($breakdown['fastest_lap_row']['actual_driver_id'])->toBe('max_verstappen')
+        ->and($breakdown['dnf_wager_points'])->toBe(10);
+});
+
+test('scoring and breakdown support legacy snake case result rows', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => [
+            [
+                'driver' => 'George Russell',
+                'driver_id' => 'russell',
+                'status' => 'FINISHED',
+                'fastest_lap' => false,
+            ],
+            [
+                'driver' => 'Max Verstappen',
+                'driver_id' => 'max_verstappen',
+                'status' => 'DNF',
+                'fastest_lap' => true,
+            ],
+        ],
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => ['russell', 'max_verstappen'],
+            'fastest_lap' => 'max_verstappen',
+            'dnf_predictions' => ['max_verstappen'],
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $score = $service->calculatePredictionScore($prediction, $race);
+    $breakdown = $service->getPredictionBreakdown($prediction, $race);
+
+    expect($score)->toBe(120)
+        ->and($breakdown['driver_rows'][0]['points'])->toBe(25)
+        ->and($breakdown['driver_rows'][1]['points'])->toBe(25)
+        ->and($breakdown['fastest_lap_row']['actual_driver_id'])->toBe('max_verstappen')
+        ->and($breakdown['fastest_lap_row']['points'])->toBe(10)
+        ->and($breakdown['dnf_wager_points'])->toBe(10)
+        ->and($breakdown['perfect_bonus'])->toBe(50);
+});
+
 test('half points halves race score when race has half_points flag', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create([

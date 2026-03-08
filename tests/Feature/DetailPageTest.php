@@ -178,6 +178,40 @@ test('race detail page via year and round displays real race data', function () 
     $response->assertSee('McLaren');
 });
 
+test('race detail page via year and round renders manual results with nested driver payloads', function () {
+    Races::factory()->create([
+        'race_name' => 'Australian Grand Prix',
+        'season' => 2026,
+        'round' => 1,
+        'circuit_name' => 'Albert Park',
+        'country' => 'Australia',
+        'date' => '2026-03-08',
+        'laps' => 58,
+        'status' => 'completed',
+        'results' => [
+            [
+                'position' => 1,
+                'driver' => ['driverId' => 'russell', 'name' => 'George Russell'],
+                'team' => 'Mercedes',
+                'points' => 25,
+            ],
+            [
+                'position' => 2,
+                'driver' => ['driverId' => 'antonelli', 'name' => 'Kimi Antonelli'],
+                'team' => 'Mercedes',
+                'points' => 18,
+            ],
+        ],
+    ]);
+
+    $response = $this->get('/2026/race/1');
+
+    $response->assertOk();
+    $response->assertSee('George Russell');
+    $response->assertSee('Kimi Antonelli');
+    $response->assertSee('Mercedes');
+});
+
 test('race detail page via year and round returns 404 for non-existent race', function () {
     $response = $this->get('/2025/race/99');
     $response->assertNotFound();
