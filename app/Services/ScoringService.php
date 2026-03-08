@@ -262,10 +262,16 @@ class ScoringService
      */
     public function handleDriverSubstitutions(Races $race, array $substitutions): void
     {
-        // Find predictions that include substituted drivers
+        // Apply substitutions across the full race weekend so sprint and race
+        // predictions stay in sync when reserve drivers step in.
         $predictions = $race->predictions()
             ->whereIn('status', ['submitted', 'locked'])
-            ->get();
+            ->get()
+            ->concat(
+                $race->sprintPredictions()
+                    ->whereIn('status', ['submitted', 'locked'])
+                    ->get()
+            );
 
         foreach ($predictions as $prediction) {
             $predictionData = $prediction->prediction_data;
@@ -298,7 +304,12 @@ class ScoringService
     {
         $predictions = $race->predictions()
             ->whereIn('status', ['submitted', 'locked'])
-            ->get();
+            ->get()
+            ->concat(
+                $race->sprintPredictions()
+                    ->whereIn('status', ['submitted', 'locked'])
+                    ->get()
+            );
 
         foreach ($predictions as $prediction) {
             $prediction->forceFill([
@@ -308,6 +319,11 @@ class ScoringService
                 'notes' => $reason ? "Race cancelled: {$reason}" : 'Race cancelled',
             ])->save();
         }
+
+        $race->forceFill([
+            'status' => 'cancelled',
+            'results' => [],
+        ])->save();
     }
 
     /**

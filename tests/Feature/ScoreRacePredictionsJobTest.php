@@ -6,7 +6,7 @@ use App\Jobs\ScoreRacePredictionsJob;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
-use App\Services\F1ApiService;
+use App\Services\RaceResultSyncService;
 use App\Services\ScoringService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
@@ -39,7 +39,7 @@ test('job scores predictions when race is completed', function () {
     ]);
 
     $job = new ScoreRacePredictionsJob($race->id, false);
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+    $job->handle(app(RaceResultSyncService::class), app(ScoringService::class));
 
     $prediction = Prediction::where('race_id', $race->id)->first();
     expect($prediction->status)->toBe('scored')
@@ -71,7 +71,7 @@ test('job scores sprint predictions when race weekend has a sprint', function ()
     ]);
 
     $job = new ScoreRacePredictionsJob($race->id, false);
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+    $job->handle(app(RaceResultSyncService::class), app(ScoringService::class));
 
     $prediction = Prediction::where('race_id', $race->id)->where('type', 'sprint')->first();
     expect($prediction->status)->toBe('scored')
@@ -84,7 +84,7 @@ test('job logs error when race not found', function () {
         ->with('Race not found for scoring job', ['race_id' => 99999]);
 
     $job = new ScoreRacePredictionsJob(99999, false);
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+    $job->handle(app(RaceResultSyncService::class), app(ScoringService::class));
 });
 
 test('job skips scoring when race not completed and no force update', function () {
@@ -102,16 +102,20 @@ test('job skips scoring when race not completed and no force update', function (
         'status' => 'submitted',
     ]);
 
-    mock(F1ApiService::class, function ($mock) {
-        $mock->shouldReceive('getRaceResults')
-            ->andReturn(['races' => ['results' => []]]);
+    mock(RaceResultSyncService::class, function ($mock) {
+        $mock->shouldReceive('sync')
+            ->once()
+            ->andThrow(new RuntimeException('No race results were available from the F1 API.'));
     });
 
     Log::shouldReceive('info')->andReturn(null);
     Log::shouldReceive('warning')->andReturn(null);
+    Log::shouldReceive('error')->andReturn(null);
 
     $job = new ScoreRacePredictionsJob($race->id, false);
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+
+    expect(fn () => $job->handle(app(RaceResultSyncService::class), app(ScoringService::class)))
+        ->toThrow(RuntimeException::class);
 
     $prediction = Prediction::where('race_id', $race->id)->first();
     expect($prediction->status)->toBe('submitted');
@@ -125,22 +129,24 @@ test('job updates race results from api when force update', function () {
         'results' => null,
     ]);
 
-    $apiResults = [
-        'races' => [
-            'results' => [
-                ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
-            ],
-        ],
-    ];
+    mock(RaceResultSyncService::class, function ($mock) use ($race) {
+        $mock->shouldReceive('sync')
+            ->once()
+            ->withArgs(fn (Races $candidate) => $candidate->is($race))
+            ->andReturnUsing(function (Races $candidate) {
+                $candidate->forceFill([
+                    'status' => 'completed',
+                    'results' => [
+                        ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'finished'],
+                    ],
+                ])->save();
 
-    mock(F1ApiService::class, function ($mock) use ($apiResults) {
-        $mock->shouldReceive('getRaceResults')
-            ->with(2024, 1)
-            ->andReturn($apiResults);
+                return ['result_count' => 1, 'status' => 'completed'];
+            });
     });
 
     $job = new ScoreRacePredictionsJob($race->id, true);
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+    $job->handle(app(RaceResultSyncService::class), app(ScoringService::class));
 
     $race->refresh();
     expect($race->status)->toBe('completed')
@@ -171,13 +177,13 @@ test('job is idempotent when run twice on the same race', function () {
     ]);
 
     $job = new ScoreRacePredictionsJob($race->id, false);
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+    $job->handle(app(RaceResultSyncService::class), app(ScoringService::class));
 
     $firstScore = Prediction::where('race_id', $race->id)->value('score');
     $firstScoredAt = Prediction::where('race_id', $race->id)->value('scored_at');
 
     // Run again — score must not change
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+    $job->handle(app(RaceResultSyncService::class), app(ScoringService::class));
 
     $prediction = Prediction::where('race_id', $race->id)->first();
     expect($prediction->score)->toBe($firstScore)
@@ -227,7 +233,7 @@ test('job creates previous-race bot prediction for next race after scoring', fun
     ]);
 
     $job = new ScoreRacePredictionsJob($race1->id, false);
-    $job->handle(app(F1ApiService::class), app(ScoringService::class));
+    $job->handle(app(RaceResultSyncService::class), app(ScoringService::class));
 
     $botUser = \App\Models\User::where('email', 'lastracebot@example.com')->first();
     expect($botUser)->not->toBeNull();

@@ -34,6 +34,7 @@
                                 <td class="text-zinc-600 dark:text-zinc-400">{{ $race->date ? \Carbon\Carbon::parse($race->date)->format('M j, Y') : '—' }}</td>
                                 <td>{{ $race->predictions_count ?? 0 }}</td>
                                 <td class="flex flex-wrap gap-2">
+                                    <a href="{{ route('admin.races.show', $race) }}" class="btn btn-ghost btn-sm">Open panel</a>
                                     @can('manageResults', $race)
                                         <form action="{{ route('admin.races.score', $race) }}" method="POST" class="inline">
                                             @csrf

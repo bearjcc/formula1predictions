@@ -89,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/races', [AdminRacesController::class, 'index'])->name('races');
         Route::get('/scoring', [AdminRacesController::class, 'scoring'])->name('scoring');
+        Route::get('/races/{race}', [AdminRacesController::class, 'show'])->name('races.show');
 
         Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings');
 
@@ -111,6 +112,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Scoring management
         Route::post('/races/{race}/score', [AdminRacesController::class, 'score'])->name('races.score');
+        Route::post('/races/{race}/fetch-results', [AdminRacesController::class, 'fetchResults'])->name('races.fetch-results');
         Route::post('/races/{race}/queue-scoring', [AdminRacesController::class, 'queueScoring'])->name('races.queue-scoring');
         Route::post('/races/{race}/substitutions', [AdminRacesController::class, 'handleDriverSubstitutions'])->name('races.substitutions');
         Route::post('/races/{race}/cancel', [AdminRacesController::class, 'cancel'])->name('races.cancel');

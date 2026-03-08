@@ -23,6 +23,7 @@
                             <th>Date</th>
                             <th>Circuit</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,10 +35,13 @@
                                 <td class="text-zinc-600 dark:text-zinc-400">{{ $race->date ? \Carbon\Carbon::parse($race->date)->format('M j, Y') : '—' }}</td>
                                 <td>{{ $race->circuit_name ?? $race->locality ?? '—' }}</td>
                                 <td><span class="badge badge-outline">{{ ucfirst($race->status ?? 'scheduled') }}</span></td>
+                                <td>
+                                    <a href="{{ route('admin.races.show', $race) }}" class="btn btn-primary btn-sm">Open panel</a>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-zinc-600 dark:text-zinc-400">No races yet.</td>
+                                <td colspan="7" class="text-center text-zinc-600 dark:text-zinc-400">No races yet.</td>
                             </tr>
                         @endforelse
                     </tbody>

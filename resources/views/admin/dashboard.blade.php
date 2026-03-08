@@ -76,6 +76,9 @@
                     <a href="{{ route('admin.races') }}" class="btn btn-outline w-full">
                         Manage Races
                     </a>
+                    <a href="{{ route('admin.scoring') }}" class="btn btn-outline w-full">
+                        Race Operations
+                    </a>
                     <a href="{{ route('admin.feedback') }}" class="btn btn-outline w-full">
                         View Feedback
                     </a>

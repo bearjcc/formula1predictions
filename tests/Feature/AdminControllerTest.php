@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Jobs\ScoreRacePredictionsJob;
 use App\Models\Feedback;
 use App\Models\News;
 use App\Models\Prediction;
 use App\Models\Races;
 use App\Models\User;
+use App\Services\F1ApiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\Feature\HasAdminAndUser;
 
 use function Pest\Laravel\actingAs;
@@ -34,6 +37,10 @@ test('admin can load all admin view pages', function () {
         ->assertOk();
     actingAs($this->admin)
         ->get(route('admin.scoring'))
+        ->assertOk();
+    $race = Races::factory()->create();
+    actingAs($this->admin)
+        ->get(route('admin.races.show', $race))
         ->assertOk();
     actingAs($this->admin)
         ->get(route('admin.settings'))
@@ -318,12 +325,50 @@ test('admin can score race', function () {
 
 test('admin can queue race scoring', function () {
     $race = Races::factory()->create(['race_name' => 'Monaco GP']);
+    Queue::fake();
 
     actingAs($this->admin)
         ->from(route('admin.scoring'))
         ->post(route('admin.races.queue-scoring', $race), ['force_update' => false])
         ->assertRedirect(route('admin.scoring'))
         ->assertSessionHas('success');
+
+    Queue::assertPushed(ScoreRacePredictionsJob::class, function (ScoreRacePredictionsJob $job) use ($race) {
+        return $job->raceId === $race->id && $job->forceUpdate === false;
+    });
+});
+
+test('admin can fetch race results from race operations panel', function () {
+    $race = Races::factory()->create([
+        'season' => 2024,
+        'round' => 5,
+        'status' => 'ongoing',
+        'results' => [],
+    ]);
+
+    $mock = \Mockery::mock(F1ApiService::class);
+    $mock->shouldReceive('getRaceResults')
+        ->once()
+        ->with(2024, 5)
+        ->andReturn([
+            'races' => [
+                'results' => [
+                    ['driver' => ['driverId' => 'max_verstappen', 'name' => 'Max Verstappen'], 'status' => 'finished'],
+                    ['driver' => ['driverId' => 'lando_norris', 'name' => 'Lando Norris'], 'status' => 'finished'],
+                ],
+            ],
+        ]);
+    app()->instance(F1ApiService::class, $mock);
+
+    actingAs($this->admin)
+        ->from(route('admin.races.show', $race))
+        ->post(route('admin.races.fetch-results', $race))
+        ->assertRedirect(route('admin.races.show', $race))
+        ->assertSessionHas('success');
+
+    $race->refresh();
+    expect($race->status)->toBe('completed')
+        ->and($race->getResultsArray())->toHaveCount(2);
 });
 
 test('regular user cannot override prediction score', function () {
@@ -424,12 +469,24 @@ test('regular user cannot cancel race', function () {
 
 test('admin can cancel race', function () {
     $race = Races::factory()->create();
+    $prediction = Prediction::factory()->submitted()->create([
+        'user_id' => $this->user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+    ]);
 
     actingAs($this->admin)
         ->from(route('admin.scoring'))
         ->post(route('admin.races.cancel', $race), ['reason' => 'Weather'])
         ->assertRedirect(route('admin.scoring'))
         ->assertSessionHas('success');
+
+    $race->refresh();
+    $prediction->refresh();
+
+    expect($race->status)->toBe('cancelled')
+        ->and($race->getResultsArray())->toBe([])
+        ->and($prediction->status)->toBe('cancelled');
 });
 
 test('regular user cannot toggle half-points', function () {

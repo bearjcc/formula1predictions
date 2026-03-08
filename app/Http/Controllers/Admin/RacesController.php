@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ScoreRacePredictionsJob;
+use App\Models\Prediction;
 use App\Models\Races;
+use App\Services\RaceResultSyncService;
 use App\Services\ScoringService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -21,6 +23,7 @@ class RacesController extends Controller
 
     public function __construct(
         private readonly ScoringService $scoringService,
+        private readonly RaceResultSyncService $resultSyncService,
     ) {}
 
     public function index(): View|RedirectResponse
@@ -50,6 +53,70 @@ class RacesController extends Controller
             Log::error('Admin\RacesController@scoring failed', ['exception' => $e]);
 
             return redirect()->route('admin.dashboard')->with('error', 'Unable to load scoring page. Please try again.');
+        }
+    }
+
+    public function show(Races $race): View|RedirectResponse
+    {
+        $this->authorize('view', $race);
+
+        try {
+            $race->loadCount([
+                'predictions as active_race_predictions_count' => function ($query) {
+                    $query->whereIn('status', ['submitted', 'locked']);
+                },
+                'sprintPredictions as active_sprint_predictions_count' => function ($query) {
+                    $query->whereIn('status', ['submitted', 'locked']);
+                },
+                'predictions as scored_race_predictions_count' => function ($query) {
+                    $query->where('status', 'scored');
+                },
+                'sprintPredictions as scored_sprint_predictions_count' => function ($query) {
+                    $query->where('status', 'scored');
+                },
+            ]);
+
+            $racePredictions = Prediction::with('user')
+                ->where('race_id', $race->id)
+                ->where('type', 'race')
+                ->orderByRaw("CASE status WHEN 'submitted' THEN 0 WHEN 'locked' THEN 1 WHEN 'scored' THEN 2 WHEN 'draft' THEN 3 WHEN 'cancelled' THEN 4 ELSE 5 END")
+                ->orderBy('updated_at', 'desc')
+                ->limit(25)
+                ->get();
+
+            $sprintPredictions = Prediction::with('user')
+                ->where('race_id', $race->id)
+                ->where('type', 'sprint')
+                ->orderByRaw("CASE status WHEN 'submitted' THEN 0 WHEN 'locked' THEN 1 WHEN 'scored' THEN 2 WHEN 'draft' THEN 3 WHEN 'cancelled' THEN 4 ELSE 5 END")
+                ->orderBy('updated_at', 'desc')
+                ->limit(25)
+                ->get();
+
+            return view('admin.race-operations', [
+                'race' => $race,
+                'racePredictions' => $racePredictions,
+                'sprintPredictions' => $sprintPredictions,
+                'resultRows' => $race->getResultsArray(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Admin\RacesController@show failed', ['race_id' => $race->id, 'exception' => $e]);
+
+            return redirect()->route('admin.races')->with('error', 'Unable to load race operations. Please try again.');
+        }
+    }
+
+    public function fetchResults(Races $race): RedirectResponse
+    {
+        $this->authorize('manageResults', $race);
+
+        try {
+            $synced = $this->resultSyncService->sync($race);
+
+            return redirect()->back()->with('success', "Fetched {$synced['result_count']} race result rows for {$race->display_name}.");
+        } catch (\Throwable $e) {
+            Log::error('Admin\RacesController@fetchResults failed', ['race_id' => $race->id, 'exception' => $e]);
+
+            return redirect()->back()->with('error', 'Failed to fetch race results. Please try again.');
         }
     }
 

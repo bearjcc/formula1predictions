@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Races;
-use App\Services\F1ApiService;
+use App\Services\RaceResultSyncService;
 use App\Services\ScoringService;
 use Illuminate\Console\Command;
 
@@ -19,7 +19,7 @@ class ScoreRacePredictions extends Command
     protected $description = 'Fetch race results and score active predictions';
 
     public function __construct(
-        private F1ApiService $f1ApiService,
+        private RaceResultSyncService $resultSyncService,
         private ScoringService $scoringService
     ) {
         parent::__construct();
@@ -64,15 +64,11 @@ class ScoreRacePredictions extends Command
 
         // Try to fetch newest results from API first
         try {
-            $apiData = $this->f1ApiService->getRaceResults($race->season, $race->round);
-            if (! empty($apiData['races']['results'] ?? [])) {
-                $this->info('Updating race results from official API...');
-                if (! $dryRun) {
-                    $race->update([
-                        'results' => $apiData['races']['results'],
-                        'status' => 'completed',
-                    ]);
-                }
+            if ($dryRun) {
+                $this->info('[DRY RUN] Would sync latest race results from official API.');
+            } else {
+                $synced = $this->resultSyncService->sync($race);
+                $this->info("Synced {$synced['result_count']} result rows from official API.");
             }
         } catch (\Exception $e) {
             $this->warn('Could not sync latest result from API: '.$e->getMessage());

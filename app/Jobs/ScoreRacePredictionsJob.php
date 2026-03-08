@@ -3,8 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\Races;
-use App\Services\F1ApiService;
 use App\Services\PreviousRaceResultBotService;
+use App\Services\RaceResultSyncService;
 use App\Services\ScoringService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,7 +32,7 @@ class ScoreRacePredictionsJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(F1ApiService $f1ApiService, ScoringService $scoringService): void
+    public function handle(RaceResultSyncService $resultSyncService, ScoringService $scoringService): void
     {
         $race = Races::find($this->raceId);
 
@@ -52,7 +52,7 @@ class ScoreRacePredictionsJob implements ShouldQueue
         try {
             // Update race results from API if needed
             if ($this->forceUpdate || ! $race->isCompleted()) {
-                $this->updateRaceResults($race, $f1ApiService);
+                $resultSyncService->sync($race);
             }
 
             // Score predictions
@@ -101,40 +101,6 @@ class ScoreRacePredictionsJob implements ShouldQueue
             ]);
 
             throw $e; // Re-throw to trigger retry
-        }
-    }
-
-    /**
-     * Update race results from F1 API
-     */
-    private function updateRaceResults(Races $race, F1ApiService $f1ApiService): void
-    {
-        try {
-            $apiResults = $f1ApiService->getRaceResults($race->season, $race->round);
-
-            if (isset($apiResults['races']['results']) && ! empty($apiResults['races']['results'])) {
-                $race->update([
-                    'results' => $apiResults['races']['results'],
-                    'status' => 'completed',
-                ]);
-
-                Log::info('Race results updated from API', [
-                    'race_id' => $race->id,
-                    'results_count' => count($apiResults['races']['results']),
-                ]);
-            } else {
-                Log::warning('No results found in API response', [
-                    'race_id' => $race->id,
-                    'api_response' => $apiResults,
-                ]);
-            }
-
-        } catch (\Exception $e) {
-            Log::error('Failed to update race results from API', [
-                'race_id' => $race->id,
-                'error' => $e->getMessage(),
-            ]);
-            throw $e;
         }
     }
 
