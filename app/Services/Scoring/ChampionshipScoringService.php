@@ -39,38 +39,35 @@ class ChampionshipScoringService
             return $score;
         }
 
-        $driverStandings = Standings::getDriverStandings($season, null);
+        $midseasonScore = $this->scoreMidseasonPrediction($prediction, $season, $constructorStandings);
 
-        if ($driverStandings->isEmpty() && $constructorStandings->isEmpty()) {
+        if ($midseasonScore === null) {
             return 0;
         }
 
-        $driverLookup = Drivers::pluck('driver_id', 'id');
-        $teamLookup = Teams::pluck('team_id', 'id');
-
-        $driverScore = $this->scoreChampionshipOrder(
-            $prediction->getDriverChampionshipOrder(),
-            $driverStandings,
-            $season,
-            fn (int $localId) => $driverLookup[$localId] ?? null
-        );
-
-        $teamScore = $this->scoreChampionshipOrder(
-            $prediction->getConstructorOrder(),
-            $constructorStandings,
-            $season,
-            fn (int $localId) => $teamLookup[$localId] ?? null
-        );
-
-        $score = $driverScore['score'] + $teamScore['score'];
-        $correctCount = $driverScore['correct'] + $teamScore['correct'];
-        $totalPredicted = $driverScore['total'] + $teamScore['total'];
+        $score = $midseasonScore['score'];
+        $correctCount = $midseasonScore['correct'];
+        $totalPredicted = $midseasonScore['total'];
 
         if ($totalPredicted > 0 && $correctCount === $totalPredicted) {
             $score += 50;
         }
 
         return $score;
+    }
+
+    public function isPerfectPrediction(Prediction $prediction, int $season): bool
+    {
+        if ($prediction->type !== 'midseason') {
+            return false;
+        }
+
+        $constructorStandings = Standings::getConstructorStandings($season, null);
+        $midseasonScore = $this->scoreMidseasonPrediction($prediction, $season, $constructorStandings);
+
+        return $midseasonScore !== null
+            && $midseasonScore['total'] > 0
+            && $midseasonScore['correct'] === $midseasonScore['total'];
     }
 
     /**
@@ -191,6 +188,46 @@ class ChampionshipScoringService
             2 => 5,
             default => 0,
         };
+    }
+
+    /**
+     * @param  EloquentCollection<int, \App\Models\Standings>|null  $constructorStandings
+     * @return array{score: int, correct: int, total: int}|null
+     */
+    private function scoreMidseasonPrediction(
+        Prediction $prediction,
+        int $season,
+        ?EloquentCollection $constructorStandings = null
+    ): ?array {
+        $driverStandings = Standings::getDriverStandings($season, null);
+        $constructorStandings ??= Standings::getConstructorStandings($season, null);
+
+        if ($driverStandings->isEmpty() && $constructorStandings->isEmpty()) {
+            return null;
+        }
+
+        $driverLookup = Drivers::pluck('driver_id', 'id');
+        $teamLookup = Teams::pluck('team_id', 'id');
+
+        $driverScore = $this->scoreChampionshipOrder(
+            $prediction->getDriverChampionshipOrder(),
+            $driverStandings,
+            $season,
+            fn (int $localId) => $driverLookup[$localId] ?? null
+        );
+
+        $teamScore = $this->scoreChampionshipOrder(
+            $prediction->getConstructorOrder(),
+            $constructorStandings,
+            $season,
+            fn (int $localId) => $teamLookup[$localId] ?? null
+        );
+
+        return [
+            'score' => $driverScore['score'] + $teamScore['score'],
+            'correct' => $driverScore['correct'] + $teamScore['correct'],
+            'total' => $driverScore['total'] + $teamScore['total'],
+        ];
     }
 
     /**

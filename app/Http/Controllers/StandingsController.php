@@ -9,6 +9,8 @@ use App\Models\Races;
 use App\Models\Standings;
 use App\Models\Teams;
 use App\Services\F1ApiService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class StandingsController extends Controller
@@ -187,12 +189,14 @@ class StandingsController extends Controller
         ]);
     }
 
-    public function predictionStandings(int $year, ?string $username = null): View
+    public function predictionStandings(Request $request, int $year, ?string $username = null): RedirectResponse
     {
-        return view('standings.predictions', [
-            'year' => $year,
-            'username' => $username,
-        ]);
+        return redirect()->route('leaderboard.index', array_filter([
+            'season' => $year,
+            'type' => $request->query('type'),
+            'sortBy' => $request->query('sortBy'),
+            'page' => $request->query('page'),
+        ], fn ($value) => filled($value)));
     }
 
     public function yearRaceDetail(int $year, int $id): View

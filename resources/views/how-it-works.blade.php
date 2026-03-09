@@ -58,11 +58,8 @@
                     Use standings pages and the leaderboard to see where you sit in the championship and how your scores evolve across races.
                 </p>
                 <div class="flex flex-wrap gap-3">
-                    <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" class="btn btn-outline" wire:navigate>
-                        Prediction standings
-                    </a>
-                    <a href="{{ route('leaderboard.index') }}" class="btn btn-outline" wire:navigate>
-                        Global leaderboard
+                    <a href="{{ route('leaderboard.index', ['season' => config('f1.current_season')]) }}" class="btn btn-outline" wire:navigate>
+                        Prediction leaderboard
                     </a>
                 </div>
             </x-mary-card>
@@ -84,4 +81,3 @@
         @endauth
     </div>
 </x-layouts.layout>
-

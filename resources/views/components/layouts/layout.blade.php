@@ -5,11 +5,24 @@
   }
   $appearance = session('appearance', config('f1.default_appearance', 'system'));
   $dataTheme = $appearance === 'system' ? null : $appearance;
+  $resolveLayoutText = static function ($value): ?string {
+      if ($value === null) {
+          return null;
+      }
+
+      if ($value instanceof \Illuminate\Support\HtmlString) {
+          $value = $value->toHtml();
+      }
+
+      return html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+  };
+  $resolvedTitle = $resolveLayoutText($title ?? $__env->yieldContent('title')) ?? config('app.name');
+  $resolvedHeaderSubtitle = $resolveLayoutText($headerSubtitle ?? $__env->yieldContent('headerSubtitle'));
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $appearance === 'dark']) data-appearance="{{ $appearance }}" @if($dataTheme) data-theme="{{ $dataTheme }}" @endif>
 <head>
-    @include('partials.head')
+    @include('partials.head', ['title' => $resolvedTitle])
 </head>
 <body class="min-h-screen antialiased bg-white dark:bg-zinc-900 overflow-x-hidden">
     <div class="flex min-h-screen min-w-0">
@@ -146,13 +159,9 @@
                             <x-mary-icon name="o-bars-3" class="w-5 h-5" />
                         </button>
                         <div class="min-w-0">
-                            @php
-                                $headerTitle = $title ?? $__env->yieldContent('title') ?? config('app.name');
-                                $headerSub = $headerSubtitle ?? $__env->yieldContent('headerSubtitle');
-                            @endphp
-                            <h1 class="text-xl font-semibold truncate text-zinc-900 dark:text-zinc-100">{{ $headerTitle }}</h1>
-                            @if($headerSub)
-                                <p class="text-sm mt-0.5 truncate text-zinc-600 dark:text-zinc-400">{{ $headerSub }}</p>
+                            <h1 class="text-xl font-semibold truncate text-zinc-900 dark:text-zinc-100">{{ $resolvedTitle }}</h1>
+                            @if($resolvedHeaderSubtitle)
+                                <p class="text-sm mt-0.5 truncate text-zinc-600 dark:text-zinc-400">{{ $resolvedHeaderSubtitle }}</p>
                             @endif
                         </div>
                     </div>

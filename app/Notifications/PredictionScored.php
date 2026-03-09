@@ -17,8 +17,7 @@ class PredictionScored extends Notification implements ShouldQueue
      */
     public function __construct(
         public Prediction $prediction,
-        public int $score,
-        public float $accuracy
+        public int $score
     ) {}
 
     /**
@@ -54,7 +53,6 @@ class PredictionScored extends Notification implements ShouldQueue
         }
 
         $message->line("Score: {$this->score} points")
-            ->line('Accuracy: '.number_format($this->accuracy, 1).'%')
             ->action('View Your Predictions', url('/predictions'))
             ->line('Keep up the great work!');
 
@@ -75,13 +73,11 @@ class PredictionScored extends Notification implements ShouldQueue
             'season' => $this->prediction->season,
             'race_name' => $this->prediction->race?->race_name,
             'score' => $this->score,
-            'accuracy' => $this->accuracy,
             'message' => sprintf(
-                'Your %s prediction for %s has been scored: %d points (%.1f%% accuracy)',
+                'Your %s prediction for %s has been scored: %d points',
                 $this->prediction->type,
                 $this->prediction->race?->display_name ?? "{$this->prediction->season} season",
-                $this->score,
-                $this->accuracy
+                $this->score
             ),
             'action_url' => '/predictions',
         ];

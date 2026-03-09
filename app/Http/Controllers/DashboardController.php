@@ -49,7 +49,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * @return array{total_predictions: int, scored_predictions: int, total_score: int, avg_score: float, accuracy: float}
+     * @return array{total_predictions: int, scored_predictions: int, total_score: int, avg_score: float}
      */
     private function getUserStats(User $user, int $season): array
     {
@@ -58,16 +58,11 @@ class DashboardController extends Controller
         $totalScore = (int) ($user->predictions()->where('season', $season)->where('status', 'scored')->sum('score') ?? 0);
         $avgScore = round($user->predictions()->where('season', $season)->where('status', 'scored')->avg('score') ?? 0, 1);
 
-        $accuracy = $scoredPredictions > 0
-            ? min(100, round(($totalScore / ($scoredPredictions * 25)) * 100, 1))
-            : 0;
-
         return [
             'total_predictions' => $totalPredictions,
             'scored_predictions' => $scoredPredictions,
             'total_score' => $totalScore,
             'avg_score' => $avgScore,
-            'accuracy' => $accuracy,
         ];
     }
 

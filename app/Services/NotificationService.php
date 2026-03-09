@@ -43,9 +43,9 @@ class NotificationService
     /**
      * Send prediction scored notification to a specific user.
      */
-    public function sendPredictionScoredNotification(Prediction $prediction, int $score, float $accuracy): void
+    public function sendPredictionScoredNotification(Prediction $prediction, int $score): void
     {
-        $prediction->user->notify(new PredictionScored($prediction, $score, $accuracy));
+        $prediction->user->notify(new PredictionScored($prediction, $score));
 
         // Dispatch real-time event
         event(new NotificationReceived($prediction->user, [
@@ -54,15 +54,13 @@ class NotificationService
             'prediction_type' => $prediction->type,
             'season' => $prediction->season,
             'score' => $score,
-            'accuracy' => $accuracy,
             'race_name' => $prediction->race?->race_name,
             'display_name' => $prediction->race?->display_name,
             'message' => sprintf(
-                'Your %s prediction for %s has been scored: %d points (%.1f%% accuracy)',
+                'Your %s prediction for %s has been scored: %d points',
                 $prediction->type,
                 $prediction->race?->display_name ?? "{$prediction->season} season",
-                $score,
-                $accuracy
+                $score
             ),
             'action_url' => '/predictions',
         ]));

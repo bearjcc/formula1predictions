@@ -1,4 +1,4 @@
-<x-layouts.layout title="How Scoring Works" headerSubtitle="Points per position accuracy and bonuses.">
+<x-layouts.layout title="How Scoring Works" headerSubtitle="Points per position and bonuses.">
     <div class="max-w-4xl mx-auto py-8">
         <p class="text-auto-muted mb-8">
             We compare your picks to official results. Each predicted position earns points by how close it is (diff 0 = exact); bonuses for fastest lap, DNFs, and perfect picks. Race, sprint, and season prediction scores sum to your leaderboard total.

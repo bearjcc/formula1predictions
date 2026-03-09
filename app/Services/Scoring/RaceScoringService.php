@@ -101,33 +101,6 @@ class RaceScoringService
         return $score;
     }
 
-    public function calculateAccuracy(Prediction $prediction): float
-    {
-        if (! in_array($prediction->type, ['race', 'sprint'], true)) {
-            return 0.0;
-        }
-
-        $predictedOrder = $prediction->getPredictedDriverOrder();
-        $actualResults = $prediction->race->getResultsArray();
-
-        if ($actualResults === [] || $predictedOrder === []) {
-            return 0.0;
-        }
-
-        $processed = $this->processRaceResults($actualResults);
-        $correctCount = 0;
-        $total = count($predictedOrder);
-
-        foreach ($predictedOrder as $pos => $driverId) {
-            $actualPosition = $this->findDriverPosition((string) $driverId, $processed);
-            if ($actualPosition !== null && $actualPosition === $pos) {
-                $correctCount++;
-            }
-        }
-
-        return $total > 0 ? ($correctCount / $total) * 100 : 0.0;
-    }
-
     /**
      * @return array{total: int, half_points: bool, fastest_lap_row: array{predicted_driver_id: string|null, actual_driver_id: string|null, points: int}, driver_rows: list<array{position: int, predicted_driver_id: string, actual_display: string, diff: int|null, points: int}>, dnf_wager_points: int, perfect_bonus: int}
      */

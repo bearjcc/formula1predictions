@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Mail\ResetPasswordMail;
 use App\Mail\VerifyEmailMail;
-use App\Models\Races;
 use App\Notifications\PredictionDeadlineReminder;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -111,27 +110,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the user's prediction accuracy percentage.
-     */
-    public function getPredictionAccuracy(): float
-    {
-        $scoredPredictions = $this->predictions()
-            ->where('status', 'scored')
-            ->where('score', '>', 0);
-
-        $totalPredictions = $scoredPredictions->count();
-
-        if ($totalPredictions === 0) {
-            return 0.0;
-        }
-
-        $totalScore = $scoredPredictions->sum('score');
-        $maxPossibleScore = $totalPredictions * 25; // Assuming 25 points per perfect prediction
-
-        return round(($totalScore / $maxPossibleScore) * 100, 2);
-    }
-
-    /**
      * Check if the user has a specific role.
      */
     public function hasRole(string $role): bool
@@ -235,13 +213,11 @@ class User extends Authenticatable implements MustVerifyEmail
                 'total_predictions' => 0,
                 'total_score' => 0,
                 'avg_score' => 0,
-                'accuracy' => 0,
                 'best_score' => 0,
                 'perfect_predictions' => 0,
                 'top_3_count' => 0,
                 'bottom_3_count' => 0,
                 'points_over_time' => [],
-                'accuracy_over_time' => [],
                 'race_performance' => [],
             ];
         }
@@ -250,8 +226,6 @@ class User extends Authenticatable implements MustVerifyEmail
         $totalScore = $predictions->sum('score');
         $avgScore = $predictions->avg('score');
         $bestScore = $predictions->max('score');
-        $accuracy = $predictions->avg('accuracy') ?? 0;
-
         // Perfect predictions (score >= 25 per driver)
         $perfectPredictions = $predictions->filter(function ($p) {
             return $p->score >= 25; // e.g. 22 drivers, 25 pts each = 550 max; 25 is minimum for one correct
@@ -303,19 +277,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ->values()
             ->toArray();
 
-        // Accuracy over time
-        $accuracyOverTime = $predictions
-            ->sortBy('scored_at')
-            ->map(function ($p) {
-                return [
-                    'date' => $p->scored_at ? $p->scored_at->format('Y-m-d') : null,
-                    'race' => $p->race_round ?? 'N/A',
-                    'accuracy' => (float) ($p->accuracy ?? 0),
-                ];
-            })
-            ->values()
-            ->toArray();
-
         // Race performance breakdown
         $racePerformance = $predictions
             ->groupBy('race_round')
@@ -323,7 +284,6 @@ class User extends Authenticatable implements MustVerifyEmail
                 return [
                     'race_round' => $racePredictions->first()->race_round,
                     'score' => $racePredictions->sum('score'),
-                    'accuracy' => $racePredictions->avg('accuracy') ?? 0,
                     'count' => $racePredictions->count(),
                 ];
             })
@@ -335,13 +295,11 @@ class User extends Authenticatable implements MustVerifyEmail
             'total_predictions' => $predictions->count(),
             'total_score' => $totalScore,
             'avg_score' => round($avgScore, 2),
-            'accuracy' => round($accuracy, 2),
             'best_score' => $bestScore,
             'perfect_predictions' => $perfectPredictions,
             'top_3_count' => $top3Count,
             'bottom_3_count' => $bottom3Count,
             'points_over_time' => $pointsOverTime,
-            'accuracy_over_time' => $accuracyOverTime,
             'race_performance' => $racePerformance,
         ];
     }
@@ -371,7 +329,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 continue;
             }
 
-            // Build position accuracy matrix
+            // Build the position heatmap matrix
             foreach ($predictedOrder as $predictedPosition => $driverId) {
                 $actualPosition = $this->findDriverPosition($driverId, $raceResults);
 
@@ -416,39 +374,5 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return null;
-    }
-
-    /**
-     * Get accuracy trends over time.
-     */
-    public function getAccuracyTrends(?int $season = null): array
-    {
-        $query = $this->predictions()
-            ->where('type', 'race')
-            ->where('status', 'scored');
-
-        if ($season) {
-            $query->where('season', $season);
-        }
-
-        $predictions = $query->orderBy('scored_at')->get();
-
-        $trends = [];
-        $windowSize = 5; // Moving average window
-        $accuracies = $predictions->pluck('accuracy')->map(fn ($a) => (float) $a)->toArray();
-
-        for ($i = 0; $i < count($accuracies); $i++) {
-            $window = array_slice($accuracies, max(0, $i - $windowSize + 1), $windowSize);
-            $avg = count($window) > 0 ? array_sum($window) / count($window) : 0;
-
-            $trends[] = [
-                'index' => $i,
-                'race' => $predictions[$i]->race_round ?? 'N/A',
-                'accuracy' => $accuracies[$i],
-                'moving_avg' => round($avg, 2),
-            ];
-        }
-
-        return $trends;
     }
 }

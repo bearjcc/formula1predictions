@@ -81,8 +81,8 @@ class SendTestNotification extends Command
                 'type' => 'race',
             ]);
 
-            $notificationService->sendPredictionScoredNotification($prediction, 85, 75.5);
-            $this->info('Sent prediction scored notification with 85 points and 75.5% accuracy');
+            $notificationService->sendPredictionScoredNotification($prediction, 85);
+            $this->info('Sent prediction scored notification with 85 points');
         } else {
             $this->error("Invalid notification type: {$type}. Use 'race' or 'prediction'.");
 

@@ -71,9 +71,6 @@
                                                 @if(isset($notification->data['score']))
                                                     &nbsp;&middot;&nbsp;{{ $notification->data['score'] }} pts
                                                 @endif
-                                                @if(isset($notification->data['accuracy']))
-                                                    &nbsp;({{ number_format($notification->data['accuracy'], 1) }}%)
-                                                @endif
                                             </p>
                                         </div>
                                     @else

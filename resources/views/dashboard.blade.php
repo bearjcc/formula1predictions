@@ -9,7 +9,7 @@
     </div>
 
     {{-- #region Stats Overview --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <x-mary-card class="p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -25,11 +25,11 @@
         <x-mary-card class="p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-auto-muted">Prediction Accuracy</p>
-                    <h2 class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $stats['accuracy'] }}%</h2>
+                    <p class="text-sm text-auto-muted">Total Points</p>
+                    <h2 class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ number_format($stats['total_score']) }}</h2>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                    <x-mary-icon name="o-chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                    <x-mary-icon name="o-trophy" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
             </div>
         </x-mary-card>
@@ -37,11 +37,11 @@
         <x-mary-card class="p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-auto-muted">Total Points</p>
-                    <h2 class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ number_format($stats['total_score']) }}</h2>
+                    <p class="text-sm text-auto-muted">Average Score</p>
+                    <h2 class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ number_format($stats['avg_score'], 1) }}</h2>
                 </div>
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                    <x-mary-icon name="o-trophy" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                    <x-mary-icon name="o-chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
             </div>
         </x-mary-card>

@@ -33,7 +33,7 @@
     </div>
 
     <!-- Key Statistics -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body text-center">
                 <div class="text-3xl font-bold text-primary">{{ $stats['total_predictions'] }}</div>
@@ -50,12 +50,6 @@
             <div class="card-body text-center">
                 <div class="text-3xl font-bold text-accent">{{ number_format($stats['avg_score'], 1) }}</div>
                 <div class="text-sm text-zinc-600 dark:text-zinc-400">Avg Score</div>
-            </div>
-        </div>
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body text-center">
-                <div class="text-3xl font-bold text-info">{{ $stats['accuracy'] }}%</div>
-                <div class="text-sm text-zinc-600 dark:text-zinc-400">Accuracy</div>
             </div>
         </div>
     </div>
@@ -96,18 +90,6 @@
         </div>
     @endif
 
-    <!-- Accuracy Over Time Chart -->
-    @if(!empty($stats['accuracy_over_time']))
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h3 class="card-title mb-4">Accuracy Over Time</h3>
-                <div style="height: 300px;">
-                    <canvas id="accuracy-chart" wire:ignore></canvas>
-                </div>
-            </div>
-        </div>
-    @endif
-
     <!-- Race Performance Table -->
     @if(!empty($stats['race_performance']))
         <div class="card bg-base-100 shadow-sm">
@@ -119,7 +101,7 @@
                             <tr>
                                 <th>Round</th>
                                 <th>Score</th>
-                                <th>Accuracy</th>
+                                <th>Entries</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -132,14 +114,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="flex items-center gap-2">
-                                            <progress 
-                                                class="progress progress-xs w-20" 
-                                                value="{{ $race['accuracy'] }}" 
-                                                max="100"
-                                            ></progress>
-                                            <span class="text-xs">{{ number_format($race['accuracy'], 1) }}%</span>
-                                        </div>
+                                        <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ $race['count'] }}</span>
                                     </td>
                                 </tr>
                             @endforeach
@@ -151,7 +126,7 @@
     @endif
 
     <!-- Scripts for charts -->
-    @if(!empty($pointsChartData) || !empty($accuracyChartData))
+    @if(!empty($pointsChartData))
         <script>
             document.addEventListener('livewire:init', function () {
                 // Points Chart
@@ -186,53 +161,6 @@
                                         title: {
                                             display: true,
                                             text: 'Points'
-                                        }
-                                    },
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Race Round'
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    }
-                @endif
-
-                // Accuracy Chart
-                @if(!empty($accuracyChartData))
-                    const accuracyCtx = document.getElementById('accuracy-chart');
-                    if (accuracyCtx) {
-                        new Chart(accuracyCtx, {
-                            type: 'line',
-                            data: @json($accuracyChartData),
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                interaction: {
-                                    intersect: false,
-                                    mode: 'index',
-                                },
-                                plugins: {
-                                    legend: {
-                                        position: 'top',
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                return context.dataset.label + ': ' + context.parsed.y + '%';
-                                            }
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        max: 100,
-                                        title: {
-                                            display: true,
-                                            text: 'Accuracy (%)'
                                         }
                                     },
                                     x: {

@@ -19,7 +19,7 @@ class Prediction extends Model
      * @var list<string>
      */
     /**
-     * User-editable only. System fields (score, accuracy, status, submitted_at, locked_at, scored_at)
+     * User-editable only. System fields (score, status, submitted_at, locked_at, scored_at)
      * are set by ScoringService or model methods (submit/lock/score); use forceFill() in app code.
      */
     protected $fillable = [
@@ -42,7 +42,6 @@ class Prediction extends Model
         return [
             'prediction_data' => 'array',
             'score' => 'integer',
-            'accuracy' => 'decimal:2',
             'submitted_at' => 'datetime',
             'locked_at' => 'datetime',
             'scored_at' => 'datetime',
@@ -131,7 +130,6 @@ class Prediction extends Model
         }
 
         $this->score = 0;
-        $this->accuracy = 0.0;
         $this->status = 'scored';
         $this->scored_at = now();
 

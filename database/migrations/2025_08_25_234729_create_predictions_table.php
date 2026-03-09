@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('race_id')->nullable(); // For race predictions
             $table->json('prediction_data'); // Store prediction details as JSON
             $table->integer('score')->default(0);
-            $table->decimal('accuracy', 5, 2)->nullable(); // Percentage accuracy
             $table->string('status')->default('draft'); // draft, submitted, locked, scored
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('locked_at')->nullable();

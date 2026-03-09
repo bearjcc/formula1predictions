@@ -53,6 +53,9 @@
                                 @foreach($breakdown['driver_rows'] as $row)
                                     @php
                                         $predDriver = is_numeric($row['predicted_driver_id']) ? \App\Models\Drivers::find($row['predicted_driver_id']) : \App\Models\Drivers::where('driver_id', $row['predicted_driver_id'])->first();
+                                        $pointClass = $row['points'] > 0
+                                            ? 'text-green-600 dark:text-green-400'
+                                            : ($row['points'] < 0 ? 'text-red-600 dark:text-red-400' : 'text-zinc-600 dark:text-zinc-400');
                                     @endphp
                                     <tr>
                                         <td class="p-3 font-medium text-zinc-900 dark:text-zinc-100">{{ $row['position'] }}</td>
@@ -61,17 +64,17 @@
                                         <td class="p-3 text-center">
                                             @if($row['diff'] !== null)
                                                 @if($row['diff'] < 0)
-                                                    <span class="text-green-600 dark:text-green-400" title="Finished above prediction">&#8593;</span>
+                                                    <span class="text-green-600 dark:text-green-400" title="Finished above prediction">&#8593; {{ abs($row['diff']) }}</span>
                                                 @elseif($row['diff'] > 0)
-                                                    <span class="text-red-600 dark:text-red-400" title="Finished below prediction">&#8595;</span>
+                                                    <span class="text-red-600 dark:text-red-400" title="Finished below prediction">&#8595; {{ $row['diff'] }}</span>
                                                 @else
-                                                    <span class="text-zinc-500">-</span>
+                                                    <span class="text-zinc-500">0</span>
                                                 @endif
                                             @else
                                                 <span class="text-zinc-500">-</span>
                                             @endif
                                         </td>
-                                        <td class="p-3 text-right">{{ $row['points'] }}</td>
+                                        <td class="p-3 text-right {{ $pointClass }}">{{ $row['points'] > 0 ? '+' . $row['points'] : $row['points'] }}</td>
                                     </tr>
                                 @endforeach
                                 @if($breakdown['dnf_wager_points'] != 0)
@@ -111,10 +114,6 @@
                     <div>
                         <p class="text-xs font-bold text-zinc-300 dark:text-zinc-200 uppercase tracking-widest mb-1">Score</p>
                         <p class="text-3xl font-black text-green-400 dark:text-green-300">{{ $prediction->status === 'scored' ? number_format($prediction->score) : 'Pending' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-zinc-300 dark:text-zinc-200 uppercase tracking-widest mb-1">Accuracy</p>
-                        <p class="text-xl font-bold">{{ $prediction->status === 'scored' ? number_format($prediction->accuracy, 1) . '%' : 'Pending' }}</p>
                     </div>
                     <div>
                         <p class="text-xs font-bold text-zinc-300 dark:text-zinc-200 uppercase tracking-widest mb-1">Submitted</p>

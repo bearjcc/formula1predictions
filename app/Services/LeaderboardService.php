@@ -4,11 +4,18 @@ namespace App\Services;
 
 use App\Models\Prediction;
 use App\Models\User;
+use App\Services\Scoring\ChampionshipScoringService;
+use App\Services\Scoring\RaceScoringService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 class LeaderboardService
 {
+    public function __construct(
+        private RaceScoringService $raceScoring,
+        private ChampionshipScoringService $championshipScoring
+    ) {}
+
     public function seasonLeaderboard(int $season, string $type = 'all'): Collection
     {
         $users = User::withCount(['predictions' => function ($query) use ($season, $type) {
@@ -31,21 +38,13 @@ class LeaderboardService
                     $query->where('type', $type);
                 }
             }], 'score')
-            ->withAvg(['predictions as avg_accuracy' => function ($query) use ($season, $type) {
+            ->with(['predictions' => function ($query) use ($season, $type) {
                 $query->where('season', $season)
                     ->where('status', 'scored');
                 if ($type !== 'all') {
                     $query->where('type', $type);
                 }
-            }], 'accuracy')
-            ->withCount(['predictions as perfect_predictions_count' => function ($query) use ($season, $type) {
-                $query->where('season', $season)
-                    ->where('status', 'scored')
-                    ->where('score', '>=', 25);
-                if ($type !== 'all') {
-                    $query->where('type', $type);
-                }
-            }])
+            }, 'predictions.race'])
             ->whereHas('predictions', function ($query) use ($season, $type) {
                 $query->where('season', $season);
                 if ($type !== 'all') {
@@ -58,6 +57,9 @@ class LeaderboardService
 
         $users->each(function (User $user, int $index): void {
             $user->rank = $index + 1;
+            $user->perfect_predictions_count = $user->predictions
+                ->filter(fn (Prediction $prediction) => $this->isPerfectPrediction($prediction))
+                ->count();
         });
 
         return $users->toBase();
@@ -101,8 +103,6 @@ class LeaderboardService
         $avgScore = $user->predictions()->where('status', 'scored')->avg('score') ?? 0;
         $bestScore = $user->predictions()->where('status', 'scored')->max('score') ?? 0;
 
-        $accuracy = $scoredPredictions > 0 ? ($totalScore / ($scoredPredictions * 25)) * 100 : 0;
-
         $seasonStats = $user->predictions()
             ->where('status', 'scored')
             ->selectRaw('season, COUNT(*) as predictions, SUM(score) as total_score, AVG(score) as avg_score')
@@ -116,7 +116,6 @@ class LeaderboardService
             'total_score' => $totalScore,
             'avg_score' => round($avgScore, 2),
             'best_score' => $bestScore,
-            'accuracy' => round($accuracy, 2),
             'season_stats' => $seasonStats,
         ];
     }
@@ -167,5 +166,19 @@ class LeaderboardService
         $position = $ranked->search(fn (User $candidate) => (int) $candidate->id === (int) $user->id);
 
         return $position !== false ? $position + 1 : null;
+    }
+
+    private function isPerfectPrediction(Prediction $prediction): bool
+    {
+        if ($prediction->status !== 'scored') {
+            return false;
+        }
+
+        return match ($prediction->type) {
+            'race', 'sprint' => $prediction->race !== null
+                && $this->raceScoring->buildBreakdown($prediction, $prediction->race)['perfect_bonus'] > 0,
+            'midseason' => $this->championshipScoring->isPerfectPrediction($prediction, $prediction->season),
+            default => false,
+        };
     }
 }

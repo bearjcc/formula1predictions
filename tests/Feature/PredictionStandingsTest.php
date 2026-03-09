@@ -2,50 +2,51 @@
 
 declare(strict_types=1);
 
+use App\Livewire\GlobalLeaderboard;
 use App\Models\Prediction;
+use App\Models\Races;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-// F1-084: Prediction standings page shows real users (from factories), no demo users; filters change results.
-// Does not hit real F1 API.
-
+// F1-084: prediction standings now resolve to the canonical leaderboard page.
 describe('prediction standings page', function () {
-    test('returns 200 and shows real users with predictions in table', function () {
+    test('redirects to the canonical leaderboard for the selected season', function () {
+        /** @var \Tests\TestCase $this */
+        $response = $this->get('/2024/standings/predictions');
+
+        $response->assertRedirect(route('leaderboard.index', ['season' => 2024]));
+    });
+
+    test('redirect preserves leaderboard filters in the query string', function () {
+        /** @var \Tests\TestCase $this */
+        $response = $this->get('/2025/standings/predictions?type=race&sortBy=avg_score&page=2');
+
+        $response->assertRedirect(route('leaderboard.index', [
+            'season' => 2025,
+            'type' => 'race',
+            'sortBy' => 'avg_score',
+            'page' => 2,
+        ]));
+    });
+
+    test('canonical leaderboard shows real users with predictions in table', function () {
         /** @var \Tests\TestCase $this */
         $user = User::factory()->create(['name' => 'RealPredictor']);
-        Prediction::factory()->scored(50, 75.0)->create([
+        Prediction::factory()->scored(50)->create([
             'user_id' => $user->id,
             'season' => 2024,
             'type' => 'race',
         ]);
 
-        $response = $this->get('/2024/standings/predictions');
+        $response = $this->get(route('leaderboard.index', ['season' => 2024]));
 
         $response->assertOk();
-        $response->assertSee('Prediction Standings', false);
+        $response->assertSee('Prediction Leaderboard', false);
         $response->assertSee('2024', false);
         $response->assertSee('RealPredictor', false);
-        $response->assertSee('Global Leaderboard', false);
-        $response->assertDontSee('F1Expert', false);
-        $response->assertDontSee('RacingFan2023', false);
-        $response->assertDontSee('PredictorPro', false);
-    });
-
-    test('does not show demo or fake usernames when only real users have predictions', function () {
-        /** @var \Tests\TestCase $this */
-        $user = User::factory()->create(['name' => 'OnlyRealUser']);
-        Prediction::factory()->scored(10)->create([
-            'user_id' => $user->id,
-            'season' => 2025,
-            'type' => 'race',
-        ]);
-
-        $response = $this->get('/2025/standings/predictions');
-
-        $response->assertOk();
-        $response->assertSee('OnlyRealUser', false);
         $response->assertDontSee('F1Expert', false);
         $response->assertDontSee('RacingFan2023', false);
         $response->assertDontSee('PredictorPro', false);
@@ -66,8 +67,8 @@ describe('prediction standings page', function () {
             'type' => 'race',
         ]);
 
-        $r2024 = $this->get('/2024/standings/predictions');
-        $r2025 = $this->get('/2025/standings/predictions');
+        $r2024 = $this->get(route('leaderboard.index', ['season' => 2024]));
+        $r2025 = $this->get(route('leaderboard.index', ['season' => 2025]));
 
         $r2024->assertOk();
         $r2024->assertSee('User2024', false);
@@ -93,17 +94,17 @@ describe('prediction standings page', function () {
             'type' => 'preseason',
         ]);
 
-        $all = $this->get('/2024/standings/predictions');
+        $all = $this->get(route('leaderboard.index', ['season' => 2024]));
         $all->assertOk();
         $all->assertSee('RaceOnlyUser', false);
         $all->assertSee('PreseasonOnlyUser', false);
 
-        $race = $this->get('/2024/standings/predictions?type=race');
+        $race = $this->get(route('leaderboard.index', ['season' => 2024, 'type' => 'race']));
         $race->assertOk();
         $race->assertSee('RaceOnlyUser', false);
         $race->assertDontSee('PreseasonOnlyUser', false);
 
-        $preseason = $this->get('/2024/standings/predictions?type=preseason');
+        $preseason = $this->get(route('leaderboard.index', ['season' => 2024, 'type' => 'preseason']));
         $preseason->assertOk();
         $preseason->assertSee('PreseasonOnlyUser', false);
         $preseason->assertDontSee('RaceOnlyUser', false);
@@ -114,7 +115,7 @@ describe('prediction standings page', function () {
         $highTotal = User::factory()->create(['name' => 'HighTotalUser']);
         $highAvg = User::factory()->create(['name' => 'HighAvgUser']);
         foreach ([20, 20, 20, 20, 20] as $round => $score) {
-            Prediction::factory()->scored($score, 50.0)->create([
+            Prediction::factory()->scored($score)->create([
                 'user_id' => $highTotal->id,
                 'season' => 2024,
                 'type' => 'race',
@@ -122,7 +123,7 @@ describe('prediction standings page', function () {
             ]);
         }
         foreach ([30, 30] as $round => $score) {
-            Prediction::factory()->scored($score, 60.0)->create([
+            Prediction::factory()->scored($score)->create([
                 'user_id' => $highAvg->id,
                 'season' => 2024,
                 'type' => 'race',
@@ -130,18 +131,60 @@ describe('prediction standings page', function () {
             ]);
         }
 
-        $byTotal = $this->get('/2024/standings/predictions?sortBy=total_score');
+        $byTotal = $this->get(route('leaderboard.index', ['season' => 2024, 'sortBy' => 'total_score']));
         $byTotal->assertOk();
         $body = $byTotal->getContent();
         $posHighTotal = strpos($body, 'HighTotalUser');
         $posHighAvg = strpos($body, 'HighAvgUser');
         expect($posHighTotal)->toBeLessThan($posHighAvg);
 
-        $byAvg = $this->get('/2024/standings/predictions?sortBy=avg_score');
+        $byAvg = $this->get(route('leaderboard.index', ['season' => 2024, 'sortBy' => 'avg_score']));
         $byAvg->assertOk();
         $bodyAvg = $byAvg->getContent();
         $posHighAvgFirst = strpos($bodyAvg, 'HighAvgUser');
         $posHighTotalSecond = strpos($bodyAvg, 'HighTotalUser');
         expect($posHighAvgFirst)->toBeLessThan($posHighTotalSecond);
+    });
+
+    test('scored predictions with points are not counted as perfect unless they meet perfect bonus rules', function () {
+        $race = Races::factory()->create([
+            'season' => 2026,
+            'round' => 1,
+            'status' => 'completed',
+            'results' => [
+                ['driver' => ['driverId' => 'max_verstappen'], 'status' => 'FINISHED', 'fastestLap' => true],
+                ['driver' => ['driverId' => 'lando_norris'], 'status' => 'FINISHED'],
+                ['driver' => ['driverId' => 'charles_leclerc'], 'status' => 'FINISHED'],
+            ],
+        ]);
+
+        foreach (range(1, 4) as $index) {
+            $user = User::factory()->create(['name' => "Predictor {$index}"]);
+
+            Prediction::factory()->create([
+                'user_id' => $user->id,
+                'race_id' => $race->id,
+                'season' => 2026,
+                'race_round' => 1,
+                'type' => 'race',
+                'status' => 'scored',
+                'score' => 25,
+                'scored_at' => now(),
+                'prediction_data' => [
+                    'driver_order' => ['max_verstappen', 'charles_leclerc', 'lando_norris'],
+                    'fastest_lap' => 'lando_norris',
+                    'dnf_predictions' => [],
+                ],
+            ]);
+        }
+
+        $component = Livewire::test(GlobalLeaderboard::class, ['season' => 2026]);
+
+        expect($component->get('proStats')['total_predictions'])->toBe(4)
+            ->and($component->get('proStats')['perfect_predictions'])->toBe(0);
+
+        foreach ($component->get('leaderboard') as $row) {
+            expect($row['perfect_predictions'])->toBe(0);
+        }
     });
 });

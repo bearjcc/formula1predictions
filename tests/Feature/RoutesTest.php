@@ -29,7 +29,6 @@ describe('year-specific routes return 200 for valid years', function () {
         '/{year}/races',
         '/{year}/standings/drivers',
         '/{year}/standings/constructors',
-        '/{year}/standings/predictions',
     ];
 
     foreach ($standingsYears as $year) {
@@ -50,10 +49,16 @@ describe('year-specific routes return 200 for valid years', function () {
         }
     }
 
-    it('prediction standings user route responds with 200', function () {
+    it('prediction standings route redirects to leaderboard', function () {
+        /** @var \Tests\TestCase $this */
+        $response = $this->get('/2023/standings/predictions');
+        $response->assertRedirect(route('leaderboard.index', ['season' => 2023]));
+    });
+
+    it('prediction standings user route redirects to leaderboard', function () {
         /** @var \Tests\TestCase $this */
         $response = $this->get('/2023/standings/predictions/bearjcc');
-        $response->assertOk();
+        $response->assertRedirect(route('leaderboard.index', ['season' => 2023]));
     });
 
     it('race detail route responds with 200', function () {

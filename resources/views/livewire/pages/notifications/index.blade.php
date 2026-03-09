@@ -141,9 +141,6 @@ on(['notification-received' => function () {
                                             @if(isset($notification->data['score']))
                                                 <div class="mt-2 flex items-center space-x-4 text-xs text-zinc-600 dark:text-zinc-400">
                                                     <span>Score: {{ $notification->data['score'] }} points</span>
-                                                    @if(isset($notification->data['accuracy']))
-                                                        <span>Accuracy: {{ number_format($notification->data['accuracy'], 1) }}%</span>
-                                                    @endif
                                                 </div>
                                             @endif
                                         </div>

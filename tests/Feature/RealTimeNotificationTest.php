@@ -51,7 +51,7 @@ test('notification received event is dispatched when prediction is scored', func
     ]);
 
     $notificationService = new NotificationService;
-    $notificationService->sendPredictionScoredNotification($prediction, 85, 75.5);
+    $notificationService->sendPredictionScoredNotification($prediction, 85);
 
     Event::assertDispatched(NotificationReceived::class, function ($event) use ($user, $prediction) {
         return $event->user->id === $user->id &&
@@ -77,15 +77,14 @@ test('notification dropdown highlights prediction scored details', function () {
     ]);
 
     // Store a real prediction scored notification using the notification class
-    $user->notify(new App\Notifications\PredictionScored($prediction, 95, 88.5));
+    $user->notify(new App\Notifications\PredictionScored($prediction, 95));
 
     actingAs($user);
 
     Livewire::test('notifications.notification-dropdown')
         ->assertSee('Prediction scored')
         ->assertSee('Monaco Grand Prix')
-        ->assertSee('95 pts')
-        ->assertSee('88.5%');
+        ->assertSee('95 pts');
 });
 
 test('notification received event broadcasts to correct channel', function () {

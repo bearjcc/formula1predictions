@@ -16,7 +16,7 @@ test('leaderboard index renders for authenticated user', function () {
     $response = $this->get(route('leaderboard.index'));
 
     $response->assertSuccessful();
-    $response->assertSee('Leaderboard');
+    $response->assertSee('Prediction Leaderboard');
     $response->assertSee('Head-to-Head Compare');
 });
 
@@ -59,7 +59,6 @@ test('leaderboard compare with users shows comparison data and shareable URL', f
         'type' => 'race',
         'status' => 'scored',
         'score' => 20,
-        'accuracy' => 80,
     ]);
     Prediction::factory()->create([
         'user_id' => $user2->id,
@@ -68,7 +67,6 @@ test('leaderboard compare with users shows comparison data and shareable URL', f
         'type' => 'race',
         'status' => 'scored',
         'score' => 15,
-        'accuracy' => 60,
     ]);
 
     $response = $this->get(route('leaderboard.compare', [
@@ -101,7 +99,6 @@ test('leaderboard compare supports users array from form', function () {
         'type' => 'race',
         'status' => 'scored',
         'score' => 25,
-        'accuracy' => 100,
     ]);
 
     $response = $this->get(route('leaderboard.compare', [
@@ -145,4 +142,25 @@ test('leaderboard user-stats has compare link', function () {
 
     $response->assertSuccessful();
     $response->assertSee('Head-to-Head Compare');
+});
+
+test('leaderboard user-stats renders apostrophes without html entity artifacts', function () {
+    $viewer = User::factory()->create();
+    $subject = User::factory()->create(['name' => 'Kirsty Campbell']);
+    $this->actingAs($viewer);
+
+    $race = Races::factory()->create(['season' => 2024, 'results' => []]);
+    Prediction::factory()->create([
+        'user_id' => $subject->id,
+        'race_id' => $race->id,
+        'season' => 2024,
+        'status' => 'scored',
+        'score' => 10,
+    ]);
+
+    $response = $this->get(route('leaderboard.user-stats', $subject));
+
+    $response->assertSuccessful();
+    $response->assertSeeText("Kirsty Campbell's Statistics");
+    $response->assertDontSee('Kirsty Campbell&amp;#039;s Statistics', false);
 });

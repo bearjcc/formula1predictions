@@ -447,6 +447,33 @@ test('scoring and breakdown support legacy snake case result rows', function () 
         ->and($breakdown['perfect_bonus'])->toBe(50);
 });
 
+test('breakdown includes negative race points for drivers more than ten places away', function () {
+    $user = User::factory()->create();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => collect(range('a', 'm'))->map(fn ($driverId) => [
+            'driver' => ['driverId' => $driverId],
+            'status' => 'finished',
+        ])->all(),
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'prediction_data' => [
+            'driver_order' => array_merge(['m'], range('a', 'l')),
+        ],
+        'status' => 'submitted',
+    ]);
+
+    $service = app(ScoringService::class);
+    $breakdown = $service->getPredictionBreakdown($prediction, $race);
+
+    expect($breakdown['driver_rows'][0]['diff'])->toBe(12)
+        ->and($breakdown['driver_rows'][0]['points'])->toBe(-2);
+});
+
 test('half points halves race score when race has half_points flag', function () {
     $user = User::factory()->create();
     $race = Races::factory()->create([
@@ -911,13 +938,11 @@ test('prediction model score method delegates to scoring service', function () {
 
     $service = app(ScoringService::class);
     $expectedScore = $service->calculatePredictionScore($prediction, $race);
-    $expectedAccuracy = $service->calculateAccuracyValue($prediction);
 
     $prediction->score();
     $prediction->refresh();
 
     expect($prediction->score)->toBe($expectedScore);
-    expect((float) $prediction->accuracy)->toBe((float) $expectedAccuracy);
     expect($prediction->status)->toBe('scored');
     expect($prediction->scored_at)->not->toBeNull();
 });
@@ -1273,7 +1298,6 @@ test('savePredictionScore updates core fields consistently', function () {
     $prediction->refresh();
 
     expect($prediction->score)->toBe($score);
-    expect((float) $prediction->accuracy)->toBeGreaterThan(0.0);
     expect($prediction->status)->toBe('scored');
     expect($prediction->scored_at)->not->toBeNull();
 });

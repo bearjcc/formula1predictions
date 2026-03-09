@@ -36,7 +36,7 @@
     </div>
 
     <!-- Statistics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="card bg-base-100">
             <div class="card-body text-center">
                 <h3 class="card-title text-primary text-2xl">{{ $stats['total_predictions'] }}</h3>
@@ -58,12 +58,6 @@
             </div>
         </div>
 
-        <div class="card bg-base-100">
-            <div class="card-body text-center">
-                <h3 class="card-title text-primary text-2xl">{{ $stats['accuracy'] }}%</h3>
-                <p class="text-sm text-zinc-600 dark:text-zinc-400">Accuracy</p>
-            </div>
-        </div>
     </div>
 
     <!-- Season Breakdown -->

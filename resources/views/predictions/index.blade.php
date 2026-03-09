@@ -47,7 +47,6 @@
                             <div class="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
                                 @if($prediction->status === 'scored')
                                     <span class="font-semibold text-green-600 dark:text-green-400">{{ number_format($prediction->score) }} pts</span>
-                                    <span>{{ number_format($prediction->accuracy, 1) }}% accuracy</span>
                                 @else
                                     <span>{{ $prediction->isEditable() ? 'Edit' : 'View' }}</span>
                                 @endif

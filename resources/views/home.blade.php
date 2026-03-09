@@ -9,7 +9,7 @@
                     F1 Predictions
                 </h1>
                 <p class="text-xl text-white mb-8 text-shadow">
-                    Predict F1 race outcomes. Track your accuracy and see where you rank.
+                    Predict F1 race outcomes, earn points, and see where you rank.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="{{ auth()->check() ? route('predict.create') : route('login') }}" wire:navigate
@@ -98,9 +98,9 @@
                         <p class="mb-4 text-body text-zinc-800 dark:text-zinc-200">
                             See how prediction scores stack up for the season. For your own picks, use My Predictions.
                         </p>
-                        <a href="{{ route('standings.predictions', ['year' => config('f1.current_season')]) }}" wire:navigate
+                        <a href="{{ route('leaderboard.index', ['season' => config('f1.current_season')]) }}" wire:navigate
                             class="block w-full text-center px-4 py-2 text-sm font-medium rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                            View prediction standings
+                            View prediction leaderboard
                         </a>
                     </div>
                 </x-mary-card>
@@ -192,7 +192,7 @@
                     </div>
                     <h3 class="text-heading-3 mb-2">Track Your Progress</h3>
                     <p class="text-body text-zinc-700 dark:text-zinc-300">
-                        Monitor your prediction accuracy over time and see how you improve throughout the season.
+                        Monitor your points over time and see how you improve throughout the season.
                     </p>
                 </div>
             </div>

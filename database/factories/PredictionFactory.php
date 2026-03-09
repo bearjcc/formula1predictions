@@ -49,12 +49,11 @@ class PredictionFactory extends Factory
         return $this->afterCreating(fn ($p) => $p->forceFill(['status' => 'locked', 'locked_at' => now()])->save());
     }
 
-    public function scored(int $score = 10, float $accuracy = 50.0): static
+    public function scored(int $score = 10): static
     {
         return $this->afterCreating(fn ($p) => $p->forceFill([
             'status' => 'scored',
             'score' => $score,
-            'accuracy' => $accuracy,
             'scored_at' => now(),
         ])->save());
     }

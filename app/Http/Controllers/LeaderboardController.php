@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\ChartDataService;
 use App\Services\LeaderboardService;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 class LeaderboardController extends Controller
@@ -21,88 +20,8 @@ class LeaderboardController extends Controller
      */
     public function index(Request $request): View
     {
-        $season = (int) $request->get('season', date('Y'));
-        $type = $request->get('type', 'all');
-
-        $perPage = (int) $request->get('per_page', 20);
-        $perPage = in_array($perPage, [10, 20, 50], true) ? $perPage : 20;
-
-        $fullLeaderboard = $this->leaderboardService->seasonLeaderboard($season, $type);
-        $total = $fullLeaderboard->count();
-
-        $seasons = $this->leaderboardService->availableSeasons();
-        $types = ['all' => 'All Predictions', 'race' => 'Race Predictions', 'preseason' => 'Preseason Predictions'];
-
-        $showFocusView = false;
-        $focusLeaderboard = collect();
-        $userRank = null;
-
-        $viewMode = $request->get('view', 'auto');
-
-        $currentUser = $request->user();
-
-        if ($currentUser !== null && $total > 0 && $viewMode !== 'full') {
-            $currentUserId = (int) $currentUser->id;
-            $userIndex = $fullLeaderboard->search(function ($user) use ($currentUserId) {
-                return (int) $user->id === (int) $currentUserId;
-            });
-
-            if ($userIndex !== false) {
-                $userRank = $userIndex + 1;
-
-                if ($userRank > 8) {
-                    $showFocusView = true;
-
-                    $topFive = $fullLeaderboard->take(5);
-                    $aroundStart = max(0, $userIndex - 1);
-                    $around = $fullLeaderboard->slice($aroundStart, 3);
-
-                    $focusLeaderboard = $topFive
-                        ->concat($around)
-                        ->unique('id')
-                        ->values();
-                }
-            }
-        }
-
-        if ($showFocusView) {
-            return view('leaderboard.index', [
-                'leaderboard' => null,
-                'focusLeaderboard' => $focusLeaderboard,
-                'showFocusView' => true,
-                'seasons' => $seasons,
-                'types' => $types,
-                'season' => $season,
-                'type' => $type,
-                'perPage' => $perPage,
-                'userRank' => $userRank,
-            ]);
-        }
-
-        $page = max(1, (int) $request->get('page', 1));
-        $items = $fullLeaderboard->forPage($page, $perPage)->values();
-
-        $leaderboard = new LengthAwarePaginator(
-            $items,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path' => $request->url(),
-                'query' => $request->query(),
-            ]
-        );
-
         return view('leaderboard.index', [
-            'leaderboard' => $leaderboard,
-            'focusLeaderboard' => null,
-            'showFocusView' => false,
-            'seasons' => $seasons,
-            'types' => $types,
-            'season' => $season,
-            'type' => $type,
-            'perPage' => $perPage,
-            'userRank' => $userRank,
+            'season' => (int) $request->get('season', config('f1.current_season')),
         ]);
     }
 

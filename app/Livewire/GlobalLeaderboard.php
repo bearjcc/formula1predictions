@@ -16,7 +16,7 @@ class GlobalLeaderboard extends Component
     public string $type = 'all'; // all, race, preseason
 
     #[Url]
-    public string $sortBy = 'total_score'; // total_score, avg_score, avg_accuracy, predictions_count
+    public string $sortBy = 'total_score'; // total_score, avg_score, predictions_count
 
     #[Url]
     public int $page = 1;
@@ -84,7 +84,6 @@ class GlobalLeaderboard extends Component
                 'initials' => strtoupper(substr($user->name, 0, 2)),
                 'total_score' => $user->total_score ?? 0,
                 'avg_score' => round($user->avg_score ?? 0, 2),
-                'avg_accuracy' => round($user->avg_accuracy ?? 0, 2),
                 'predictions_count' => $user->predictions_count,
                 'perfect_predictions' => $user->perfect_predictions_count ?? 0,
                 'rank' => $user->rank,
@@ -117,15 +116,11 @@ class GlobalLeaderboard extends Component
         }
 
         $totalScores = array_column($this->leaderboard, 'total_score');
-        $avgScores = array_column($this->leaderboard, 'avg_score');
-        $accuracies = array_column($this->leaderboard, 'avg_accuracy');
-
         $this->proStats = [
             'total_users' => $totalUsers,
             'total_predictions' => array_sum(array_column($this->leaderboard, 'predictions_count')),
             'avg_total_score' => round(array_sum($totalScores) / $totalUsers, 0),
             'median_score' => $this->calculateMedian($totalScores),
-            'avg_accuracy' => round(array_sum($accuracies) / $totalUsers, 2),
             'perfect_predictions' => array_sum(array_column($this->leaderboard, 'perfect_predictions')),
         ];
     }

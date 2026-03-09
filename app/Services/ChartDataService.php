@@ -103,99 +103,6 @@ class ChartDataService
     }
 
     /**
-     * Get prediction accuracy trends for a user.
-     */
-    public function getUserPredictionAccuracyTrends(User $user, int $season): array
-    {
-        $predictions = $user->predictions()
-            ->where('season', $season)
-            ->whereNotNull('accuracy')
-            ->orderBy('submitted_at')
-            ->get();
-
-        $chartData = [];
-        foreach ($predictions as $prediction) {
-            $chartData[] = [
-                'prediction' => $prediction->type.' #'.$prediction->id,
-                'date' => $prediction->submitted_at->format('M j'),
-                'accuracy' => round($prediction->accuracy, 1),
-                'score' => $prediction->score,
-                'type' => $prediction->type,
-            ];
-        }
-
-        return $chartData;
-    }
-
-    /**
-     * Get prediction accuracy comparison between users.
-     */
-    public function getPredictionAccuracyComparison(int $season): array
-    {
-        $users = User::with(['predictions' => function ($query) use ($season) {
-            $query->where('season', $season)
-                ->whereNotNull('accuracy');
-        }])->get();
-
-        $chartData = [];
-        foreach ($users as $user) {
-            if ($user->predictions->isNotEmpty()) {
-                $avgAccuracy = $user->predictions->avg('accuracy');
-                $totalScore = $user->predictions->sum('score');
-                $totalPredictions = $user->predictions->count();
-
-                $chartData[] = [
-                    'user' => $user->name,
-                    'avg_accuracy' => round($avgAccuracy, 1),
-                    'total_score' => $totalScore,
-                    'total_predictions' => $totalPredictions,
-                ];
-            }
-        }
-
-        // Sort by average accuracy descending
-        usort($chartData, fn ($a, $b) => $b['avg_accuracy'] <=> $a['avg_accuracy']);
-
-        return $chartData;
-    }
-
-    /**
-     * Get race prediction accuracy by race.
-     */
-    public function getRacePredictionAccuracyByRace(int $season): array
-    {
-        $races = Races::where('season', $season)
-            ->whereNotNull('results')
-            ->orderBy('round')
-            ->get();
-
-        // Batch load all predictions for these races in one query
-        $raceIds = $races->pluck('id')->all();
-        $predictionsByRace = Prediction::whereIn('race_id', $raceIds)
-            ->where('type', 'race')
-            ->whereNotNull('accuracy')
-            ->get()
-            ->groupBy('race_id');
-
-        $chartData = [];
-        foreach ($races as $race) {
-            $predictions = $predictionsByRace->get($race->id);
-
-            if ($predictions && $predictions->isNotEmpty()) {
-                $chartData[] = [
-                    'race' => $race->display_name,
-                    'round' => $race->round,
-                    'avg_accuracy' => round($predictions->avg('accuracy'), 1),
-                    'total_predictions' => $predictions->count(),
-                    'date' => $race->date->format('M j'),
-                ];
-            }
-        }
-
-        return $chartData;
-    }
-
-    /**
      * Get driver performance comparison.
      */
     public function getDriverPerformanceComparison(int $season): array
@@ -360,72 +267,6 @@ class ChartDataService
     }
 
     /**
-     * Get prediction accuracy by prediction type.
-     */
-    public function getPredictionAccuracyByType(int $season): array
-    {
-        $predictions = Prediction::where('season', $season)
-            ->whereNotNull('accuracy')
-            ->get()
-            ->groupBy('type');
-
-        $chartData = [];
-        foreach ($predictions as $type => $typePredictions) {
-            $avgAccuracy = $typePredictions->avg('accuracy');
-            $totalPredictions = $typePredictions->count();
-            $totalScore = $typePredictions->sum('score');
-
-            $chartData[] = [
-                'type' => ucfirst($type),
-                'avg_accuracy' => round($avgAccuracy, 1),
-                'total_predictions' => $totalPredictions,
-                'total_score' => $totalScore,
-                'avg_score' => round($totalScore / $totalPredictions, 1),
-            ];
-        }
-
-        // Sort by average accuracy descending
-        usort($chartData, fn ($a, $b) => $b['avg_accuracy'] <=> $a['avg_accuracy']);
-
-        return $chartData;
-    }
-
-    /**
-     * Get user performance trends over time.
-     */
-    public function getUserPerformanceTrends(User $user, int $season): array
-    {
-        $predictions = $user->predictions()
-            ->where('season', $season)
-            ->whereNotNull('accuracy')
-            ->orderBy('submitted_at')
-            ->get();
-
-        $chartData = [];
-        $cumulativeScore = 0;
-        $cumulativeAccuracy = 0;
-        $predictionCount = 0;
-
-        foreach ($predictions as $prediction) {
-            $cumulativeScore += $prediction->score;
-            $cumulativeAccuracy += $prediction->accuracy;
-            $predictionCount++;
-
-            $chartData[] = [
-                'prediction' => $prediction->type.' #'.$prediction->id,
-                'date' => $prediction->submitted_at->format('M j'),
-                'accuracy' => round($prediction->accuracy, 1),
-                'score' => $prediction->score,
-                'cumulative_score' => $cumulativeScore,
-                'avg_accuracy' => round($cumulativeAccuracy / $predictionCount, 1),
-                'type' => $prediction->type,
-            ];
-        }
-
-        return $chartData;
-    }
-
-    /**
      * Get race result distribution (podiums, points, DNFs).
      */
     public function getRaceResultDistribution(int $season): array
@@ -468,66 +309,10 @@ class ChartDataService
     }
 
     /**
-     * Get predictor luck and variance metrics for a season (experiment: F1-011).
-     * Returns per-user: total_score, avg_accuracy, score_std_dev, expected_score, luck_index.
-     * Does not alter leaderboards; for analytics/experiment only.
-     *
-     * @return array<int, array{user: string, total_score: int|float, avg_accuracy: float, prediction_count: int, score_std_dev: float|null, expected_score: float, luck_index: float}>
-     */
-    public function getPredictorLuckAndVariance(int $season): array
-    {
-        $predictions = Prediction::where('season', $season)
-            ->whereNotNull('accuracy')
-            ->whereNotNull('score')
-            ->with('user:id,name')
-            ->orderBy('user_id')
-            ->get();
-
-        $byUser = $predictions->groupBy('user_id');
-        $chartData = [];
-
-        foreach ($byUser as $userId => $userPredictions) {
-            $user = $userPredictions->first()->user;
-            if (! $user) {
-                continue;
-            }
-
-            $scores = $userPredictions->pluck('score')->map(fn ($s) => (float) $s)->all();
-            $totalScore = array_sum($scores);
-            $count = count($scores);
-            $avgAccuracy = $userPredictions->avg('accuracy');
-            $expectedScore = $count > 0 ? ($avgAccuracy / 100) * 25 * $count : 0.0;
-            $luckIndex = $totalScore - $expectedScore;
-
-            $scoreStdDev = null;
-            if ($count >= 2) {
-                $mean = $totalScore / $count;
-                $variance = array_sum(array_map(fn ($s) => ($s - $mean) ** 2, $scores)) / $count;
-                $scoreStdDev = sqrt($variance);
-            }
-
-            $chartData[] = [
-                'user' => $user->name,
-                'total_score' => (int) round($totalScore),
-                'avg_accuracy' => round((float) $avgAccuracy, 1),
-                'prediction_count' => $count,
-                'score_std_dev' => $scoreStdDev !== null ? round($scoreStdDev, 2) : null,
-                'expected_score' => round($expectedScore, 1),
-                'luck_index' => round($luckIndex, 1),
-            ];
-        }
-
-        usort($chartData, fn ($a, $b) => $b['total_score'] <=> $a['total_score']);
-
-        return $chartData;
-    }
-
-    /**
-     * Get head-to-head comparison data for selected users in a season (F1-012).
-     * Returns per-user total_score, avg_accuracy, prediction_count for comparison charts.
+     * Get head-to-head comparison data for selected users in a season.
      *
      * @param  array<int>  $userIds
-     * @return array<int, array{user: string, user_id: int, total_score: int|float, avg_accuracy: float, prediction_count: int}>
+     * @return array<int, array{user: string, user_id: int, total_score: int|float, avg_score: float, prediction_count: int}>
      */
     public function getHeadToHeadComparison(array $userIds, int $season): array
     {
@@ -537,7 +322,6 @@ class ChartDataService
 
         $predictions = Prediction::where('season', $season)
             ->whereIn('user_id', $userIds)
-            ->whereNotNull('accuracy')
             ->whereNotNull('score')
             ->with('user:id,name')
             ->get();
@@ -557,14 +341,13 @@ class ChartDataService
             }
 
             $totalScore = $userPredictions->sum('score');
-            $avgAccuracy = $userPredictions->avg('accuracy');
             $count = $userPredictions->count();
 
             $chartData[] = [
                 'user' => $user->name,
                 'user_id' => (int) $userId,
                 'total_score' => (int) round($totalScore),
-                'avg_accuracy' => round((float) $avgAccuracy, 1),
+                'avg_score' => round((float) $userPredictions->avg('score'), 1),
                 'prediction_count' => $count,
             ];
         }

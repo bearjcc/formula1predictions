@@ -16,28 +16,23 @@ describe('2026 standings pages', function () {
         $response->assertOk();
         $response->assertSee('2026 Standings', false);
         $response->assertSee(route('standings.drivers', ['year' => 2026]), false);
-        $response->assertSee(route('standings.predictions', ['year' => 2026]), false);
+        $response->assertSee(route('leaderboard.index', ['season' => 2026]), false);
     });
 
-    test('prediction standings for 2026 returns 200 and does not show fake usernames', function () {
+    test('prediction standings for 2026 redirects to leaderboard', function () {
         $response = $this->get('/2026/standings/predictions');
 
-        $response->assertOk();
-        $response->assertSee('2026', false);
-        $response->assertSee('Prediction Standings', false);
-        $response->assertDontSee('F1Expert', false);
-        $response->assertDontSee('RacingFan2023', false);
-        $response->assertDontSee('PredictorPro', false);
+        $response->assertRedirect(route('leaderboard.index', ['season' => 2026]));
     });
 
-    test('prediction standings for 2026 shows real users with predictions', function () {
+    test('leaderboard for 2026 shows real users with predictions', function () {
         $user = User::factory()->create(['name' => 'RealPredictor2026']);
         Prediction::factory()->scored(50)->create([
             'user_id' => $user->id,
             'season' => 2026,
         ]);
 
-        $response = $this->get('/2026/standings/predictions');
+        $response = $this->get(route('leaderboard.index', ['season' => 2026]));
 
         $response->assertOk();
         $response->assertSee('RealPredictor2026', false);

@@ -82,6 +82,38 @@ test('scored prediction page shows the score breakdown without the redundant top
         ->assertDontSee('Predicted Finishing Order');
 });
 
+test('scored prediction page shows numeric diff and signed negative points when applicable', function () {
+    $user = testUser();
+    $race = Races::factory()->create([
+        'status' => 'completed',
+        'results' => collect(range('a', 'm'))->map(fn ($driverId) => [
+            'driver' => ['driverId' => $driverId],
+            'status' => 'finished',
+        ])->all(),
+    ]);
+
+    $prediction = Prediction::factory()->create([
+        'user_id' => $user->id,
+        'race_id' => $race->id,
+        'type' => 'race',
+        'status' => 'submitted',
+        'prediction_data' => [
+            'driver_order' => array_merge(['m'], range('a', 'l')),
+        ],
+    ]);
+
+    $scoring = app(\App\Services\ScoringService::class);
+    $score = $scoring->calculatePredictionScore($prediction, $race);
+    $scoring->savePredictionScore($prediction, $score);
+    $prediction->refresh();
+
+    actingAs($user)
+        ->get(route('predictions.show', $prediction))
+        ->assertOk()
+        ->assertSee('12')
+        ->assertSee('-2');
+});
+
 test('user cannot view another users prediction', function () {
     $owner = testUser();
     $other = testUser();
@@ -373,7 +405,6 @@ test('mass-assigning score or status via create is rejected', function () {
         'prediction_data' => ['team_order' => [1], 'driver_championship' => [1]],
         'notes' => null,
         'score' => 500,
-        'accuracy' => 99.9,
         'status' => 'scored',
         'submitted_at' => now(),
         'locked_at' => now(),
@@ -383,7 +414,6 @@ test('mass-assigning score or status via create is rejected', function () {
     $prediction->refresh();
     expect($prediction->score)->toBe(0)
         ->and($prediction->status)->toBe('draft')
-        ->and($prediction->accuracy)->toBeNull()
         ->and($prediction->submitted_at)->toBeNull()
         ->and($prediction->locked_at)->toBeNull()
         ->and($prediction->scored_at)->toBeNull();

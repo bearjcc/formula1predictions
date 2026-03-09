@@ -10,6 +10,7 @@ use App\Services\ChartDataService;
 use Database\Seeders\HistoricalPredictionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+
 use function Pest\Laravel\artisan;
 
 uses(RefreshDatabase::class)->group('slow');
@@ -232,11 +233,10 @@ test('imported historical predictions can feed basic analytics for a season', fu
     $predictions = Prediction::where('season', $season)->get();
     expect($predictions->isNotEmpty())->toBeTrue();
 
-    // Assign simple synthetic scores and accuracy values so analytics have data to work with
+    // Assign simple synthetic scores so analytics have data to work with
     foreach ($predictions as $index => $prediction) {
         $prediction->forceFill([
             'score' => 50 + ($index % 25),
-            'accuracy' => 60 + ($index % 40),
         ])->save();
     }
 
@@ -267,19 +267,11 @@ test('imported historical predictions can feed basic analytics for a season', fu
     /** @var ChartDataService $service */
     $service = app(ChartDataService::class);
 
-    // Accuracy-based analytics should have entries for the imported season
-    $byType = $service->getPredictionAccuracyByType($season);
-    $comparison = $service->getPredictionAccuracyComparison($season);
-
-    expect($byType)->not()->toBeEmpty();
-    expect($comparison)->not()->toBeEmpty();
-
-    // Pick a user who actually has imported predictions for this season and ensure their trends can be generated
     $predictionWithUser = Prediction::where('season', $season)->whereNotNull('user_id')->first();
     expect($predictionWithUser)->not()->toBeNull();
 
-    $trends = $service->getUserPredictionAccuracyTrends($predictionWithUser->user, $season);
-    expect($trends)->not()->toBeEmpty();
+    $comparison = $service->getHeadToHeadComparison([$predictionWithUser->user_id], $season);
+    expect($comparison)->not()->toBeEmpty();
 
     // Standings-based analytics should also return data for this synthetic season
     $driverPerformance = $service->getDriverPerformanceComparison($season);

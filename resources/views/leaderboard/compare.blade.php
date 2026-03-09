@@ -1,7 +1,7 @@
-<x-layouts.layout title="Head-to-Head Comparison" headerSubtitle="Compare scores and accuracy with other predictors">
+<x-layouts.layout title="Head-to-Head Comparison" headerSubtitle="Compare scores with other predictors">
     <div class="container mx-auto max-w-full min-w-0 px-4 py-8">
         <div class="mb-8 flex justify-end">
-            <x-mary-button link="{{ route('leaderboard.index') }}" variant="outline" label="Back to Leaderboard" />
+            <x-mary-button link="{{ route('leaderboard.index', ['season' => $season]) }}" variant="outline" label="Back to Leaderboard" />
         </div>
 
         {{-- Filters: season + user multi-select --}}
@@ -55,7 +55,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">User</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Score</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Avg Accuracy</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Avg Score</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Predictions</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -65,7 +65,7 @@
                                     <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-700">
                                         <td class="px-6 py-4 whitespace-nowrap font-semibold text-zinc-900 dark:text-zinc-100">{{ $row['user'] }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{{ $row['total_score'] }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{{ $row['avg_accuracy'] }}%</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{{ number_format($row['avg_score'], 1) }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">{{ $row['prediction_count'] }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <x-mary-button

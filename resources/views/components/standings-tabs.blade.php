@@ -19,11 +19,11 @@
                 <span class="sm:hidden">{{ __('Constructors') }}</span>
                 <span class="hidden sm:inline">{{ __('Constructor Standings') }}</span>
             </a>
-            <a href="{{ route('standings.predictions', ['year' => $year]) }}"
-               class="{{ $tabClass }} {{ request()->routeIs('standings.predictions*') ? $activeClass : $inactiveClass }}"
+            <a href="{{ route('leaderboard.index', ['season' => $year]) }}"
+               class="{{ $tabClass }} {{ request()->routeIs('leaderboard.index') ? $activeClass : $inactiveClass }}"
                wire:navigate>
                 <span class="sm:hidden">{{ __('Predictions') }}</span>
-                <span class="hidden sm:inline">{{ __('Prediction Standings') }}</span>
+                <span class="hidden sm:inline">{{ __('Prediction Leaderboard') }}</span>
             </a>
         </nav>
     </div>

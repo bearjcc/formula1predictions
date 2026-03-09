@@ -69,9 +69,9 @@
                     <x-mary-icon name="o-chart-bar" class="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div class="ml-4">
-                            <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Avg Accuracy</p>
+                            <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Avg Score</p>
                             <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                                {{ $avgAccuracy ?? 0 }}%
+                                {{ $avgScore ?? 0 }}
                             </p>
                         </div>
                     </div>
@@ -80,9 +80,6 @@
 
     {{-- #region Charts Grid --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
-        <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 min-h-[320px]">
-            @livewire('charts.prediction-accuracy-chart', ['season' => $selectedSeason ?? 2024])
-        </div>
         <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 min-h-[320px]">
             @livewire('charts.standings-chart', ['season' => $selectedSeason ?? 2024])
         </div>

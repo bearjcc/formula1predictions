@@ -5,7 +5,7 @@
         <div class="px-4 sm:px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
             <h2 class="text-heading-3">{{ $year }} Standings</h2>
             <p class="mt-1 text-sm text-auto-muted">
-                Select a tab above to view detailed driver, constructor, or prediction standings for {{ $year }}.
+                Select a tab above to view detailed driver, constructor, or prediction leaderboard pages for {{ $year }}.
             </p>
         </div>
 
@@ -20,11 +20,10 @@
                 <a href="{{ route('standings.constructors', ['year' => $year]) }}" class="btn btn-sm btn-outline">
                     Constructor standings
                 </a>
-                <a href="{{ route('standings.predictions', ['year' => $year]) }}" class="btn btn-sm btn-outline">
-                    Prediction standings
+                <a href="{{ route('leaderboard.index', ['season' => $year]) }}" class="btn btn-sm btn-outline">
+                    Prediction leaderboard
                 </a>
             </div>
         </div>
     </x-mary-card>
 </x-layouts.layout>
-

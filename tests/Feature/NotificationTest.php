@@ -49,12 +49,11 @@ test('prediction scored notification can be sent', function () {
     ]);
 
     $notificationService = new NotificationService;
-    $notificationService->sendPredictionScoredNotification($prediction, 85, 75.5);
+    $notificationService->sendPredictionScoredNotification($prediction, 85);
 
     Notification::assertSentTo($user, PredictionScored::class, function ($notification) use ($prediction) {
         return $notification->prediction->id === $prediction->id &&
-               $notification->score === 85 &&
-               $notification->accuracy === 75.5;
+               $notification->score === 85;
     });
 });
 
@@ -162,7 +161,7 @@ test('prediction scored notification has correct email content', function () {
         'type' => 'race',
     ]);
 
-    $notification = new PredictionScored($prediction, 95, 88.5);
+    $notification = new PredictionScored($prediction, 95);
     $mailMessage = $notification->toMail($user);
 
     expect($mailMessage->subject)->toBe('Prediction Scored: Race Prediction')
@@ -183,7 +182,7 @@ test('prediction scored notification stores detailed data for dropdown', functio
         'type' => 'race',
     ]);
 
-    $notification = new PredictionScored($prediction, 95, 88.5);
+    $notification = new PredictionScored($prediction, 95);
     $array = $notification->toArray($user);
 
     expect($array)
@@ -191,10 +190,8 @@ test('prediction scored notification stores detailed data for dropdown', functio
         ->and($array['prediction_id'])->toBe($prediction->id)
         ->and($array['race_name'])->toBe('Monaco Grand Prix')
         ->and($array['score'])->toBe(95)
-        ->and($array['accuracy'])->toBe(88.5)
         ->and($array['message'])->toContain('Monaco Grand Prix')
         ->and($array['message'])->toContain('95 points')
-        ->and($array['message'])->toContain('88.5%')
         ->and($array['action_url'])->toBe('/predictions');
 });
 
@@ -231,8 +228,8 @@ test('prediction deadline reminder has correct action url for race', function ()
     $array = $notification->toArray($user);
 
     expect($mailable->actionUrl)->toContain('predict/create')
-        ->and($mailable->actionUrl)->toContain('race_id=' . $race->id)
-        ->and($array['action_url'])->toBe('/predict/create?race_id=' . $race->id);
+        ->and($mailable->actionUrl)->toContain('race_id='.$race->id)
+        ->and($array['action_url'])->toBe('/predict/create?race_id='.$race->id);
 });
 
 test('prediction deadline reminder has correct action url for preseason', function () {
@@ -265,7 +262,7 @@ test('notifications implement ShouldQueue interface', function () {
     $prediction = Prediction::factory()->create();
 
     expect(new RaceResultsAvailable($race))->toBeInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class)
-        ->and(new PredictionScored($prediction, 100, 90.0))->toBeInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class)
+        ->and(new PredictionScored($prediction, 100))->toBeInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class)
         ->and(new PredictionDeadlineReminder($race))->toBeInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class);
 });
 

@@ -17,11 +17,7 @@ class UserProfileStats extends Component
 
     public array $pointsChartData = [];
 
-    public array $accuracyChartData = [];
-
     public array $heatmapData = [];
-
-    public array $accuracyTrends = [];
 
     public function mount(User $user, ?int $season = null): void
     {
@@ -39,9 +35,7 @@ class UserProfileStats extends Component
     {
         $this->stats = $this->user->getDetailedStats($this->season);
         $this->pointsChartData = $this->preparePointsChartData();
-        $this->accuracyChartData = $this->prepareAccuracyChartData();
         $this->heatmapData = $this->user->getPositionHeatmapData($this->season);
-        $this->accuracyTrends = $this->user->getAccuracyTrends($this->season);
     }
 
     private function preparePointsChartData(): array
@@ -66,25 +60,6 @@ class UserProfileStats extends Component
                     'backgroundColor' => 'transparent',
                     'tension' => 0.4,
                     'borderDash' => [5, 5],
-                ],
-            ],
-        ];
-    }
-
-    private function prepareAccuracyChartData(): array
-    {
-        $data = $this->stats['accuracy_over_time'] ?? [];
-
-        return [
-            'labels' => array_column($data, 'race'),
-            'datasets' => [
-                [
-                    'label' => 'Accuracy (%)',
-                    'data' => array_map(fn ($a) => round($a, 2), array_column($data, 'accuracy')),
-                    'borderColor' => '#8B5CF6',
-                    'backgroundColor' => 'rgba(139, 92, 246, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
                 ],
             ],
         ];

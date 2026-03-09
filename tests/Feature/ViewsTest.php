@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Circuits;
-use App\Models\Countries;
 use App\Models\Drivers;
 use App\Models\Races;
 use App\Models\Teams;
@@ -34,7 +33,6 @@ describe('Year-specific views load correctly', function () {
         '/{year}/standings' => 'standings',
         '/{year}/standings/drivers' => 'standings.drivers',
         '/{year}/standings/constructors' => 'standings.constructors',
-        '/{year}/standings/predictions' => 'standings.predictions',
     ];
 
     foreach ($validYears as $year) {
@@ -51,12 +49,9 @@ describe('Year-specific views load correctly', function () {
     }
 
     // Test year-specific routes with additional parameters
-    it('loads standings.predictions view for /2023/standings/predictions/bearjcc', function () {
+    it('redirects /2023/standings/predictions/bearjcc to the leaderboard', function () {
         $response = $this->get('/2023/standings/predictions/bearjcc');
-        $response->assertOk();
-        $response->assertViewIs('standings.predictions');
-        $response->assertViewHas('year', '2023');
-        $response->assertViewHas('username', 'bearjcc');
+        $response->assertRedirect(route('leaderboard.index', ['season' => 2023]));
     });
 
     it('loads race view for a valid race', function () {
@@ -171,8 +166,8 @@ describe('View data is structured correctly', function () {
         $response->assertViewHas('team');
     });
 
-    it('complex routes pass multiple parameters', function () {
+    it('prediction standings routes redirect with the year in the query string', function () {
         $response = $this->get('/2023/standings/predictions/testuser');
-        $response->assertViewHasAll(['year', 'username']);
+        $response->assertRedirect(route('leaderboard.index', ['season' => 2023]));
     });
 });

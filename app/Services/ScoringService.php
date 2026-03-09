@@ -48,7 +48,7 @@ class ScoringService
                 $results['total_score'] += $score;
 
                 try {
-                    $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+                    $prediction->user->notify(new PredictionScored($prediction, $score));
                 } catch (\Exception $e) {
                     Log::warning("Could not notify user {$prediction->user_id} for prediction {$prediction->id}");
                 }
@@ -128,7 +128,7 @@ class ScoringService
                 $results['total_score'] += $score;
 
                 try {
-                    $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+                    $prediction->user->notify(new PredictionScored($prediction, $score));
                 } catch (\Exception $e) {
                     Log::warning("Could not notify user {$prediction->user_id} for sprint prediction {$prediction->id}");
                 }
@@ -201,7 +201,7 @@ class ScoringService
                 $results['total_score'] += $score;
 
                 try {
-                    $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+                    $prediction->user->notify(new PredictionScored($prediction, $score));
                 } catch (\Exception $e) {
                     Log::warning("Could not notify user {$prediction->user_id} for prediction {$prediction->id}");
                 }
@@ -219,15 +219,9 @@ class ScoringService
     {
         $prediction->forceFill([
             'score' => $score,
-            'accuracy' => $this->calculateAccuracyValue($prediction),
             'status' => 'scored',
             'scored_at' => now(),
         ])->save();
-    }
-
-    public function calculateAccuracyValue(Prediction $prediction): float
-    {
-        return $this->raceScoring->calculateAccuracy($prediction);
     }
 
     /**
@@ -247,14 +241,13 @@ class ScoringService
     {
         $prediction->forceFill([
             'score' => $score,
-            'accuracy' => $this->calculateAccuracyValue($prediction),
             'status' => 'scored',
             'scored_at' => now(),
             'notes' => $reason ? "Admin override: {$reason}" : 'Admin override',
         ])->save();
 
         // Send notification
-        $prediction->user->notify(new PredictionScored($prediction, $score, $prediction->accuracy));
+        $prediction->user->notify(new PredictionScored($prediction, $score));
     }
 
     /**
@@ -315,7 +308,6 @@ class ScoringService
             $prediction->forceFill([
                 'status' => 'cancelled',
                 'score' => 0,
-                'accuracy' => 0,
                 'notes' => $reason ? "Race cancelled: {$reason}" : 'Race cancelled',
             ])->save();
         }

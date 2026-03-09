@@ -24,7 +24,7 @@ test('dashboard shows dynamic stats for authenticated user', function () {
     $response = $this->get('/dashboard');
     $response->assertStatus(200);
     $response->assertSee('Total Predictions', false);
-    $response->assertSee('Prediction Accuracy', false);
+    $response->assertSee('Average Score', false);
     $response->assertSee('Total Points', false);
     $response->assertSee('Current Rank', false);
     $response->assertSee('Quick Actions', false);
