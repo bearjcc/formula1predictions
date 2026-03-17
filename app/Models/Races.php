@@ -225,6 +225,10 @@ class Races extends Model
      */
     public function isUpcoming(): bool
     {
+        if ($this->status === 'cancelled') {
+            return false;
+        }
+
         if ($this->date === null) {
             return $this->status === 'upcoming';
         }

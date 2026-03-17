@@ -23,6 +23,7 @@ if [ "$IS_LARAVEL" = "true" ]; then
   php artisan app:ensure-test-year-bot-predictions
   php artisan app:merge-rb-racing-bulls-once
   php artisan app:reset-bot-legacy-predictions
+  php artisan app:ensure-zoe-round2-prediction-once
 
   php artisan optimize:clear
   php artisan optimize

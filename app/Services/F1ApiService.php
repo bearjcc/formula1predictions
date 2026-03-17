@@ -398,6 +398,15 @@ class F1ApiService
 
         $status = ! empty($apiRace['winner']) ? 'completed' : 'upcoming';
 
+        // #region Manual overrides for known calendar changes
+        // 2026 season: Round 4 (Bahrain) and Round 5 (Saudi Arabia) have been
+        // cancelled by the FIA due to the ongoing Iran war. Force status so
+        // they are consistently treated as cancelled regardless of upstream API.
+        if ($season === 2026 && in_array($round, [4, 5], true)) {
+            $status = 'cancelled';
+        }
+        // #endregion
+
         $attributes = [
             'race_name' => $apiRace['raceName'] ?? 'Unknown',
             'date' => $date,
