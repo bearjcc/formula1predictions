@@ -188,6 +188,21 @@ Deployment uses [Railpack](https://railpack.com/) (PHP/FrankenPHP). A custom `st
 - **Cron / scheduler:** Either (1) a dedicated service running `./railway/run-cron.sh` (loop: `schedule:run` every 60s), or (2) Railway’s cron feature pointing at a URL or command that runs the scheduler. See [railway/run-cron.sh](railway/run-cron.sh).
 - **Email:** For production, configure a mail driver and `MAIL_FROM_ADDRESS` (and `MAIL_FROM_NAME`) so verification and other transactional emails are sent; otherwise they are logged (`MAIL_MAILER=log`).
 
+### Running one-off Artisan commands on Railway
+
+To run artisan against your **production** app (same env vars and DB as the live site), use the [Railway CLI](https://docs.railway.app/develop/cli):
+
+1. Install the CLI and log in, then from the repo root run `railway link` and select your project/service.
+2. Run any command with: `railway run php artisan <command>`.
+
+Example: send prediction deadline reminders (e.g. Chinese GP) when the scheduler missed the window:
+
+```bash
+railway run php artisan reminders:send-deadline --force
+```
+
+`--force` skips the 72h window check and sends to non-predictors for any race whose deadline has not passed. Mail uses your Railway env (e.g. Resend); Resend does not restrict by environment, only by verified sending domain.
+
 ### Supervisor (self-hosted queue worker)
 
 For self-hosted or VPS deployments using [Supervisor](https://supervisord.org/) to run the Laravel queue worker:

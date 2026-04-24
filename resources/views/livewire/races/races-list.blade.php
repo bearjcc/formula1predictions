@@ -86,7 +86,9 @@
                         </summary>
                         <div class="px-6 pb-6 space-y-4">
                             @foreach($grouped['flat'] as $race)
-                                @include('livewire.races.partials.race-card', ['race' => $race])
+                                <div wire:key="race-flat-{{ $year }}-{{ $race['round'] ?? 'unknown' }}">
+                                    @include('livewire.races.partials.race-card', ['race' => $race])
+                                </div>
                             @endforeach
                         </div>
                     </details>
@@ -98,7 +100,9 @@
                             Next race
                         </summary>
                         <div class="px-6 pb-6">
-                            @include('livewire.races.partials.race-card', ['race' => $grouped['next']])
+                            <div wire:key="race-next-{{ $year }}-{{ $grouped['next']['round'] ?? 'unknown' }}">
+                                @include('livewire.races.partials.race-card', ['race' => $grouped['next']])
+                            </div>
                         </div>
                     </details>
                 @endif
@@ -111,7 +115,9 @@
                         </summary>
                         <div class="px-6 pb-6 space-y-4">
                             @foreach($grouped['future'] as $race)
-                                @include('livewire.races.partials.race-card', ['race' => $race])
+                                <div wire:key="race-future-{{ $year }}-{{ $race['round'] ?? 'unknown' }}">
+                                    @include('livewire.races.partials.race-card', ['race' => $race])
+                                </div>
                             @endforeach
                         </div>
                     </details>
@@ -125,7 +131,9 @@
                         </summary>
                         <div class="px-6 pb-6 space-y-4">
                             @foreach($grouped['past'] as $race)
-                                @include('livewire.races.partials.race-card', ['race' => $race])
+                                <div wire:key="race-past-{{ $year }}-{{ $race['round'] ?? 'unknown' }}">
+                                    @include('livewire.races.partials.race-card', ['race' => $race])
+                                </div>
                             @endforeach
                         </div>
                     </details>

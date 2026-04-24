@@ -342,3 +342,43 @@ test('race card shows locked state when prediction is locked and no score yet', 
         ->assertDontSee('Edit Prediction')
         ->assertDontSee('Make Prediction');
 });
+
+test('race card renders iso race dates without shifting the month', function () {
+    mock(F1ApiService::class, function ($mock) {
+        $mock->shouldReceive('getRacesForYear')
+            ->with(2026)
+            ->andReturn([
+                [
+                    'round' => 2,
+                    'raceName' => 'Heineken Chinese Grand Prix 2026',
+                    'circuit' => [
+                        'circuitName' => 'Shanghai International Circuit',
+                        'country' => 'China',
+                    ],
+                    'date' => '2026-03-15',
+                    'time' => '07:00:00',
+                    'status' => 'upcoming',
+                    'predictions_open' => true,
+                    'results' => [],
+                ],
+                [
+                    'round' => 3,
+                    'raceName' => 'Aramco Japanese Grand Prix 2026',
+                    'circuit' => [
+                        'circuitName' => 'Suzuka International Circuit',
+                        'country' => 'Japan',
+                    ],
+                    'date' => '2026-03-29',
+                    'time' => '05:00:00',
+                    'status' => 'upcoming',
+                    'predictions_open' => true,
+                    'results' => [],
+                ],
+            ]);
+    });
+
+    Livewire::test(RacesList::class, ['year' => 2026])
+        ->assertSee('Mar 15, 2026')
+        ->assertDontSee('Apr 15, 2026')
+        ->assertSee('Mar 29, 2026');
+});
