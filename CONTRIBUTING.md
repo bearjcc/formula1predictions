@@ -9,19 +9,37 @@ This project is a Laravel application; follow Laravel's standard local setup pra
 
 ## Development workflow
 
-- **Branching**: Create feature branches from the main branch for any non-trivial change.
-- **Small, focused PRs**: Keep changesets small and cohesive around a single concern.
-- **Commit messages**: Use clear, descriptive messages that explain the "why," not just the "what."
+### Git hygiene (humans and AI agents)
+
+1. **Branch or worktree before coding** — not on `main`/`master`.
+   - Branch: `git switch -c agent/my-task`
+   - Worktree (recommended for agent sessions): `.\scripts\agent-task-start.ps1 -Task "my-task"` (Windows) or `./scripts/agent-task-start.sh my-task`
+2. **Install repo hooks** (once per clone/worktree): `.\scripts\install-git-hooks.ps1` or `./scripts/install-git-hooks.sh`
+   - **pre-commit**: blocks oversized staged commits; runs Pint on staged PHP
+   - **commit-msg**: Conventional Commits (`feat:`, `fix:`, …) or `checkpoint:` after verified tests
+3. **Check diff size** while working: `.\scripts\git\change-stats.ps1` or `./scripts/git/change-stats.sh`
+4. **One branch, one objective** — split unrelated work into another branch/PR.
+
+Override hooks only when necessary: `GIT_HYGIENE_SKIP=1` (single command).
+
+### Commits and PRs
+
+- **Small, focused PRs**: one concern per PR; prefer stacked small commits over a single 5k-line dump.
+- **Commit messages**: `type(scope): summary` — e.g. `fix(scoring): treat DNS as non-finisher`. Avoid `wip`, `updates`, `changes`.
+- **Do not** use `git commit --no-verify` or force-push to `main`/`master`.
 
 Before opening a PR:
 
-- Run the test suite (PHPUnit/Pest) locally.
-- Run static analysis and formatting (e.g., Laravel Pint) if configured.
-- On this project, prefer running the pre-push script:
-  - Windows: `.\scripts\pre-push.ps1`
-  - Unix-like: `./scripts/pre-push.sh`
+- Run `.\scripts\pre-push.ps1` (Windows) or `./scripts/pre-push.sh` (Unix).
+- That runs composer audit, readiness, Pint, tests, frontend build, and **aislop** (AI slop gate; config in `.aislop/config.yml`).
 
-These scripts run audits, readiness checks, Pint, tests, and the build so your changes match CI.
+CI runs the same checks (`.github/workflows/ci.yml`, `.github/workflows/aislop.yml`).
+
+### AI-assisted changes
+
+- Cursor project rules: `.cursor/rules/ai-git-hygiene.mdc`, command `/guardian` for architecture review.
+- Scan for slop: `npm run slop` (alias for `aislop scan`).
+- Agents must not skip failing tests or hooks to appear green.
 
 ## Code style and architecture
 

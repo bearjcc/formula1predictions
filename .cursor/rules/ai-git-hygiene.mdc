@@ -1,0 +1,55 @@
+---
+description: MANDATORY git hygiene for every agent in this repo — read before editing or committing
+alwaysApply: true
+---
+
+# Git hygiene (mandatory)
+
+**This repo requires senior-developer git discipline.** "Get the task done" is not an excuse to skip these steps.
+
+## 0. First action on every task (before editing any file)
+
+1. Check branch: `git branch --show-current` or `.\scripts\git\change-stats.ps1`
+2. If on `main` or `master`: **stop** and create isolation first:
+   - Preferred: `.\scripts\agent-task-start.ps1 -Task "<slug>"` then open the **worktree** in Cursor
+   - Or: `git switch -c agent/<slug>`
+3. If hooks not installed: `.\scripts\install-git-hooks.ps1` (once per clone/worktree)
+
+**Do not edit application code on `main`/`master`.** Docs-only hotfixes on main are rare; ask the user if unsure.
+
+## 1. While implementing
+
+- **One branch, one objective.** New scope → new branch.
+- Run `.\scripts\git\change-stats.ps1` before every commit.
+- If unstaged diff is roughly **>15 files or >300 lines**: stop, commit (if user asked), or split the task — do not keep piling changes.
+- Prefer **vertical slices** with tests over horizontal mega-diffs.
+- **Never** `git commit --no-verify`, `git push --force` to `main`/`master`, or `git push origin main`.
+
+## 2. Commits
+
+- Create commits **only when the user explicitly asked**.
+- Subject: `feat|fix|refactor|test|docs|chore|style|perf|ci|build(scope): imperative summary`
+- After tests pass (user asked for checkpoint): `checkpoint: <note>`
+- **Forbidden:** `wip`, `updates`, `changes`, `stuff`, bare `fix`, empty messages
+- Stage only related files; keep each commit reviewable (hooks enforce ~25 files / ~500 lines staged max)
+
+## 3. Before saying "done" or opening a PR
+
+1. Run tests for behavior you changed
+2. `vendor/bin/pint --dirty --test` on PHP you touched
+3. `npm run aislop:ci` if you touched `app/`, `resources/`, or JS under this repo
+4. `.\scripts\pre-push.ps1` when the change is push-ready
+
+Do not claim success without running the relevant checks.
+
+## 4. Anti-patterns (instant fail)
+
+- Thousands of lines changed, zero commits
+- Eight commits for a one-line fix
+- Skipping hooks/tests to appear green
+- Hiding errors (empty catch, commented-out failures)
+- Committing secrets, `database.sqlite`, or `public/build` artifacts
+
+## 5. Code slop
+
+See `AGENTS.md` § AI agents and code quality. Run `npm run slop` on touched app code. Use `/guardian` for architectural changes.
