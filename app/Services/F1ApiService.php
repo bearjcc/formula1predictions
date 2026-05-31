@@ -17,8 +17,6 @@ use Throwable;
 
 class F1ApiService
 {
-    private const BASE_URL = 'https://f1api.dev/api';
-
     private const CACHE_TTL = 3600; // 1 hour
 
     /**
@@ -303,7 +301,7 @@ class F1ApiService
      */
     private function makeApiCall(string $endpoint): Response
     {
-        $url = self::BASE_URL.$endpoint;
+        $url = config('f1.api_base_url').$endpoint;
 
         $request = Http::timeout(30)
             ->retry(3, 1000);

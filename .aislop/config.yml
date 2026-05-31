@@ -17,6 +17,8 @@ exclude:
   - scripts
   - tests
   - tests/Browser
+  - .cursor/hooks
+  - .cursor/commands
 
 engines:
   format: true
