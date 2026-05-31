@@ -194,23 +194,7 @@ php artisan test tests/Feature/AccessibilityTest.php
 
 ## Color Validation
 
-### JavaScript Utilities
-```javascript
-import { validateColorCombination } from './resources/js/accessibility.js';
-
-// Check if a color combination meets WCAG AA standards
-const result = validateColorCombination('#000000', '#ffffff');
-console.log(result.passes); // true/false
-```
-
-### Design System Validation
-```javascript
-import { validateDesignSystemColors } from './resources/js/accessibility.js';
-
-// Validate all design system color combinations
-const results = validateDesignSystemColors();
-const failingCombinations = results.filter(r => !r.passes);
-```
+Use browser DevTools contrast checks or `npm run audit:lighthouse` for WCAG checks in CI/local audits. The former in-repo JS contrast helpers were removed as unused dead code.
 
 ## Maintenance
 
