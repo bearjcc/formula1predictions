@@ -15,8 +15,8 @@ Run locally: `npm run slop` or `npm run aislop:ci`.
 |------|----------------|-------|--------|
 | Services | `complexity/file-too-large` | `F1ApiService.php` (~1006 LOC), `ChartDataService.php`, `RaceScoringService.php` | Split by concern; keep tests green per slice |
 | Livewire | `complexity/file-too-large` | `PredictionForm.php`, `draggable-driver-list.blade.php` | Extract subcomponents / form sections |
-| Commands | `complexity/function-too-long` | `MergeUsers`, `AuditRace1Predictions`, `EnsureZoeRound2Prediction` | Extract private methods |
-| JS | Knip false positives | Vite entry files (`app.js`, CSS) | Tune aislop exclude or knip config when supported |
+| Commands | `complexity/function-too-long` | `MergeUsers`, `AuditRace1Predictions` | Extract private methods |
+| JS | Knip false positives | Vite entry files (`app.js`, CSS) | Done: excluded in `.aislop/config.yml`; removed unused `accessibility.js` |
 
 ## P2 — defer (noisy or needs product decision)
 

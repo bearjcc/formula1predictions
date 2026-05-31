@@ -19,6 +19,11 @@ exclude:
   - tests/Browser
   - .cursor/hooks
   - .cursor/commands
+  # Vite/Tailwind entry graph (knip does not trace @import or laravel-vite-plugin inputs)
+  - resources/css
+  - resources/js/app.js
+  - resources/js/bootstrap.js
+  - resources/js/notifications.js
 
 engines:
   format: true
@@ -53,8 +58,8 @@ scoring:
   smoothing: 20
 
 ci:
-  # Ratchet upward as slop is cleaned up (was 26, then 57 after trivial-comment fix, May 2026).
-  failBelow: 50
+  # Ratchet upward as slop is cleaned up (was 26, then 57, then 50, then 52 May 2026).
+  failBelow: 51
   format: json
 
 telemetry:

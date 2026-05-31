@@ -21,40 +21,91 @@ class EnsureZoeRound2Prediction extends Command
 
     public function handle(): int
     {
-        if (! Schema::hasTable('one_time_jobs')) {
-            $this->warn('one_time_jobs table missing. Run migrations first.');
-
+        if (! $this->guardMigrations()) {
             return Command::SUCCESS;
         }
 
-        if (DB::table('one_time_jobs')->where('name', self::JOB_NAME)->exists()) {
-            $this->info('Zoe round 2 prediction already ensured. Skipping.');
-
+        if ($this->alreadyCompleted()) {
             return Command::SUCCESS;
         }
 
+        $user = $this->resolveUser();
+        if ($user === null) {
+            return Command::SUCCESS;
+        }
+
+        $race = $this->resolveRace();
+        if ($race === null) {
+            return Command::SUCCESS;
+        }
+
+        $prediction = $this->ensurePrediction($user, $race);
+        if ($prediction === null) {
+            return Command::SUCCESS;
+        }
+
+        $this->linkRaceAndScore($prediction, $race);
+        $this->markJobCompleted();
+
+        return Command::SUCCESS;
+    }
+
+    private function guardMigrations(): bool
+    {
+        if (Schema::hasTable('one_time_jobs')) {
+            return true;
+        }
+
+        $this->warn('one_time_jobs table missing. Run migrations first.');
+
+        return false;
+    }
+
+    private function alreadyCompleted(): bool
+    {
+        if (! DB::table('one_time_jobs')->where('name', self::JOB_NAME)->exists()) {
+            return false;
+        }
+
+        $this->info('Zoe round 2 prediction already ensured. Skipping.');
+
+        return true;
+    }
+
+    private function resolveUser(): ?User
+    {
         $user = User::where('email', 'zoepasternack@gmail.com')->first();
 
-        if (! $user) {
-            $this->warn('User zoepasternack@gmail.com not found. Nothing to do.');
-            Log::warning('EnsureZoeRound2Prediction: user not found', ['email' => 'zoepasternack@gmail.com']);
-
-            $this->markJobCompleted();
-
-            return Command::SUCCESS;
+        if ($user) {
+            return $user;
         }
 
+        $this->warn('User zoepasternack@gmail.com not found. Nothing to do.');
+        Log::warning('EnsureZoeRound2Prediction: user not found', ['email' => 'zoepasternack@gmail.com']);
+        $this->markJobCompleted();
+
+        return null;
+    }
+
+    private function resolveRace(): ?Races
+    {
         $season = (int) config('f1.current_season');
         $race = Races::where('season', $season)->where('round', 2)->first();
 
-        if (! $race) {
-            $this->warn("Round 2 race for season {$season} not found. Nothing to do.");
-            Log::warning('EnsureZoeRound2Prediction: race not found', ['season' => $season, 'round' => 2]);
-
-            $this->markJobCompleted();
-
-            return Command::SUCCESS;
+        if ($race) {
+            return $race;
         }
+
+        $this->warn("Round 2 race for season {$season} not found. Nothing to do.");
+        Log::warning('EnsureZoeRound2Prediction: race not found', ['season' => $season, 'round' => 2]);
+        $this->markJobCompleted();
+
+        return null;
+    }
+
+    private function ensurePrediction(User $user, Races $race): ?Prediction
+    {
+        $season = (int) config('f1.current_season');
 
         $prediction = Prediction::where('user_id', $user->id)
             ->where('type', 'race')
@@ -64,36 +115,42 @@ class EnsureZoeRound2Prediction extends Command
 
         if ($prediction) {
             $this->info('Zoe already has a round 2 race prediction. Ensuring it is linked and scored if possible.');
-        } else {
-            $driverOrder = $this->buildDriverOrder();
 
-            if ($driverOrder === []) {
-                $this->warn('Could not resolve any drivers for Zoe\'s prediction. Skipping creation.');
-                Log::warning('EnsureZoeRound2Prediction: empty driver order after resolution');
-
-                $this->markJobCompleted();
-
-                return Command::SUCCESS;
-            }
-
-            $prediction = new Prediction();
-            $prediction->fill([
-                'user_id' => $user->id,
-                'type' => 'race',
-                'season' => $season,
-                'race_round' => (int) $race->round,
-                'race_id' => $race->id,
-                'prediction_data' => [
-                    'driver_order' => $driverOrder,
-                ],
-            ]);
-            $prediction->status = 'submitted';
-            $prediction->submitted_at = now();
-            $prediction->save();
-
-            $this->info('Created Zoe\'s round 2 race prediction from emailed picks.');
+            return $prediction;
         }
 
+        $driverOrder = $this->buildDriverOrder();
+
+        if ($driverOrder === []) {
+            $this->warn('Could not resolve any drivers for Zoe\'s prediction. Skipping creation.');
+            Log::warning('EnsureZoeRound2Prediction: empty driver order after resolution');
+            $this->markJobCompleted();
+
+            return null;
+        }
+
+        $prediction = new Prediction;
+        $prediction->fill([
+            'user_id' => $user->id,
+            'type' => 'race',
+            'season' => $season,
+            'race_round' => (int) $race->round,
+            'race_id' => $race->id,
+            'prediction_data' => [
+                'driver_order' => $driverOrder,
+            ],
+        ]);
+        $prediction->status = 'submitted';
+        $prediction->submitted_at = now();
+        $prediction->save();
+
+        $this->info('Created Zoe\'s round 2 race prediction from emailed picks.');
+
+        return $prediction;
+    }
+
+    private function linkRaceAndScore(Prediction $prediction, Races $race): void
+    {
         if (! $prediction->race_id) {
             $prediction->race_id = $race->id;
             $prediction->save();
@@ -101,16 +158,13 @@ class EnsureZoeRound2Prediction extends Command
 
         if ($race->isCompleted() && $race->getResultsArray() !== []) {
             $this->info('Race has results; scoring Zoe\'s prediction now.');
-
             $prediction->refresh();
             $prediction->score();
-        } else {
-            $this->info('Race results not available yet; prediction will be scored by normal background jobs later.');
+
+            return;
         }
 
-        $this->markJobCompleted();
-
-        return Command::SUCCESS;
+        $this->info('Race results not available yet; prediction will be scored by normal background jobs later.');
     }
 
     /**
@@ -217,4 +271,3 @@ class EnsureZoeRound2Prediction extends Command
         ]);
     }
 }
-
