@@ -171,11 +171,20 @@ Coverage (optional): `composer run test:coverage` (requires pcov).
 
 ### CI
 
-GitHub Actions runs on push and pull request to `main` and `master` (see [.github/workflows/ci.yml](.github/workflows/ci.yml)): `composer audit`, `app:check-ready`, two-batch tests via `scripts/test-batches.sh`, `npm run build`, `npm audit --audit-level=high` (optional), and `vendor/bin/pint --dirty --test`.
+GitHub Actions runs on push and pull request to `main` and `master`:
 
-### Pre-push (local)
+- [.github/workflows/ci.yml](.github/workflows/ci.yml): `composer audit`, `app:check-ready`, two-batch tests via `scripts/test-batches.sh`, `npm run build`, `npm audit --audit-level=high` (optional), and `vendor/bin/pint --dirty --test`.
+- [.github/workflows/aislop.yml](.github/workflows/aislop.yml): [aislop](https://github.com/scanaislop/aislop) quality gate (`npx aislop ci`).
 
-Before pushing, run `.\scripts\pre-push.ps1` (PowerShell) or `./scripts/pre-push.sh` (Unix). These run composer audit, readiness check, Pint, tests, build, and optionally npm audit. You can wire them to a git pre-push hook if desired.
+Local aislop: `npm run aislop:scan` or `npm run aislop:ci` (config in [.aislop/config.yml](.aislop/config.yml)). This repo is a Laravel + Livewire fixture for PHP/JS slop detection; see [docs/aislop-fixture.md](docs/aislop-fixture.md).
+
+### Pre-push and git hooks (local)
+
+1. **Install hooks** (once): `.\scripts\install-git-hooks.ps1` or `./scripts/install-git-hooks.sh` — commit size limits, Conventional Commits, Pint on staged PHP.
+2. **Agent worktree** (optional): `.\scripts\agent-task-start.ps1 -Task "my-feature"`.
+3. **Before push**: `.\scripts\pre-push.ps1` or `./scripts/pre-push.sh` — audit, readiness, Pint, tests, build, aislop.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for the full AI/git hygiene pipeline.
 
 ---
 

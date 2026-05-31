@@ -136,7 +136,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Countries::class, CountriesPolicy::class);
         Gate::policy(Standings::class, StandingsPolicy::class);
 
-        // Define additional gates
         Gate::define('view-admin-dashboard', function (User $user) {
             return $user->hasRole('admin');
         });

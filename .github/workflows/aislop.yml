@@ -1,0 +1,28 @@
+# Quality gate via https://github.com/scanaislop/aislop
+name: aislop
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: aislop ci
+        env:
+          AISLOP_NO_TELEMETRY: "1"
+          DO_NOT_TRACK: "1"
+          CI: "1"
+        run: npm run aislop:ci

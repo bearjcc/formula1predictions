@@ -29,7 +29,6 @@ class PreviousYearChampionshipBotSeeder extends Seeder
 
     private function seedSeason(int $botUserId, int $season): void
     {
-        // Get previous year's final driver standings
         $previousYear = $season - 1;
         $previousStandings = Standings::getDriverStandings($previousYear);
 
@@ -39,7 +38,6 @@ class PreviousYearChampionshipBotSeeder extends Seeder
             return;
         }
 
-        // Get races for current season
         $races = Races::where('season', $season)->orderBy('round')->get();
 
         foreach ($races as $race) {

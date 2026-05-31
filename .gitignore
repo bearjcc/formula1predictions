@@ -44,5 +44,11 @@ deployment/logs/
 /lighthouse-mobile.html
 lighthouse-*.html
 
+# aislop local score history (not for CI)
+.aislop/history.jsonl
+
+# Local git hygiene overrides (optional)
+scripts/git/hygiene.local
+
 # Windows artifacts
 nul

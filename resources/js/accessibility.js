@@ -44,7 +44,6 @@ export function meetsWCAGAA(contrastRatio, isLargeText = false) {
     return isLargeText ? contrastRatio >= 3 : contrastRatio >= 4.5;
 }
 
-// Validate color combinations
 export function validateColorCombination(textColor, backgroundColor) {
     const contrastRatio = calculateContrastRatio(textColor, backgroundColor);
     const meetsLargeText = meetsWCAGAA(contrastRatio, true);
@@ -126,7 +125,6 @@ export const darkModeColors = {
     }
 };
 
-// Validate design system color combinations
 export function validateDesignSystemColors() {
     const results = [];
     
@@ -163,7 +161,6 @@ export function validateDesignSystemColors() {
 export function runAccessibilityAudit() {
     const issues = [];
     
-    // Check for missing alt text on images
     const images = document.querySelectorAll('img');
     images.forEach((img, index) => {
         if (!img.alt && !img.getAttribute('aria-label')) {
@@ -176,10 +173,9 @@ export function runAccessibilityAudit() {
         }
     });
     
-    // Check for proper heading hierarchy
     const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
     let previousLevel = 0;
-    headings.forEach((heading, index) => {
+    headings.forEach((heading, _index) => {
         const level = parseInt(heading.tagName.charAt(1));
         if (level - previousLevel > 1) {
             issues.push({
@@ -192,7 +188,6 @@ export function runAccessibilityAudit() {
         previousLevel = level;
     });
     
-    // Check for proper button semantics
     const buttons = document.querySelectorAll('button');
     buttons.forEach((button, index) => {
         if (!button.type) {
@@ -205,7 +200,6 @@ export function runAccessibilityAudit() {
         }
     });
     
-    // Check for proper link text
     const links = document.querySelectorAll('a');
     links.forEach((link, index) => {
         const linkText = link.textContent.trim();
@@ -219,7 +213,6 @@ export function runAccessibilityAudit() {
         }
     });
     
-    // Check for focus management
     const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]');
     focusableElements.forEach((element, index) => {
         const computedStyle = window.getComputedStyle(element);
@@ -259,13 +252,11 @@ export function autoFixAccessibilityIssues() {
     return fixes;
 }
 
-// Initialize accessibility monitoring
 export function initAccessibilityMonitoring() {
     // Monitor for dynamic content changes
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.type === 'childList') {
-                // Check new nodes for accessibility issues
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         const issues = runAccessibilityAudit();
@@ -296,4 +287,4 @@ export default {
     autoFixAccessibilityIssues,
     initAccessibilityMonitoring
 };
-
+

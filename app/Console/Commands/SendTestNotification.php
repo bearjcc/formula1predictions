@@ -51,14 +51,12 @@ class SendTestNotification extends Command
         $notificationService = new NotificationService;
 
         if ($type === 'race') {
-            // Create a test race
             $race = \App\Models\Races::factory()->create([
                 'race_name' => 'Test Grand Prix',
                 'season' => 2024,
                 'round' => 1,
             ]);
 
-            // Create a test prediction for the user
             \App\Models\Prediction::factory()->create([
                 'user_id' => $user->id,
                 'race_id' => $race->id,
@@ -68,7 +66,6 @@ class SendTestNotification extends Command
             $notificationService->sendRaceResultsAvailableNotification($race);
             $this->info("Sent race results available notification for: {$race->display_name}");
         } elseif ($type === 'prediction') {
-            // Create a test race and prediction
             $race = \App\Models\Races::factory()->create([
                 'race_name' => 'Test Grand Prix',
                 'season' => 2024,

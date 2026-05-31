@@ -1,10 +1,5 @@
 <?php
 
-/**
- * HTML to Markdown Converter for Formula 1 2023 Predictions
- * Converts Google Sheets HTML export directly to markdown format
- * Handles regular races, PreSeason, and MidSeason files
- */
 class HtmlToMarkdown2023Converter
 {
     private $inputDir;
@@ -40,7 +35,6 @@ class HtmlToMarkdown2023Converter
             $filename = basename($htmlFile, '.html');
             echo "Processing: {$filename}.html\n";
 
-            // Handle special files separately
             if (in_array($filename, ['PreSeason', 'MidSeason'])) {
                 $specialFiles[$filename] = $this->extractSpecialFileInfo($htmlFile, $filename);
             } else {
@@ -70,7 +64,6 @@ class HtmlToMarkdown2023Converter
             $markdownContent .= $this->generateMidSeasonMarkdown($specialFiles['MidSeason']);
         }
 
-        // Write markdown file
         $success = file_put_contents($this->outputFile, $markdownContent);
 
         if ($success) {
@@ -98,10 +91,8 @@ class HtmlToMarkdown2023Converter
             'classification' => [],
         ];
 
-        // Extract fastest lap
         $raceInfo['fastest_lap'] = $this->extractFastestLap($tableData);
 
-        // Extract classification
         $raceInfo['classification'] = $this->extractClassification($tableData);
 
         return $raceInfo;
@@ -319,7 +310,6 @@ class HtmlToMarkdown2023Converter
             return [];
         }
 
-        // Create a new DOMDocument
         $dom = new DOMDocument;
 
         // Suppress warnings for malformed HTML
@@ -356,7 +346,6 @@ class HtmlToMarkdown2023Converter
             $cells = $row->getElementsByTagName('td');
 
             foreach ($cells as $cell) {
-                // Get the text content, handling nested elements
                 $text = $this->extractTextContent($cell);
                 $rowData[] = $text;
             }

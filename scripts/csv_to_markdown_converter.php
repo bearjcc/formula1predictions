@@ -54,7 +54,6 @@ class CsvToMarkdownConverter
             $markdownContent .= $this->generateRaceMarkdown($race);
         }
 
-        // Write markdown file
         $success = file_put_contents($this->outputFile, $markdownContent);
 
         if ($success) {
@@ -92,10 +91,8 @@ class CsvToMarkdownConverter
 
         }
 
-        // Extract fastest lap
         $raceInfo['fastest_lap'] = $this->extractFastestLap($csvData);
 
-        // Extract classification
         $raceInfo['classification'] = $this->extractClassification($csvData, $hasDnfColumn);
 
         return $raceInfo;
@@ -107,7 +104,6 @@ class CsvToMarkdownConverter
     private function extractFastestLap($csvData)
     {
         foreach ($csvData as $row) {
-            // Check for FL in different possible positions
             if (isset($row[1]) && trim($row[1]) === 'FL') {
                 return isset($row[2]) ? trim($row[2]) : null;
             }

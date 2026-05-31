@@ -12,6 +12,4 @@ const outPath = process.env.LIGHTHOUSE_OUT || join(process.cwd(), 'lighthouse-mo
 
 const cmd = `npx lighthouse "${baseUrl}" --mobile --output=html --output-path="${outPath}" --chrome-flags="--headless"`;
 
-console.log('Running Lighthouse mobile audit for', baseUrl);
 execSync(cmd, { stdio: 'inherit', shell: true });
-console.log('Report written to', outPath);

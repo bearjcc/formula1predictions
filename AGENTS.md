@@ -1,11 +1,37 @@
--NoNewline
+---
+
+## Git hygiene (mandatory for every agent)
+
+**Read `.cursor/rules/ai-git-hygiene.mdc` before editing files.** Cursor also injects branch context at session start (`.cursor/hooks/session-git-context.mjs`).
+
+| Step | Action |
+|------|--------|
+| 1 | **Not on `main`/`master`** — `git switch -c agent/<slug>` or `.\scripts\agent-task-start.ps1 -Task "<slug>"` |
+| 2 | **Hooks installed** — `.\scripts\install-git-hooks.ps1` once per clone/worktree |
+| 3 | **While working** — `.\scripts\git\change-stats.ps1`; stop if diff grows too large; small vertical commits |
+| 4 | **Commits** — only when user asked; Conventional Commits (`fix(scope): …`); never `--no-verify` |
+| 5 | **Before done** — tests + `.\scripts\pre-push.ps1` |
+
+Slash command: `/git-hygiene` for a quick checklist.
 
 ---
 
 ## Agent workflow
 
 - **Run tests before claiming completion or making commits.** At minimum run the test suite (or the subset that covers your changes). Auth and other critical paths have tests that assert 200 and no Laravel 500 error page; if those fail, fix before committing.
-- **Pre-push:** `.\scripts\pre-push.ps1` or `./scripts/pre-push.sh` runs audits, readiness (`app:check-ready`), Pint, tests, and build. CI runs the same checks (see .github/workflows/ci.yml).
+- **Pre-push:** `.\scripts\pre-push.ps1` or `./scripts/pre-push.sh` runs audits, readiness (`app:check-ready`), Pint, tests, build, and aislop (`npm run aislop:ci`). CI runs the same checks (see `.github/workflows/ci.yml` and `.github/workflows/aislop.yml`).
+
+### Quality gate stack (deterministic, not LLM)
+
+| Layer | Tool | When |
+|-------|------|------|
+| AI slop | [aislop](https://github.com/scanaislop/aislop) (`npm run aislop:ci`) | pre-push, CI |
+| Style | Laravel Pint | pre-commit (hooks), pre-push, CI |
+| Tests | Pest (`php artisan test`) | before commit (user/agent), pre-push, CI |
+| Security | `composer audit`, `npm audit` | pre-push, CI |
+| Git | `.githooks` + Cursor `git-guard` | commit / shell |
+
+Optional future additions (not yet in repo): Larastan/PHPStan, Deptrac, mutation testing (Infection).
 
 ---
 

@@ -54,7 +54,6 @@ class HistoricalPredictionsSeeder extends Seeder
             ),
         ];
 
-        // Import predictions for each year and user
         $this->importPredictionsForYear(2022, $users);
         $this->importPredictionsForYear(2023, $users);
 
@@ -107,7 +106,6 @@ class HistoricalPredictionsSeeder extends Seeder
                 continue;
             }
 
-            // Check for race headers
             if (preg_match('/^## ([A-Za-z\s]+)$/', $line, $matches)) {
                 $raceName = trim($matches[1]);
 
@@ -124,7 +122,6 @@ class HistoricalPredictionsSeeder extends Seeder
                 continue;
             }
 
-            // Check for fastest lap
             if (preg_match('/^FL -> (.+)$/', $line, $matches)) {
                 $fastestLap = trim($matches[1]);
                 if ($fastestLap === 'null') {
@@ -134,7 +131,6 @@ class HistoricalPredictionsSeeder extends Seeder
                 continue;
             }
 
-            // Check for section headers
             if (preg_match('/^### (.+)$/', $line, $matches)) {
                 $currentSection = strtolower(trim($matches[1]));
 
@@ -176,7 +172,6 @@ class HistoricalPredictionsSeeder extends Seeder
             }
         }
 
-        // Save final race prediction
         if ($currentRace && ! empty($driverOrder)) {
             $this->createRacePrediction($user, $year, $currentRace, $driverOrder, $fastestLap);
         }

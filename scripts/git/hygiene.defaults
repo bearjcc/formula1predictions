@@ -1,0 +1,6 @@
+# Git hygiene thresholds (sourced by scripts/git/*.sh)
+# Override per-repo: copy to hygiene.local (gitignored) or set env vars.
+
+MAX_COMMIT_FILES=25
+MAX_COMMIT_LINES=500
+WARN_STAGED_LINES=300

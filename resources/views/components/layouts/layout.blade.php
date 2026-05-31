@@ -263,7 +263,6 @@
                 });
             }
 
-            // Handle window resize
             window.addEventListener('resize', () => {
                 if (window.innerWidth >= 1024) {
                     closeSidebar();

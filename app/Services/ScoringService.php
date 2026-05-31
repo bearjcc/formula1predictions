@@ -271,7 +271,6 @@ class ScoringService
             $driverOrder = $predictionData['driver_order'] ?? [];
             $updated = false;
 
-            // Check for substitutions
             foreach ($substitutions as $oldDriverId => $newDriverId) {
                 $key = array_search($oldDriverId, $driverOrder);
                 if ($key !== false) {

@@ -30,7 +30,6 @@ class LegacyCsvPredictions2022Seeder extends Seeder
             return;
         }
 
-        // Create or reuse users for CSV-based historical data
         $users = [
             'Joseph' => User::firstOrCreate(
                 ['email' => 'bearjcc@example.com'],
@@ -89,7 +88,7 @@ class LegacyCsvPredictions2022Seeder extends Seeder
 
             /**
              * @var array<string, array<string, array<int, string>>>
-             *                     predictor => race => [position => driverName]
+             *                                                       predictor => race => [position => driverName]
              */
             $grouped = [];
 
@@ -261,4 +260,3 @@ class LegacyCsvPredictions2022Seeder extends Seeder
         return $raceRounds[$raceName] ?? 1;
     }
 }
-

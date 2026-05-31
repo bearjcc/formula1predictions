@@ -18,7 +18,7 @@ let appearanceListenerRegistered = false;
 function registerAppearanceListener() {
   if (appearanceListenerRegistered || typeof window.Livewire === 'undefined') return;
   appearanceListenerRegistered = true;
-  Livewire.on('appearance-changed', ({ appearance }) => {
+  window.Livewire.on('appearance-changed', ({ appearance }) => {
     document.documentElement.setAttribute('data-appearance', appearance);
     applyAppearance();
   });

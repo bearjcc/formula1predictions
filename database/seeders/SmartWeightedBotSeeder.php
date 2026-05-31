@@ -32,7 +32,6 @@ class SmartWeightedBotSeeder extends Seeder
     {
         $races = Races::where('season', $season)->orderBy('round')->get();
 
-        // Get last 20 races from previous seasons for weighting
         $previousRaces = $this->getLast20Races($season);
 
         foreach ($races as $race) {
