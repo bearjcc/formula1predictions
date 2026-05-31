@@ -23,6 +23,12 @@ Write-Host "=== Frontend build ==="
 & npm run build
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+Write-Host "=== aislop quality gate ==="
+$env:AISLOP_NO_TELEMETRY = "1"
+$env:DO_NOT_TRACK = "1"
+& npm run aislop:ci
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 Write-Host "=== NPM audit (high/critical; optional) ==="
 & npm audit --audit-level=high
 if ($LASTEXITCODE -ne 0) { Write-Host "(NPM audit reported issues; fix when convenient)" }

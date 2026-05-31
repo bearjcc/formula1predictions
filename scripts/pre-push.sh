@@ -18,6 +18,10 @@ echo "=== Tests (two batches) ==="
 echo "=== Frontend build ==="
 npm run build
 
+echo "=== aislop quality gate ==="
+export AISLOP_NO_TELEMETRY=1 DO_NOT_TRACK=1
+npm run aislop:ci
+
 echo "=== NPM audit (high/critical; optional) ==="
 npm audit --audit-level=high || true
 
