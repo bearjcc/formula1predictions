@@ -17,9 +17,12 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install NPM dependencies
+        run: npm ci
+
       - name: aislop ci
         env:
           AISLOP_NO_TELEMETRY: "1"
           DO_NOT_TRACK: "1"
           CI: "1"
-        run: npx aislop@latest ci .
+        run: npm run aislop:ci
