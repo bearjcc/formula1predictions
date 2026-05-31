@@ -15,7 +15,6 @@ new class extends Component {
         $this->appearance = $value;
         session(['appearance' => $value]);
         
-        // Dispatch event to update the theme
         $this->dispatch('appearance-changed', appearance: $value);
     }
 }; ?>

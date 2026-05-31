@@ -36,7 +36,6 @@ class HtmlToCsvConverter
             return false;
         }
 
-        // Parse the HTML table
         $tableData = $this->parseHtmlTable($htmlContent);
 
         if (empty($tableData)) {
@@ -49,7 +48,6 @@ class HtmlToCsvConverter
         $csvFile = str_replace('.html', '.csv', $htmlFile);
         $csvPath = $this->outputDir.'/'.$csvFile;
 
-        // Write CSV file
         $success = $this->writeCsvFile($csvPath, $tableData);
 
         if ($success) {
@@ -92,7 +90,6 @@ class HtmlToCsvConverter
      */
     private function parseHtmlTable($htmlContent)
     {
-        // Create a new DOMDocument
         $dom = new DOMDocument;
 
         // Suppress warnings for malformed HTML
@@ -131,7 +128,6 @@ class HtmlToCsvConverter
             $cells = $row->getElementsByTagName('td');
 
             foreach ($cells as $cell) {
-                // Get the text content, handling nested elements
                 $text = $this->extractTextContent($cell);
                 $rowData[] = $text;
             }
@@ -188,7 +184,6 @@ class HtmlToCsvConverter
                 $row[] = '';
             }
 
-            // Write the row to CSV
             fputcsv($handle, $row);
         }
 

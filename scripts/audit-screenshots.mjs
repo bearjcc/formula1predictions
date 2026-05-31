@@ -56,7 +56,6 @@ const adminPages = [
 async function takeScreenshot(page, slug, fullPage = true) {
   const path = join(OUT_DIR, `${slug}.png`);
   await page.screenshot({ path, fullPage });
-  console.log('  ' + slug + '.png');
 }
 
 async function login(page, email, password) {
@@ -71,8 +70,6 @@ async function login(page, email, password) {
 
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
-  console.log('Screenshots -> ' + OUT_DIR);
-  console.log('Base URL: ' + BASE_URL);
 
   const browser = await chromium.launch({ headless: true });
 
@@ -105,7 +102,6 @@ async function main() {
         await takeScreenshot(page, name);
       }
     } else {
-      console.log('(Skip admin screenshots: set ADMIN_EMAIL and ADMIN_PASSWORD to capture)');
     }
 
     await context.close();
@@ -113,7 +109,6 @@ async function main() {
     await browser.close();
   }
 
-  console.log('Done.');
 }
 
 main().catch((err) => {
