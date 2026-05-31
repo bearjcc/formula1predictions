@@ -2,6 +2,10 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "aislop:scan": "aislop scan .",
+        "aislop:ci": "aislop ci .",
+        "slop": "aislop scan .",
+        "slop:fix": "aislop fix .",
         "build": "vite build",
         "dev": "vite",
         "audit-screenshots": "node scripts/audit-screenshots.mjs",
@@ -24,6 +28,7 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
+        "aislop": "^0.10.1",
         "@axe-core/puppeteer": "^4.10.2",
         "@tailwindcss/vite": "^4.1.18",
         "autoprefixer": "^10.4.24",
