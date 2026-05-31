@@ -44,7 +44,6 @@ class ScoreHistoricalPredictions extends Command
             $this->info('DRY RUN MODE - No changes will be made');
         }
 
-        // Get completed races that haven't been scored yet
         $query = Races::where('status', 'completed')
             ->whereNotNull('results')
             ->where('results', '!=', '[]');

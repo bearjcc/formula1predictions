@@ -329,7 +329,6 @@ class User extends Authenticatable implements MustVerifyEmail
                 continue;
             }
 
-            // Build the position heatmap matrix
             foreach ($predictedOrder as $predictedPosition => $driverId) {
                 $actualPosition = $this->findDriverPosition($driverId, $raceResults);
 

@@ -24,7 +24,6 @@ class NotificationService
         })->chunkById(500, function ($users) use ($race) {
             Notification::send($users, new RaceResultsAvailable($race));
 
-            // Dispatch real-time events for each user in the chunk
             foreach ($users as $user) {
                 event(new NotificationReceived($user, [
                     'type' => 'race_results_available',
@@ -47,7 +46,6 @@ class NotificationService
     {
         $prediction->user->notify(new PredictionScored($prediction, $score));
 
-        // Dispatch real-time event
         event(new NotificationReceived($prediction->user, [
             'type' => 'prediction_scored',
             'prediction_id' => $prediction->id,
